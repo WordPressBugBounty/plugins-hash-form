@@ -45,7 +45,8 @@ jQuery(function ($) {
                 dataType: 'json',
                 data: {
                     action: 'hashform_process_entry',
-                    data: $.param(data)
+                    data: $.param(data),
+                    location: window.location.href
                 },
                 success: function (response) {
                     form.find('button.hf-submit-button').removeClass('hf-button-loading');

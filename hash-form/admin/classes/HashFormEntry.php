@@ -353,6 +353,7 @@ class HashFormEntry {
     public function process_entry() {
         global $wpdb;
         parse_str(htmlspecialchars_decode(HashFormHelper::get_post('data', 'esc_html')), $data);
+        $location = esc_url(HashFormHelper::get_post('location', 'esc_html'));
 
         if (empty($data) || empty($data['form_id']) || !isset($data['form_key'])) {
             return;
@@ -371,7 +372,7 @@ class HashFormEntry {
             $form_settings = $form->settings;
             $entry_id = self::create($data);
 
-            $send_mail = new HashFormEmail($form, $entry_id);
+            $send_mail = new HashFormEmail($form, $entry_id, $location);
             $check_mail = $send_mail->send_email();
 
             if (!$check_mail) {
@@ -464,6 +465,20 @@ class HashFormEntry {
         $query = $wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}hashform_entries e LEFT OUTER JOIN {$wpdb->prefix}hashform_forms f ON e.form_id=f.id WHERE e.form_id=%d AND e.status='published'", $form_id);
         $count = $wpdb->get_var($query);
         return $count;
+    }
+
+    public static function get_prev_entry($entry_id) {
+        global $wpdb;
+        $query = $wpdb->prepare("select id from {$wpdb->prefix}hashform_entries WHERE id < %d ORDER BY id DESC LIMIT 1", $entry_id);
+        $results = $wpdb->get_results($query);
+        return $results;
+    }
+
+    public static function get_next_entry($entry_id) {
+        global $wpdb;
+        $query = $wpdb->prepare("select id from {$wpdb->prefix}hashform_entries WHERE id > %d ORDER BY id ASC LIMIT 1", $entry_id);
+        $results = $wpdb->get_results($query);
+        return $results;
     }
 
 }

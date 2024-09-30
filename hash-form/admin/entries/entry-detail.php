@@ -1,5 +1,14 @@
 <?php
 defined('ABSPATH') || die();
+$prev_entry = HashFormEntry::get_prev_entry($entry->id);
+$prev_entry = isset($prev_entry[0]) ? $prev_entry[0] : '';
+$prev_entry_id = isset($prev_entry->id) ? $prev_entry->id : '';
+$prev_url = $prev_entry_id ? admin_url('admin.php?page=hashform-entries&hashform_action=view&id=' . $prev_entry_id) : '#';
+
+$next_entry = HashFormEntry::get_next_entry($entry->id);
+$next_entry = isset($next_entry[0]) ? $next_entry[0] : '';
+$next_entry_id = isset($next_entry->id) ? $next_entry->id : '';
+$next_url = $next_entry_id ? admin_url('admin.php?page=hashform-entries&hashform_action=view&id=' . $next_entry_id) : '#';
 ?>
 
 <div class="hf-form-entry-details-wrap wrap">
@@ -12,6 +21,14 @@ defined('ABSPATH') || die();
                     <?php printf(esc_html__('(ID %d)', 'hash-form'), absint($entry->id)); ?>
                 </span>
             </h3>
+            <div class="hf-form-entry-navigation">
+                <a class="hf-form-entry-prev<?php echo $prev_url == '#' ? ' hf-disabled' : ''; ?>" href="<?php echo esc_url($prev_url); ?>">
+                    <i class="mdi mdi-chevron-left"></i><?php echo esc_html__('Previous', 'hash-form') ?>
+                </a>
+                <a class="hf-form-entry-next<?php echo $next_url == '#' ? ' hf-disabled' : ''; ?>" href="<?php echo esc_url($next_url); ?>">
+                    <?php echo esc_html__('Next', 'hash-form') ?><i class="mdi mdi-chevron-right"></i>
+                </a>
+            </div>
         </div>
         <table>
             <tbody>
@@ -78,6 +95,8 @@ defined('ABSPATH') || die();
                     echo '<td>' . wp_kses_post($entry_value) . '</td>';
                     echo '</tr>';
                 }
+
+                do_action('hf_after_entry_detail_view', $entry);
                 ?>
             </tbody>
         </table>

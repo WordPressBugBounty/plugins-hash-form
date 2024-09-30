@@ -3,7 +3,7 @@ Contributors: hashthemes
 Tags: form, form builder, drag and drop, contact form
 Requires at least: 5.0
 Tested up to: 6.6
-Stable tag: 1.1.8
+Stable tag: 1.1.9
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -111,6 +111,10 @@ The easy way to install the plugin is via WordPress.org plugin directory.
 11. Global Email Settings Page
 
 == Changelog ==
+= 1.1.9, 30 Sep, 2024 =
+* Previous and Next button added on Entry details page - Added
+* Necessary hooks Added
+
 = 1.1.8, 4 Sep, 2024 =
 * Error in Entry Sanitization of textarea field - Fixed
 

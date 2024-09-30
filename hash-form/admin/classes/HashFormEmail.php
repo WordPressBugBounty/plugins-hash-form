@@ -5,10 +5,12 @@ class HashFormEmail {
 
     public $form;
     public $entry_id;
+    public $location;
 
-    public function __construct($form, $entry_id) {
+    public function __construct($form, $entry_id, $location) {
         $this->form = $form;
         $this->entry_id = $entry_id;
+        $this->location = $location;
     }
 
     private function get_form_settings() {
@@ -151,6 +153,7 @@ class HashFormEmail {
                 'entry_id' => $this->entry_id,
                 'form_settings' => $form_settings,
                 'metas' => $metas,
+                'location' => $this->location
             ));
 
             if (!empty($redirect_url)) {
