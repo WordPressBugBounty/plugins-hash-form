@@ -132,7 +132,11 @@ class HashFormFileUploader {
         $filename = $pathinfo['filename'];
         $ext = @$pathinfo['extension'];  // hide notices if extension is empty
 
-        if ($this->allowedExtensions && !in_array(strtolower($ext), $this->allowedExtensions) && in_array(strtolower($ext), $unallowed_extensions)) {
+        if (in_array(strtolower($ext), $unallowed_extensions)) {
+            return array('error' => esc_html__('This type of file is not allowed.'));
+        }
+
+        if ($this->allowedExtensions && !in_array(strtolower($ext), $this->allowedExtensions)) {
             $these = implode(', ', $this->allowedExtensions);
             return array('error' => esc_html__('File has an invalid extension, it should be one of', 'hash-form') . ' ' . $these . '.');
         }
