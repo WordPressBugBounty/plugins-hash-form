@@ -152,7 +152,7 @@ class HashFormFieldCaptcha extends HashFormFieldType {
             } else {
                 $image_name = HashFormFieldCaptcha::get_captcha_image_name();
                 ?>
-                <img src="<?php echo esc_url(HASHFORM_URL . '/img/' . $image_name . '.png'); ?>" style="width: 304px;" />
+                <img src="<?php echo esc_url(HASHFORM_URL . 'img/' . $image_name . '.png'); ?>" style="width: 304px;" />
                 <input type="hidden" name="<?php echo esc_attr($this->html_name()); ?>" value="1" />
                 <?php
             }

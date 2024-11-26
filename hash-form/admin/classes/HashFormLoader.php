@@ -53,11 +53,11 @@ class HashFormLoader {
             wp_enqueue_script('updates');
         }
 
-        wp_enqueue_script('hashform-chosen', HASHFORM_URL . '/js/chosen.jquery.js', array('jquery'), HASHFORM_VERSION, true);
-        wp_enqueue_script('hashform-select2', HASHFORM_URL . '/js/select2.min.js', array('jquery'), HASHFORM_VERSION, true);
-        wp_enqueue_script('jquery-condition', HASHFORM_URL . '/js/jquery-condition.js', array('jquery'), HASHFORM_VERSION, true);
-        wp_enqueue_script('wp-color-picker-alpha', HASHFORM_URL . '/js/wp-color-picker-alpha.js', array('wp-color-picker'), HASHFORM_VERSION, true);
-        wp_enqueue_script('hashform-admin-settings', HASHFORM_URL . '/js/admin-settings.js', array('jquery'), HASHFORM_VERSION, true);
+        wp_enqueue_script('hashform-chosen', HASHFORM_URL . 'js/chosen.jquery.js', array('jquery'), HASHFORM_VERSION, true);
+        wp_enqueue_script('hashform-select2', HASHFORM_URL . 'js/select2.min.js', array('jquery'), HASHFORM_VERSION, true);
+        wp_enqueue_script('jquery-condition', HASHFORM_URL . 'js/jquery-condition.js', array('jquery'), HASHFORM_VERSION, true);
+        wp_enqueue_script('wp-color-picker-alpha', HASHFORM_URL . 'js/wp-color-picker-alpha.js', array('wp-color-picker'), HASHFORM_VERSION, true);
+        wp_enqueue_script('hashform-admin-settings', HASHFORM_URL . 'js/admin-settings.js', array('jquery'), HASHFORM_VERSION, true);
 
         wp_localize_script('hashform-admin-settings', 'hashform_admin_js_obj', array(
             'ajax_url' => admin_url('admin-ajax.php'),
@@ -70,12 +70,12 @@ class HashFormLoader {
         wp_enqueue_style('wp-color-picker');
         wp_enqueue_style('hashform-icons', HASHFORM_URL . 'fonts/hf-icons.css', array(), HASHFORM_VERSION);
         wp_enqueue_style('materialdesignicons', HASHFORM_URL . 'fonts/materialdesignicons.css', array(), HASHFORM_VERSION);
-        wp_enqueue_style('hashform-chosen', HASHFORM_URL . '/css/chosen.css', array(), HASHFORM_VERSION);
-        wp_enqueue_style('hashform-select2', HASHFORM_URL . '/css/select2.min.css', array(), HASHFORM_VERSION);
+        wp_enqueue_style('hashform-chosen', HASHFORM_URL . 'css/chosen.css', array(), HASHFORM_VERSION);
+        wp_enqueue_style('hashform-select2', HASHFORM_URL . 'css/select2.min.css', array(), HASHFORM_VERSION);
         wp_enqueue_style('hashform-admin', HASHFORM_URL . 'css/admin-style.css', array(), HASHFORM_VERSION);
         wp_enqueue_style('hashform-file-uploader', HASHFORM_URL . 'css/file-uploader.css', array(), HASHFORM_VERSION);
-        wp_enqueue_style('hashform-admin-settings', HASHFORM_URL . '/css/admin-settings.css', array(), HASHFORM_VERSION);
-        wp_enqueue_style('hashform-style', HASHFORM_URL . '/css/style.css', array(), HASHFORM_VERSION);
+        wp_enqueue_style('hashform-admin-settings', HASHFORM_URL . 'css/admin-settings.css', array(), HASHFORM_VERSION);
+        wp_enqueue_style('hashform-style', HASHFORM_URL . 'css/style.css', array(), HASHFORM_VERSION);
 
         $fonts_url = HashFormStyles::fonts_url();
 

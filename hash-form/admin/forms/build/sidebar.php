@@ -104,6 +104,9 @@ defined('ABSPATH') || die();
                                 <option value="center" <?php isset($values['submit_btn_alignment']) ? selected($values['submit_btn_alignment'], 'center') : ''; ?>>
                                     <?php esc_html_e('Center', 'hash-form'); ?>
                                 </option>
+                                <option value="stretch" <?php isset($values['submit_btn_alignment']) ? selected($values['submit_btn_alignment'], 'center') : ''; ?>>
+                                    <?php esc_html_e('Stretch', 'hash-form'); ?>
+                                </option>
                             </select>
                         </div>
                     </div>

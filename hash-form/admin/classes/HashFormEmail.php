@@ -36,7 +36,7 @@ class HashFormEmail {
         $email_msg = isset($form_settings['email_message']) ? sanitize_text_field($form_settings['email_message']) : '';
         $email_table = $this->get_entry_rows($email_template);
         $form_title = $this->form->name;
-        $file_img_placeholder = HASHFORM_URL . '/img/attachment.png';
+        $file_img_placeholder = HASHFORM_URL . 'img/attachment.png';
 
         foreach ($metas as $item => $value) {
             $reply_to_email = str_replace('#field_id_' . absint($item), $value['value'], $reply_to_email);
@@ -176,7 +176,7 @@ class HashFormEmail {
         $settings = HashFormSettings::get_settings();
         $entry = HashFormEntry::get_entry_vars($this->entry_id);
         $entry_rows = '';
-        $file_img_placeholder = HASHFORM_URL . '/img/attachment.png';
+        $file_img_placeholder = HASHFORM_URL . 'img/attachment.png';
         $count = 0;
         foreach ($entry->metas as $id => $value) {
             $count++;

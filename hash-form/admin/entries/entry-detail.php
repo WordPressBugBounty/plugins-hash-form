@@ -33,7 +33,7 @@ $next_url = $next_entry_id ? admin_url('admin.php?page=hashform-entries&hashform
         <table>
             <tbody>
                 <?php
-                $file_img_placeholder = HASHFORM_URL . '/img/attachment.png';
+                $file_img_placeholder = HASHFORM_URL . 'img/attachment.png';
                 foreach ($entry->metas as $id => $value) {
                     $title = $value['name'];
                     $entry_value = HashFormHelper::unserialize_or_decode($value['value']);

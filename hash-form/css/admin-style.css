@@ -499,6 +499,11 @@
     justify-content: flex-end;
 }
 
+.hf-editor-submit-button-wrap.hf-submit-btn-align-stretch .hf-editor-submit-button{
+    width: 100%;
+    justify-content: center;
+}
+
 /* Form Fields */
 #hf-editor-fields .hf-editor-form-field {
     position: relative;

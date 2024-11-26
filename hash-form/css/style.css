@@ -1213,6 +1213,11 @@
     justify-content: flex-end;
 }
 
+.hf-submit-btn-align-stretch.hf-submit-wrap .hf-submit-button{
+    width: 100%;
+    justify-content: center;
+}
+
 .hf-submit-button {
     display: flex;
     align-items: center;
