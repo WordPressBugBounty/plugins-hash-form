@@ -3,7 +3,7 @@ Contributors: hashthemes
 Tags: form, form builder, drag and drop, contact form
 Requires at least: 5.0
 Tested up to: 6.7
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -111,6 +111,9 @@ The easy way to install the plugin is via WordPress.org plugin directory.
 11. Global Email Settings Page
 
 == Changelog ==
+= 1.2.2, 10 Dec, 2024 =
+* Security bug (Missing Authorization to Authenticated (Contributor+) Form Style Creation) reported by WordFence - Fixed
+
 = 1.2.1, 26 Nov, 2024 =
 * Extra / on wp_enqueue_style and image path removed
 * Option for full width submit button - Added
