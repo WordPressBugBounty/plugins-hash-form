@@ -173,6 +173,20 @@ var hashFormAdmin = hashFormAdmin || {};
             e.preventDefault();
             var $thisEle = this;
             hashFormAdmin.preFormSave(this);
+            /*
+            var fieldsData = $buildForm.serializeArray(); 
+            var settingsData = $formMeta.serializeArray(); 
+
+            var hashform_fields = {};
+            $.each(fieldsData, function () {
+                hashform_fields[this.name] = this.value;
+            });
+
+            var hashform_settings = {};
+            $.each(settingsData, function () {
+                hashform_settings[this.name] = this.value;
+            });
+            */
             var hashform_fields = JSON.stringify($buildForm.serializeArray());
             var hashform_settings = JSON.stringify($formMeta.serializeArray());
 

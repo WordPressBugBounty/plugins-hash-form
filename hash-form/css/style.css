@@ -1121,6 +1121,11 @@
     max-width: var(--hf-width);
 }
 
+/* Custom HTML */
+.hf-form-field.hashform-field-type-html .hf-field-content a{
+    text-decoration: underline;
+}
+
 /* Heading */
 .hf-form-field.hashform-field-type-heading .hf-field-container {
     width: 100%;

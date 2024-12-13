@@ -179,12 +179,13 @@ class HashFormBuilder {
 
         $fields_array = $settings_array = array();
 
-        $fields = htmlspecialchars_decode(nl2br(str_replace('&quot;', '"', HashFormHelper::get_post('hashform_fields', 'wp_kses_post'))));
+        $fields = htmlspecialchars_decode(nl2br(str_replace('&quot;', '"', HashFormHelper::get_post('hashform_fields', 'esc_html'))));
+
         if ($fields) {
             $fields_array = HashFormHelper::parse_json_array($fields);
         }
 
-        $settings = htmlspecialchars_decode(nl2br(str_replace('&quot;', '"', HashFormHelper::get_post('hashform_settings'))));
+        $settings = htmlspecialchars_decode(nl2br(str_replace('&quot;', '"', HashFormHelper::get_post('hashform_settings', 'esc_html'))));
         if ($settings) {
             $settings_array = HashFormHelper::parse_json_array($settings);
         }
