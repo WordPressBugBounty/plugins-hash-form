@@ -7,8 +7,6 @@ class HashFormBuilder {
 
         $this->includes();
 
-        add_action('init', array($this, 'session_init'));
-
         add_action('admin_menu', array($this, 'add_menu'), 1);
         add_filter('set-screen-option', array($this, 'set_screen_option'), 10, 3);
 
@@ -32,13 +30,6 @@ class HashFormBuilder {
 
     public function includes() {
         include HASHFORM_PATH . 'admin/forms/sanitization.php';
-    }
-
-    public function session_init() {
-        if (!session_id() && !headers_sent()) {
-            session_start(); //starts session if already not started
-            session_write_close();
-        }
     }
 
     public function add_menu() {

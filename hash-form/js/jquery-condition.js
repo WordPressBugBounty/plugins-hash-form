@@ -30,7 +30,6 @@
             } else {
                 result = checkCombine(value, PickVal);
             }
-            ;
             if (result)
                 return false;
         });
@@ -59,17 +58,13 @@
                 if (0 <= jQuery.inArray(v, arr)) {
                     return true;
                 }
-                ;
                 // exclude value
             } else {
                 if ('!' + v != pick) {
                     return true;
                 }
-                ;
             }
-            ;
         }
-        ;
         return false;
     }
     // has checked?
@@ -79,7 +74,6 @@
         if ('select' == tag) {
             return checkSelect($('#' + e), pick);
         }
-        ;
         return $('#' + e).is(":checked");
     }
     // conditionToggle DATA-API
