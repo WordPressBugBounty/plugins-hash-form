@@ -62,7 +62,9 @@ abstract class HashFormFieldType {
         <div class="hf-field-container" style="<?php echo esc_attr($this->container_inner_style()); ?>">
             <?php if ($display['label'] && !empty(trim($field['name'])) && (!($field['type'] == 'captcha' && $settings['re_type'] === 'v3'))) { ?>
                 <label class="hf-field-label <?php echo (!$field['name'] || ((isset($field['hide_label']) && $field['hide_label']))) ? 'hf-hidden' : ''; ?>">
-                    <?php echo esc_html($field['name']); ?>
+                    <?php
+                    echo esc_html(apply_filters('hf_translate_string', $field['name'], 'Hash Form', $field['id'] . ' - ' . 'Field Label'));
+                    ?>
                     <?php if (!!$field['required']) { ?>
                         <span class="hf-field-required" aria-hidden="true">
                             <?php echo esc_html($field['required_indicator']); ?>
@@ -77,7 +79,9 @@ abstract class HashFormFieldType {
                 if (isset($display['description']) && $display['description'] && !empty(trim($field['description']))) {
                     ?>
                     <div class="hf-field-desc">
-                        <?php echo esc_html($field['description']); ?>
+                        <?php
+                        echo esc_html(apply_filters('hf_translate_string', $field['description'], 'Hash Form', $field['id'] . ' - ' . 'Field Description'));
+                        ?>
                     </div>
                 <?php } ?>
             </div>
@@ -189,14 +193,18 @@ abstract class HashFormFieldType {
             ?>
             <label class="hf-editor-field-label hf-label-show-hide <?php echo (!$field['name'] || ((isset($field['hide_label']) && $field['hide_label']))) ? 'hf-hidden' : ''; ?> ">
                 <span id="hf-editor-field-label-text-<?php echo esc_attr($id); ?>" class="hf-editor-field-label-text">
-                    <?php echo esc_html($field['name']); ?>
+                    <?php
+                    echo esc_html($field['name']);
+                    ?>
                 </span>
 
                 <span id="hf-editor-field-required-<?php echo esc_attr($id); ?>" class="hf-field-required<?php echo (!$field['required'] ? ' hf-hidden' : ''); ?>">
                     <?php echo esc_html($field['required_indicator']); ?>
                 </span>
             </label>
-        <?php } ?>
+            <?php
+        }
+        ?>
 
         <div class="hf-editor-field-content">
             <div class="hf-editor-field-elements">
@@ -207,9 +215,13 @@ abstract class HashFormFieldType {
             if (isset($display['description']) && $display['description']) {
                 ?>
                 <div class="hf-field-desc" id="hf-field-desc-<?php echo esc_attr($id); ?>">
-                    <?php echo esc_html($field['description']); ?>
+                    <?php
+                    echo esc_html($field['description']);
+                    ?>
                 </div>
-            <?php } ?>
+                <?php
+            }
+            ?>
         </div>
         <?php
     }

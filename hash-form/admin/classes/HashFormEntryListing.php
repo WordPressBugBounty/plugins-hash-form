@@ -222,7 +222,7 @@ class HashFormEntryListing extends \WP_List_Table {
             <option value=""><?php echo esc_html__('All', 'hash-form'); ?></option>
             <?php foreach ($forms as $form) { ?>
                 <option value="<?php echo esc_attr($form->id); ?>" <?php selected($field_value, $form->id); ?>>
-                    <?php echo ('' === $form->name ? esc_html__('(no title)', 'hash-form') : esc_html($form->name)); ?>
+                    <?php echo ('' === $form->name ? esc_html__('No Title', 'hash-form') : esc_html($form->name)); ?>
                 </option>
             <?php } ?>
         </select>
@@ -289,7 +289,7 @@ class HashFormEntryListing extends \WP_List_Table {
         foreach ($statuses as $status => $name) {
             $class = ($status == $this->status) ? ' class="current"' : '';
             if ($counts[$status]) {
-                $links[$status] = '<a href="' . esc_url('?page=hashform-entries&status=' . $status) . '" ' . $class . '>' . sprintf(__('%1$s <span class="count">(%2$s)</span>', 'hash-form'), $name, number_format_i18n($counts[$status])) . '</a>';
+                $links[$status] = '<a href="' . esc_url('?page=hashform-entries&status=' . $status) . '" ' . $class . '>' . sprintf('%1$s <span class="count">(%2$s)</span>', $name, number_format_i18n($counts[$status])) . '</a>';
             }
         }
         return $links;

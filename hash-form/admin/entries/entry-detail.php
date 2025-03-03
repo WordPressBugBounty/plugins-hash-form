@@ -18,7 +18,7 @@ $next_url = $next_entry_id ? admin_url('admin.php?page=hashform-entries&hashform
             <h3>
                 <span><?php esc_html_e('Entry', 'hash-form'); ?></span>
                 <span class="hf-sub-label">
-                    <?php printf(esc_html__('(ID %d)', 'hash-form'), absint($entry->id)); ?>
+                    <?php echo '(' . esc_html__('ID', 'hash-form') . ' ' . absint($entry->id) . ')'; ?>
                 </span>
             </h3>
             <div class="hf-form-entry-navigation">

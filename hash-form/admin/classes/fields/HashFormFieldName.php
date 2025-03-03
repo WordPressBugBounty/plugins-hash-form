@@ -147,11 +147,14 @@ class HashFormFieldName extends HashFormFieldType {
                 ?>
 
                 <div id="hf-subfield-container-<?php echo esc_attr($name) . '-' . esc_attr($field_id); ?>" class="hf-subfield-element hf-subfield-element-<?php echo esc_attr($name); ?>" data-sub-field-name="<?php echo esc_attr($name); ?>">
-                    <input type="text" id="hf-field-<?php echo esc_attr($field_key) . '-' . esc_attr($name); ?>" value="<?php echo esc_attr($value); ?>" name="<?php echo esc_attr($this->html_name()) . '[' . esc_attr($name) . ']'; ?>" placeholder="<?php echo esc_attr($placeholder); ?>">
+                    <input type="text" id="hf-field-<?php echo esc_attr($field_key) . '-' . esc_attr($name); ?>" value="<?php echo esc_attr(apply_filters('hf_translate_string', $value, 'Hash Form', $field['id'] . ' - ' . ucwords($name) . ' Value')); ?>" name="<?php echo esc_attr($this->html_name()) . '[' . esc_attr($name) . ']'; ?>" placeholder="<?php echo esc_attr(apply_filters('hf_translate_string', $placeholder, 'Hash Form', $field['id'] . ' - ' . ucwords($name) . ' Placeholder')); ?>">
                     <?php
                     if (!empty($label) || is_admin()) {
                         ?>
-                        <div class="hf-field-desc" id="hf-subfield-desc-<?php echo esc_attr($name) . '-' . esc_attr($field_id); ?>"><?php echo esc_attr($label); ?></div>
+                        <div class="hf-field-desc" id="hf-subfield-desc-<?php echo esc_attr($name) . '-' . esc_attr($field_id); ?>">
+                            <?php
+                            echo esc_html(apply_filters('hf_translate_string', $label, 'Hash Form', $field['id'] . ' - ' . ucwords($name) . ' Label')); ?>
+                        </div>
                         <?php
                     }
                     ?>

@@ -379,7 +379,7 @@ class HashFormEntry {
                 $wpdb->update($wpdb->prefix . 'hashform_entries', array('delivery_status' => false), array('id' => $entry_id));
                 return wp_send_json(array(
                     'status' => 'failed',
-                    'message' => esc_html($form_settings['error_message'])
+                    'message' => esc_html(apply_filters('hf_translate_string', $form_settings['error_message'], 'Hash Form', $form->name . ' - ' . 'Error Message'))
                 ));
             }
         }

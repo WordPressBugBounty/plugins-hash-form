@@ -28,7 +28,11 @@ class HashFormFieldParagraph extends HashFormFieldType {
     protected function input_html() {
         $field = $this->get_field();
         ?>
-        <div class="hf-paragraph-field" id="hf-field-<?php echo absint($field['id']); ?>"><?php echo esc_html($field['content']); ?></div>
+        <div class="hf-paragraph-field" id="hf-field-<?php echo absint($field['id']); ?>">
+            <?php
+            echo esc_html(apply_filters('hf_translate_string', $field['content'], 'Hash Form', $field['id'] . ' - ' . 'Field Content'));
+            ?>
+        </div>
         <?php
     }
 

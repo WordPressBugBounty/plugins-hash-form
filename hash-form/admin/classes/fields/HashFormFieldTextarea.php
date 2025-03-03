@@ -26,7 +26,9 @@ class HashFormFieldTextarea extends HashFormFieldType {
         $field = $this->get_field();
         $value = $this->prepare_esc_value();
         ?>
-        <textarea <?php $this->field_attrs(); ?> rows="<?php echo absint($field['rows']); ?>"><?php echo esc_textarea($value); ?></textarea>
+        <textarea <?php $this->field_attrs(); ?> rows="<?php echo absint($field['rows']); ?>">
+            <?php echo esc_textarea(apply_filters('hf_translate_string', $value, 'Hash Form', $field['name'] . ' - ' . 'Field Default')); ?>
+        </textarea>
         <?php
     }
 

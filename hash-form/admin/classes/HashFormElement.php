@@ -76,7 +76,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'enable_custom_style', [
-                'label' => __('Enable Custom Style', 'totalplus'),
+                'label' => esc_html__('Enable Custom Style', 'totalplus'),
                 'type' => Controls_Manager::SWITCHER,
                 'return_value' => 'yes',
             ]
@@ -97,7 +97,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'column_gap', [
-                'label' => __('Column Gap', 'hash-elements'),
+                'label' => esc_html__('Column Gap', 'hash-elements'),
                 'type' => Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [
@@ -118,7 +118,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'row_gap', [
-                'label' => __('Row Gap', 'hash-elements'),
+                'label' => esc_html__('Row Gap', 'hash-elements'),
                 'type' => Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [
@@ -675,19 +675,19 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'validation_text_alignment', [
-                'label' => __('Text Alignment', 'totalplus'),
+                'label' => esc_html__('Text Alignment', 'totalplus'),
                 'type' => Controls_Manager::CHOOSE,
                 'options' => [
                     'left' => [
-                        'title' => __('Left', 'totalplus'),
+                        'title' => esc_html__('Left', 'totalplus'),
                         'icon' => 'eicon-text-align-left',
                     ],
                     'center' => [
-                        'title' => __('Center', 'totalplus'),
+                        'title' => esc_html__('Center', 'totalplus'),
                         'icon' => 'eicon-text-align-center',
                     ],
                     'right' => [
-                        'title' => __('Right', 'totalplus'),
+                        'title' => esc_html__('Right', 'totalplus'),
                         'icon' => 'eicon-text-align-right',
                     ],
                 ],
@@ -888,7 +888,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'star_size', [
-                'label' => __('Size', 'hash-elements'),
+                'label' => esc_html__('Size', 'hash-elements'),
                 'type' => Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [
@@ -941,7 +941,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'range_slider_height', [
-                'label' => __('Height', 'hash-elements'),
+                'label' => esc_html__('Height', 'hash-elements'),
                 'type' => Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [
@@ -962,7 +962,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'range_slider_handle_size', [
-                'label' => __('Handle Size', 'hash-elements'),
+                'label' => esc_html__('Handle Size', 'hash-elements'),
                 'type' => Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [

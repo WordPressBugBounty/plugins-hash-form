@@ -15,11 +15,11 @@ class HashFormStyles {
 
     public function register_post_type() {
         $labels = array(
-            'name' => _x('Style Template', 'post type general name', 'hash-form'),
-            'singular_name' => _x('Style Template', 'post type singular name', 'hash-form'),
-            'menu_name' => _x('Style Template', 'admin menu', 'hash-form'),
-            'name_admin_bar' => _x('Style Template', 'add new on admin bar', 'hash-form'),
-            'add_new' => _x('Add New', 'Style Template', 'hash-form'),
+            'name' => esc_html_x('Style Template', 'post type general name', 'hash-form'),
+            'singular_name' => esc_html_x('Style Template', 'post type singular name', 'hash-form'),
+            'menu_name' => esc_html_x('Style Template', 'admin menu', 'hash-form'),
+            'name_admin_bar' => esc_html_x('Style Template', 'add new on admin bar', 'hash-form'),
+            'add_new' => esc_html_x('Add New', 'Style Template', 'hash-form'),
             'add_new_item' => esc_html__('Add New Style Template', 'hash-form'),
             'new_item' => esc_html__('New Template', 'hash-form'),
             'edit_item' => esc_html__('Edit Template', 'hash-form'),

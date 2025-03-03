@@ -56,7 +56,7 @@ class HashFormListing extends \WP_List_Table {
         $form_name = $item['name'];
         $form_id = $item['id'];
         if (trim($form_name) == '') {
-            $form_name = esc_html__('(no title)', 'hash-form');
+            $form_name = esc_html__('No Title', 'hash-form');
         }
         $edit_url = admin_url('admin.php?page=hashform&hashform_action=edit&id=' . absint($form_id));
 
@@ -148,6 +148,21 @@ class HashFormListing extends \WP_List_Table {
         global $wpdb;
         $table = $wpdb->prefix . 'hashform_forms';
         $status = $this->status;
+        $search = htmlspecialchars_decode(HashFormHelper::get_var('s'));
+
+        if ($search) {
+            $query = $wpdb->prepare("SELECT * from {$table} WHERE status=%s AND name Like %s", $status, '%' . $wpdb->esc_like($search) . '%');
+            return $wpdb->get_results($query, ARRAY_A);
+        } else {
+            $query = $wpdb->prepare("SELECT * from {$table} WHERE status=%s", $status);
+            return $wpdb->get_results($query, ARRAY_A);
+        }
+    }
+
+    public static function get_published_table_data() {
+        global $wpdb;
+        $table = $wpdb->prefix . 'hashform_forms';
+        $status = 'published';
         $search = htmlspecialchars_decode(HashFormHelper::get_var('s'));
 
         if ($search) {
@@ -268,7 +283,7 @@ class HashFormListing extends \WP_List_Table {
         foreach ($statuses as $status => $name) {
             $class = ($status == $this->status) ? ' class="current"' : '';
             if ($counts->{$status}) {
-                $links[$status] = '<a href="' . esc_url('?page=hashform&status=' . $status) . '" ' . $class . '>' . sprintf(__('%1$s <span class="count">(%2$s)</span>', 'hash-form'), $name, number_format_i18n($counts->{$status})) . '</a>';
+                $links[$status] = '<a href="' . esc_url('?page=hashform&status=' . $status) . '" ' . $class . '>' . sprintf('%1$s <span class="count">(%2$s)</span>', $name, number_format_i18n($counts->{$status})) . '</a>';
             }
         }
         return $links;

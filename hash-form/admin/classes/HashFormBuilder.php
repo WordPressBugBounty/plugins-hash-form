@@ -26,6 +26,9 @@ class HashFormBuilder {
         add_action('wp_ajax_nopriv_hashform_file_delete_action', array($this, 'file_delete_action'));
 
         add_action('wp_loaded', array($this, 'admin_notice'), 20);
+
+        add_action('init', array($this, 'register_translation_strings'));
+        add_filter('hf_translate_string', array($this, 'hf_translate_string'), 10, 3);
     }
 
     public function includes() {
@@ -929,6 +932,93 @@ class HashFormBuilder {
             $dismissed[] = $notice;
             update_option('hashform_dismissed_notices', array_unique($dismissed));
         }
+    }
+
+
+    public function register_translation_strings() {
+        $all_forms = HashFormListing::get_published_table_data();
+
+        foreach($all_forms as $form) {
+            $form_title = $form['name'];
+            $options = HashFormHelper::unserialize_or_decode($form['options']);
+            $settings = HashFormHelper::unserialize_or_decode($form['settings']);
+            $string_array = array(
+                'Name' => $form_title,
+                'Description' => $form['description'],
+                'Email Auto Responder Subject' => isset($settings['email_subject_ar']) ? $settings['email_subject_ar'] : '',
+                'Email Auto Responder Message' => isset($settings['email_message_ar']) ? $settings['email_message_ar'] : '',
+                'Confirmation Message' => isset($settings['confirmation_message']) ? $settings['confirmation_message'] : '',
+                'Error Message' => isset($settings['error_message']) ? $settings['error_message'] : '',
+                'Submit Button Text' => isset($options['submit_value']) ? $options['submit_value'] : ''
+            );
+
+            foreach ($string_array as $title => $strings) {
+                if (has_action('wpml_register_single_string')) {
+                    do_action('wpml_register_single_string', 'Hash Form', $form_title . ' - ' . $title, $strings);
+                }
+            }
+
+            $form_fields = HashFormFields::get_form_fields($form['id']);
+            foreach ($form_fields as $field) {
+                $string_array = array(
+                    'Field Label' => $field->name,
+                    'Field Description' => $field->description,
+                    'Field Validation Message' => isset($field->field_options['invalid']) ? $field->field_options['invalid'] : '',
+                );
+
+                if ($field->type == 'paragraph' && isset($field->field_options['content'])) {
+                    $string_array['Field Content'] = $field->field_options['content'];
+                }
+
+                if ($field->type == 'name') {
+                    $name_arrs = array('full', 'first', 'middle', 'last');
+                    foreach ($name_arrs as $name) {
+                        $value = isset($field->default_value[$name]) ? $field->default_value[$name] : '';
+                        $placeholder = isset($field->placeholder[$name]) ? $field->placeholder[$name] : '';
+                        $label = isset($field->field_options['desc'][$name]) ? $field->field_options['desc'][$name] : '';
+                        $string_array[ucwords($name) . ' Label'] = $label;
+                        $string_array[ucwords($name) . ' Value'] = $value;
+                        $string_array[ucwords($name) . ' Placeholder'] = $placeholder;
+                    }
+                }
+
+                if (isset($field->default_value) && $field->type != 'name') {
+                    if (is_array($field->default_value)) {
+                        foreach($field->default_value as $key => $defval) {
+                            $string_array['Field Default ' . $key] = $defval;
+                        }
+                    } else {
+                        $string_array['Field Default'] = $field->default_value;
+                    }
+                }
+
+                if (isset($field->field_options['placeholder'])) {
+                    if (is_array($field->field_options['placeholder'])) {
+                        foreach($field->field_options['placeholder'] as $key => $defval) {
+                            $string_array['Field Placeholder ' . $key] = $defval;
+                        }
+                    } else {
+                        $string_array['Field Placeholder'] = $field->field_options['placeholder'];
+                    }
+                }
+
+                foreach ($string_array as $title => $strings) {
+                    if (has_action('wpml_register_single_string')) {
+                        do_action('wpml_register_single_string', 'Hash Form', $field->id . ' - ' . $title, $strings);
+                    }
+                }
+            }
+
+        }
+        // var_dump(apply_filters('hf_translate_string', $settings['confirmation_message'], 'Hash Form', $title . ' - ' . 'Confirmation Message'));
+    }
+
+    public function hf_translate_string($original_value, $domain, $name = '') {
+        $wpml_translation = apply_filters('wpml_translate_single_string', $original_value, $domain, $name);
+        if ($wpml_translation === $original_value && function_exists('pll__')) {
+            return pll__($original_value);
+        }
+        return $wpml_translation;
     }
 
 }

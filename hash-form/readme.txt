@@ -1,10 +1,10 @@
 === Hash Form - Drag & Drop Form Builder ===
 Contributors: hashthemes
 Tags: form, form builder, drag and drop, contact form
-Requires at least: 5.0
+Requires at least: 6.3
 Tested up to: 6.7
-Stable tag: 1.2.4
-Requires PHP: 5.4
+Stable tag: 1.2.5
+Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -111,82 +111,86 @@ The easy way to install the plugin is via WordPress.org plugin directory.
 11. Global Email Settings Page
 
 == Changelog ==
-= 1.2.4, 29 Jan, 2025 =
+= 1.2.5 - 03 Mar, 2025 =
+* String Translation refinements - Updated
+* Multi Lingual ready (With WPML & Polylang plugin)- Added
+
+= 1.2.4 - 29 Jan, 2025 =
 * Unused session code - Removed
 
-= 1.2.3, 13 Dec, 2024 =
+= 1.2.3 - 13 Dec, 2024 =
 * Custom HTML field escaping anchor tag - Fixed
 
-= 1.2.2, 10 Dec, 2024 =
+= 1.2.2 - 10 Dec, 2024 =
 * Security bug (Missing Authorization to Authenticated (Contributor+) Form Style Creation) reported by WordFence - Fixed
 
-= 1.2.1, 26 Nov, 2024 =
+= 1.2.1 - 26 Nov, 2024 =
 * Extra / on wp_enqueue_style and image path removed
 * Option for full width submit button - Added
 
-= 1.2.0, 3 Oct, 2024 =
+= 1.2.0 - 3 Oct, 2024 =
 * Securty bug indicated by WordFence - Fixed
 
-= 1.1.9, 30 Sep, 2024 =
+= 1.1.9 - 30 Sep, 2024 =
 * Previous and Next button added on Entry details page - Added
 * Necessary hooks Added
 
-= 1.1.8, 4 Sep, 2024 =
+= 1.1.8 - 4 Sep, 2024 =
 * Error in Entry Sanitization of textarea field - Fixed
 
-= 1.1.7, 26 Aug, 2024 =
+= 1.1.7 - 26 Aug, 2024 =
 * Placeholder CSS added for Elementor Module
 
-= 1.1.6, 15 Aug, 2024 =
+= 1.1.6 - 15 Aug, 2024 =
 * Bug Fixes
 
-= 1.1.5, 20 Jul, 2024 =
+= 1.1.5 - 20 Jul, 2024 =
 * Upload issue - Fixed
 * Compatibility test with WordPress 6.6
 
-= 1.1.4, 23 Jun, 2024 =
+= 1.1.4 - 23 Jun, 2024 =
 * Upload button in the form not working - Fixed
 
-= 1.1.3, 20 Jun, 2024 =
+= 1.1.3 - 20 Jun, 2024 =
 * Design setting added to design form from Elementor
 * Minor bugs resolved
 
-= 1.1.2, 23 May, 2024 =
+= 1.1.2 - 23 May, 2024 =
 * Previous version bug fixed
 
-= 1.1.1, 21 May, 2024 =
+= 1.1.1 - 21 May, 2024 =
 * Security issue reported by WordFence - Fixed
 
-= 1.1.0, 25 Mar, 2024 =
+= 1.1.0 - 25 Mar, 2024 =
 * Icon for HashForm - Added
 * HashForm block for Gutenberg - Added
 * Documentation link - Added
 * Shortcode naming - Updated
 
-= 1.0.9, 13 Feb, 2024 =
+= 1.0.9 - 13 Feb, 2024 =
 * Theme upload button not working fixed
 
-= 1.0.8, 31 Jan, 2024 =
+= 1.0.8 - 31 Jan, 2024 =
 * Typo error on setting page fixed
 * CSS updates
 
-= 1.0.7, 26 Jan, 2024 =
+= 1.0.7 - 26 Jan, 2024 =
 * Loader updated
 * Entry order - Fixed
 
-= 1.0.6, 21 Jan, 2024 = 
+= 1.0.6 - 21 Jan, 2024 = 
 * User profile url error on entry listing - Fixed
 * Other minor fixes
 
-= 1.0.5, 5 Jan, 2024 = 
+= 1.0.5 - 5 Jan, 2024 = 
 * Demo Importer issue fixed
 * Bug in Conditional Display fixed
 
 * Bug fixes
-= 1.0.4, 4 Jan, 2024 = 
+= 1.0.4 - 4 Jan, 2024 = 
 * Bug fixes
 
-= 1.0.3, 2 Jan, 2024 = 
+= 1.0.3 - 2 Jan, 2024 = 
 * Plugin installer not working issue fixed
 
 = 1.0.2 =
@@ -198,8 +202,3 @@ The easy way to install the plugin is via WordPress.org plugin directory.
 
 = 1.0 =
 * Release
-
-== Upgrade Notice ==
-
-= 1.0 =
-Release

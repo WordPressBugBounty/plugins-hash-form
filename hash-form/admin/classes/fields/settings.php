@@ -222,16 +222,16 @@ defined('ABSPATH') || die();
                 <label><?php esc_html_e('Date Format', 'hash-form'); ?></label>
                 <select name="field_options[date_format_<?php echo esc_attr($field_id); ?>]">
                     <option value="MM dd, yy" <?php isset($field['date_format']) ? selected($field['date_format'], 'MM dd, yy') : ''; ?>>
-                        <?php esc_html_e('September 19, 2023', 'hash-form'); ?>
+                        September 19, 2023
                     </option>
                     <option value="yy-mm-dd" <?php isset($field['date_format']) ? selected($field['date_format'], 'yy-mm-dd') : ''; ?>>
-                        <?php esc_html_e('2023-09-19', 'hash-form'); ?>
+                        2023-09-19
                     </option>
                     <option value="mm/dd/yy" <?php isset($field['date_format']) ? selected($field['date_format'], 'mm/dd/yy') : ''; ?>>
-                        <?php esc_html_e('09/19/2023', 'hash-form'); ?>
+                        09/19/2023
                     </option>
                     <option value="dd/mm/yy" <?php isset($field['date_format']) ? selected($field['date_format'], 'dd/mm/yy') : ''; ?>>
-                        <?php esc_html_e('19/09/2023', 'hash-form'); ?>
+                        19/09/2023
                     </option>
                 </select>
             </div>
@@ -492,7 +492,7 @@ defined('ABSPATH') || die();
 
                     <select name="field_options[field_max_width_unit_<?php echo esc_attr($field_id); ?>]">
                         <option value="%" <?php isset($field['field_max_width_unit']) ? selected($field['field_max_width_unit'], '%') : ''; ?>>
-                            <?php esc_html_e('%', 'hash-form'); ?>
+                            <?php echo '%'; ?>
                         </option>
                         <option value="px" <?php isset($field['field_max_width_unit']) ? selected($field['field_max_width_unit'], 'px') : ''; ?>>
                             <?php esc_html_e('px', 'hash-form'); ?>
@@ -512,7 +512,7 @@ defined('ABSPATH') || die();
 
                     <select name="field_options[image_max_width_unit_<?php echo esc_attr($field_id); ?>]">
                         <option value="%" <?php isset($field['image_max_width_unit']) ? selected($field['image_max_width_unit'], '%') : ''; ?>>
-                            <?php esc_html_e('%', 'hash-form'); ?>
+                            <?php echo '%'; ?>
                         </option>
                         <option value="px" <?php isset($field['image_max_width_unit']) ? selected($field['image_max_width_unit'], 'px') : ''; ?>>
                             <?php esc_html_e('px', 'hash-form'); ?>
