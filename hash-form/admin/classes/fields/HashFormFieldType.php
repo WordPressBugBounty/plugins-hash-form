@@ -63,7 +63,7 @@ abstract class HashFormFieldType {
             <?php if ($display['label'] && !empty(trim($field['name'])) && (!($field['type'] == 'captcha' && $settings['re_type'] === 'v3'))) { ?>
                 <label class="hf-field-label <?php echo (!$field['name'] || ((isset($field['hide_label']) && $field['hide_label']))) ? 'hf-hidden' : ''; ?>">
                     <?php
-                    echo esc_html(apply_filters('hf_translate_string', $field['name'], 'Hash Form', $field['id'] . ' - ' . 'Field Label'));
+                    echo esc_html(apply_filters('hf_translate_string', $field['name'], 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Label'));
                     ?>
                     <?php if (!!$field['required']) { ?>
                         <span class="hf-field-required" aria-hidden="true">
@@ -80,7 +80,7 @@ abstract class HashFormFieldType {
                     ?>
                     <div class="hf-field-desc">
                         <?php
-                        echo esc_html(apply_filters('hf_translate_string', $field['description'], 'Hash Form', $field['id'] . ' - ' . 'Field Description'));
+                        echo esc_html(apply_filters('hf_translate_string', $field['description'], 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Description'));
                         ?>
                     </div>
                 <?php } ?>

@@ -153,7 +153,8 @@ class HashFormFieldName extends HashFormFieldType {
                         ?>
                         <div class="hf-field-desc" id="hf-subfield-desc-<?php echo esc_attr($name) . '-' . esc_attr($field_id); ?>">
                             <?php
-                            echo esc_html(apply_filters('hf_translate_string', $label, 'Hash Form', $field['id'] . ' - ' . ucwords($name) . ' Label')); ?>
+                            echo esc_html(apply_filters('hf_translate_string', $label, 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . ucwords($name) . ' Label'));
+                            ?>
                         </div>
                         <?php
                     }

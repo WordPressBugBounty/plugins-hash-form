@@ -383,7 +383,7 @@ var hashFormAdmin = hashFormAdmin || {};
         },
 
         liveChangeButtonPosition: function (e) {
-            $('.hf-editor-submit-button-wrap').removeClass('hf-submit-btn-align-left hf-submit-btn-align-right hf-submit-btn-align-center').addClass('hf-submit-btn-align-' + e.target.value);
+            $('.hf-editor-submit-button-wrap').removeClass('hf-submit-btn-align-left hf-submit-btn-align-right hf-submit-btn-align-center hf-submit-btn-align-stretch').addClass('hf-submit-btn-align-' + e.target.value);
         },
 
         markRequired: function () {

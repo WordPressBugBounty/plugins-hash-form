@@ -15,7 +15,7 @@ class HashFormFieldEmail extends HashFormFieldType {
     public function validate($args) {
         $errors = isset($args['errors']) ? $args['errors'] : array();
         if ($args['value'] != '' && !is_email($args['value'])) {
-            $errors['field' . $args['id']] = apply_filters('hf_translate_string', HashFormFields::get_error_msg($this->field, 'invalid'), 'Hash Form', $args['id'] . ' - ' . 'Field Validation Message');
+            $errors['field' . $args['id']] = apply_filters('hf_translate_string', HashFormFields::get_error_msg($this->field, 'invalid'), 'Hash Form', HashFormBuilder::get_form_title($args['form_id']) . ' - ' . $args['id'] . ' - ' . 'Field Validation Message');
         }
         return $errors;
     }

@@ -171,10 +171,10 @@
 .hf-form-custom-style .hf-container input[type="button"],
 .hf-form-custom-style .hf-container input[type="reset"],
 .hf-form-custom-style .hf-container input[type="submit"] {
-    border-top: var(--hf-button-border-top, 1px) solid var(--hf-button-border-color-normal, #CCC);
-    border-right: var(--hf-button-border-right, 1px) solid var(--hf-button-border-color-normal, #CCC);
-    border-bottom: var(--hf-button-border-bottom, 1px) solid var(--hf-button-border-color-normal, #CCC);
-    border-left: var(--hf-button-border-left, 1px) solid var(--hf-button-border-color-normal, #CCC);
+    border-top: var(--hf-button-border-top, 1px) var(--hf-button-border, solid) var(--hf-button-border-color-normal, #CCC);
+    border-right: var(--hf-button-border-right, 1px) var(--hf-button-border, solid) var(--hf-button-border-color-normal, #CCC);
+    border-bottom: var(--hf-button-border-bottom, 1px) var(--hf-button-border, solid) var(--hf-button-border-color-normal, #CCC);
+    border-left: var(--hf-button-border-left, 1px) var(--hf-button-border, solid) var(--hf-button-border-color-normal, #CCC);
     border-radius: var(--hf-button-border-radius-top, 3px) var(--hf-button-border-radius-right, 3px) var(--hf-button-border-radius-bottom, 3px) var(--hf-button-border-radius-left, 3px);
     padding: var(--hf-button-padding-top, 15px) var(--hf-button-padding-right, 30px) var(--hf-button-padding-bottom, 15px) var(--hf-button-padding-left, 30px);
     font-family: var(--hf-button-typo-font-family);
@@ -218,10 +218,10 @@
 .hf-form-custom-style .hf-container input[type="button"]:hover,
 .hf-form-custom-style .hf-container input[type="reset"]:hover,
 .hf-form-custom-style .hf-container input[type="submit"]:hover {
-    border-top: var(--hf-button-border-top, 1px) solid var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
-    border-right: var(--hf-button-border-right, 1px) solid var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
-    border-bottom: var(--hf-button-border-bottom, 1px) solid var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
-    border-left: var(--hf-button-border-left, 1px) solid var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
+    border-top: var(--hf-button-border-top, 1px) var(--hf-button-border, solid) var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
+    border-right: var(--hf-button-border-right, 1px) var(--hf-button-border, solid) var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
+    border-bottom: var(--hf-button-border-bottom, 1px) var(--hf-button-border, solid) var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
+    border-left: var(--hf-button-border-left, 1px) var(--hf-button-border, solid) var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
     color: var(--hf-button-color-hover, var(--hf-button-color-normal, inherit));
     background-color: var(--hf-button-bg-color-hover, var(--hf-button-bg-color-normal, transparent));
     box-shadow: var(--hf-button-shadow-hover-x, var(--hf-button-shadow-normal-x, 0)) var(--hf-button-shadow-hover-y, var(--hf-button-shadow-normal-y, 0)) var(--hf-button-shadow-hover-blur, var(--hf-button-shadow-normal-blur, 0)) var(--hf-button-shadow-hover-spread, var(--hf-button-shadow-normal-spread, 0)) var(--hf-button-shadow-hover-color, var(--hf-button-shadow-normal-color, transparent));
@@ -266,10 +266,10 @@
 .hf-form-custom-style .hf-container input[type="color"],
 .hf-form-custom-style .hf-container textarea,
 .hf-form-custom-style .hf-container select {
-    border-top: var(--hf-field-border-top, 1px) solid var(--hf-field-border-color-normal, #CCC);
-    border-right: var(--hf-field-border-right, 1px) solid var(--hf-field-border-color-normal, #CCC);
-    border-bottom: var(--hf-field-border-bottom, 1px) solid var(--hf-field-border-color-normal, #CCC);
-    border-left: var(--hf-field-border-left, 1px) solid var(--hf-field-border-color-normal, #CCC);
+    border-top: var(--hf-field-border-top, 1px) var(--hf-field-border, solid) var(--hf-field-border-color-normal, #CCC);
+    border-right: var(--hf-field-border-right, 1px) var(--hf-field-border, solid) var(--hf-field-border-color-normal, #CCC);
+    border-bottom: var(--hf-field-border-bottom, 1px) var(--hf-field-border, solid) var(--hf-field-border-color-normal, #CCC);
+    border-left: var(--hf-field-border-left, 1px) var(--hf-field-border, solid) var(--hf-field-border-color-normal, #CCC);
     border-radius: var(--hf-field-border-radius-top, 3px) var(--hf-field-border-radius-right, 3px) var(--hf-field-border-radius-bottom, 3px) var(--hf-field-border-radius-left, 3px);
     padding: var(--hf-field-padding-top, 10px) var(--hf-field-padding-right, 10px) var(--hf-field-padding-bottom, 10px) var(--hf-field-padding-left, 10px);
     font-family: var(--hf-field-typo-font-family);
@@ -306,6 +306,7 @@
 .hf-form-custom-style .hf-container textarea::placeholder,
 .hf-form-custom-style .hf-container select::placeholder {
     color: var(--hf-field-color-normal, #666);
+    opacity: 0.7;
 }
 
 .hf-form-default-style .hf-container input[type="text"],
@@ -359,10 +360,10 @@
 .hf-form-custom-style .hf-container input[type="color"]:focus,
 .hf-form-custom-style .hf-container textarea:focus,
 .hf-form-custom-style .hf-container select:focus {
-    border-top: var(--hf-field-border-top, 1px) solid var(--hf-field-border-color-focus, var(--hf-field-border-color-normal, #CCC));
-    border-right: var(--hf-field-border-right, 1px) solid var(--hf-field-border-color-focus, var(--hf-field-border-color-normal, #CCC));
-    border-bottom: var(--hf-field-border-bottom, 1px) solid var(--hf-field-border-color-focus, var(--hf-field-border-color-normal, #CCC));
-    border-left: var(--hf-field-border-left, 1px) solid var(--hf-field-border-color-focus, var(--hf-field-border-color-normal, #CCC));
+    border-top: var(--hf-field-border-top, 1px) var(--hf-field-border, solid) var(--hf-field-border-color-focus, var(--hf-field-border-color-normal, #CCC));
+    border-right: var(--hf-field-border-right, 1px) var(--hf-field-border, solid) var(--hf-field-border-color-focus, var(--hf-field-border-color-normal, #CCC));
+    border-bottom: var(--hf-field-border-bottom, 1px) var(--hf-field-border, solid) var(--hf-field-border-color-focus, var(--hf-field-border-color-normal, #CCC));
+    border-left: var(--hf-field-border-left, 1px) var(--hf-field-border, solid) var(--hf-field-border-color-focus, var(--hf-field-border-color-normal, #CCC));
     color: var(--hf-field-color-focus, var(--hf-field-color-normal, inherit));
     background-color: var(--hf-field-bg-color-focus, var(--hf-field-bg-color-normal, transparent));
     box-shadow: var(--hf-field-shadow-focus-x, var(--hf-field-shadow-normal-x, 0)) var(--hf-field-shadow-focus-y, var(--hf-field-shadow-normal-y, 0)) var(--hf-field-shadow-focus-blur, var(--hf-field-shadow-normal-blur, 0)) var(--hf-field-shadow-focus-spread, var(--hf-field-shadow-normal-spread, 0)) var(--hf-field-shadow-focus-color, var(--hf-field-shadow-normal-color, transparent));
@@ -424,7 +425,7 @@
 .hf-form-custom-style .hf-container .hf-field-label {
     display: block;
     font-family: var(--hf-label-typo-font-family);
-    font-size: var(--hf-label-typo-font-size, 14px);
+    font-size: var(--hf-label-typo-font-size, 1em);
     font-weight: var(--hf-label-typo-font-weight, 400);
     font-style: var(--hf-label-typo-font-style, normal);
     letter-spacing: var(--hf-label-typo-letter-spacing, normal);
@@ -1122,7 +1123,7 @@
 }
 
 /* Custom HTML */
-.hf-form-field.hashform-field-type-html .hf-field-content a{
+.hf-form-field.hashform-field-type-html .hf-field-content a {
     text-decoration: underline;
 }
 
@@ -1218,7 +1219,7 @@
     justify-content: flex-end;
 }
 
-.hf-submit-btn-align-stretch.hf-submit-wrap .hf-submit-button{
+.hf-submit-btn-align-stretch.hf-submit-wrap .hf-submit-button {
     width: 100%;
     justify-content: center;
 }
@@ -1646,4 +1647,207 @@ body.wp-admin:not(.rtl) .ui-datepicker {
 
 body.wp-admin.rtl .ui-datepicker {
     margin-right: -1px;
+}
+
+.hf-hashform-block {
+    --hf-form-title-spacing: var(--hf-form-title-spacing-bottom);
+    --hf-form-desc-spacing: var(--hf-form-desc-spacing-bottom);
+    --hf-label-spacing: var(--hf-label-spacing-bottom);
+    --hf-desc-spacing: var(--hf-desc-spacing-top);
+}
+
+.hf-hashform-block.hf-form-custom-style .hf-form-description {
+    font-family: var(--hf-form-desc-typo-font-family);
+    font-size: var(--hf-form-desc-typo-font-size, 16px);
+    font-weight: var(--hf-form-desc-typo-font-weight, 400);
+    font-style: var(--hf-form-desc-typo-font-style, normal);
+    letter-spacing: var(--hf-form-desc-typo-letter-spacing, normal);
+    text-transform: var(--hf-form-desc-typo-text-transform, inherit);
+    text-decoration: var(--hf-form-desc-typo-text-decoration, inherit);
+    line-height: var(--hf-form-desc-typo-line-height, 1.2);
+    color: var(--hf-form-desc-typo-font-color, #666);
+}
+
+.hf-hashform-block.hf-form-custom-style .hf-form-field.hashform-field-type-paragraph {
+    font-family: var(--hf-paragraph-typo-font-family);
+    font-size: var(--hf-paragraph-typo-font-size, 13px);
+    font-weight: var(--hf-paragraph-typo-font-weight, 400);
+    font-style: var(--hf-paragraph-typo-font-style, normal);
+    letter-spacing: var(--hf-paragraph-typo-letter-spacing, normal);
+    text-transform: var(--hf-paragraph-typo-text-transform, inherit);
+    text-decoration: var(--hf-paragraph-typo-text-decoration, inherit);
+    line-height: var(--hf-paragraph-typo-line-height, 1.2);
+    color: var(--hf-paragraph-typo-font-color, inherit);
+}
+
+@media screen and (max-width:1024px) {
+    .hf-form-custom-style .hf-container .hf-field-label {
+        font-size: var(--hf-label-typo-font-size-md, var(--hf-label-typo-font-size, 1em));
+        letter-spacing: var(--hf-label-typo-letter-spacing-md, var(--hf-label-typo-letter-spacing, inherit));
+        line-height: var(--hf-label-typo-line-height-md, var(--hf-label-typo-line-height, inherit));
+    }
+
+    .hf-form-custom-style .hf-container .hf-field-desc {
+        font-size: var(--hf-desc-typo-font-size-md, var(--hf-desc-typo-font-size, 1em));
+        letter-spacing: var(--hf-desc-typo-letter-spacing-md, var(--hf-desc-typo-letter-spacing, inherit));
+        line-height: var(--hf-desc-typo-line-height-md, var(--hf-desc-typo-line-height, inherit));
+    }
+
+    .hf-form-custom-style .hf-container input[type="text"],
+    .hf-form-custom-style .hf-container input[type="email"],
+    .hf-form-custom-style .hf-container input[type="url"],
+    .hf-form-custom-style .hf-container input[type="password"],
+    .hf-form-custom-style .hf-container input[type="search"],
+    .hf-form-custom-style .hf-container input[type="number"],
+    .hf-form-custom-style .hf-container input[type="tel"],
+    .hf-form-custom-style .hf-container input[type="range"],
+    .hf-form-custom-style .hf-container input[type="date"],
+    .hf-form-custom-style .hf-container input[type="month"],
+    .hf-form-custom-style .hf-container input[type="week"],
+    .hf-form-custom-style .hf-container input[type="time"],
+    .hf-form-custom-style .hf-container input[type="datetime"],
+    .hf-form-custom-style .hf-container input[type="datetime-local"],
+    .hf-form-custom-style .hf-container input[type="color"],
+    .hf-form-custom-style .hf-container textarea,
+    .hf-form-custom-style .hf-container select {
+        font-size: var(--hf-field-typo-font-size-md, var(--hf-field-typo-font-size, 1em));
+        letter-spacing: var(--hf-field-typo-letter-spacing-md, var(--hf-field-typo-letter-spacing, inherit));
+        line-height: var(--hf-field-typo-line-height-md, var(--hf-field-typo-line-height, inherit));
+    }
+
+    .hf-form-custom-style .hf-file-uploader .qq-upload-button {
+        font-size: var(--hf-upload-typo-font-size-md, var(--hf-upload-typo-font-size, 1em));
+        letter-spacing: var(--hf-upload-typo-letter-spacing-md, var(--hf-upload-typo-letter-spacing, inherit));
+        line-height: var(--hf-upload-typo-line-height-md, var(--hf-upload-typo-line-height, inherit));
+    }
+
+    .hf-form-custom-style .hf-container button,
+    .hf-form-custom-style .hf-container input[type="button"],
+    .hf-form-custom-style .hf-container input[type="reset"],
+    .hf-form-custom-style .hf-container input[type="submit"] {
+        font-size: var(--hf-button-typo-font-size-md, var(--hf-button-typo-font-size, 1em));
+        letter-spacing: var(--hf-button-typo-letter-spacing-md, var(--hf-button-typo-letter-spacing, inherit));
+        line-height: var(--hf-button-typo-line-height-md, var(--hf-button-typo-line-height, inherit));
+    }
+
+    .hf-form-custom-style .hf-container .hf-error-msg {
+        font-size: var(--hf-validation-typo-font-size-md, var(--hf-validation-typo-font-size, 1em));
+        letter-spacing: var(--hf-validation-typo-letter-spacing-md, var(--hf-validation-typo-letter-spacing, inherit));
+        line-height: var(--hf-validation-typo-line-height-md, var(--hf-validation-typo-line-height, inherit));
+    }
+
+    .hf-form-custom-style .hf-form-title {
+        font-size: var(--hf-form-title-typo-font-size-md, var(--hf-form-title-typo-font-size, 1em));
+        letter-spacing: var(--hf-form-title-typo-letter-spacing-md, var(--hf-form-title-typo-letter-spacing, inherit));
+        line-height: var(--hf-form-title-typo-line-height-md, var(--hf-form-title-typo-line-height, inherit));
+    }
+
+    .hf-hashform-block.hf-form-custom-style .hf-form-description {
+        font-size: var(--hf-form-desc-typo-font-size-md, var(--hf-form-desc-typo-font-size, 1em));
+        letter-spacing: var(--hf-form-desc-typo-letter-spacing-md, var(--hf-form-desc-typo-letter-spacing, inherit));
+        line-height: var(--hf-form-desc-typo-line-height-md, var(--hf-form-desc-typo-line-height, inherit));
+    }
+
+    .hf-form-custom-style .hf-form-field.hashform-field-type-heading h1,
+    .hf-form-custom-style .hf-form-field.hashform-field-type-heading h2,
+    .hf-form-custom-style .hf-form-field.hashform-field-type-heading h3,
+    .hf-form-custom-style .hf-form-field.hashform-field-type-heading h4,
+    .hf-form-custom-style .hf-form-field.hashform-field-type-heading h5,
+    .hf-form-custom-style .hf-form-field.hashform-field-type-heading h6 {
+        font-size: var(--hf-heading-typo-font-size-md, var(--hf-heading-typo-font-size, 1em));
+        letter-spacing: var(--hf-heading-typo-letter-spacing-md, var(--hf-heading-typo-letter-spacing, inherit));
+        line-height: var(--hf-heading-typo-line-height-md, var(--hf-heading-typo-line-height, inherit));
+    }
+
+    .hf-hashform-block.hf-form-custom-style .hf-form-field.hashform-field-type-paragraph {
+        font-size: var(--hf-paragraph-typo-font-size-md, var(--hf-paragraph-typo-font-size, 1em));
+        letter-spacing: var(--hf-paragraph-typo-letter-spacing-md, var(--hf-paragraph-typo-letter-spacing, inherit));
+        line-height: var(--hf-paragraph-typo-line-height-md, var(--hf-paragraph-typo-line-height, inherit));
+    }
+}
+
+@media screen and (max-width:767px) {
+    .hf-form-custom-style .hf-container .hf-field-label {
+        font-size: var(--hf-label-typo-font-size-sm, var(--hf-label-typo-font-size-md, var(--hf-label-typo-font-size, 1em)));
+        letter-spacing: var(--hf-label-typo-letter-spacing-sm, var(--hf-label-typo-letter-spacing-md, var(--hf-label-typo-letter-spacing, inherit)));
+        line-height: var(--hf-label-typo-line-height-sm, var(--hf-label-typo-line-height-md, var(--hf-label-typo-line-height, inherit)));
+    }
+
+    .hf-form-custom-style .hf-container .hf-field-desc {
+        font-size: var(--hf-desc-typo-font-size-sm, var(--hf-desc-typo-font-size-md, var(--hf-desc-typo-font-size, 1em)));
+        letter-spacing: var(--hf-desc-typo-letter-spacing-sm, var(--hf-desc-typo-letter-spacing-md, var(--hf-desc-typo-letter-spacing, inherit)));
+        line-height: var(--hf-desc-typo-line-height-sm, var(--hf-desc-typo-line-height-md, var(--hf-desc-typo-line-height, inherit)));
+    }
+
+    .hf-form-custom-style .hf-container input[type="text"],
+    .hf-form-custom-style .hf-container input[type="email"],
+    .hf-form-custom-style .hf-container input[type="url"],
+    .hf-form-custom-style .hf-container input[type="password"],
+    .hf-form-custom-style .hf-container input[type="search"],
+    .hf-form-custom-style .hf-container input[type="number"],
+    .hf-form-custom-style .hf-container input[type="tel"],
+    .hf-form-custom-style .hf-container input[type="range"],
+    .hf-form-custom-style .hf-container input[type="date"],
+    .hf-form-custom-style .hf-container input[type="month"],
+    .hf-form-custom-style .hf-container input[type="week"],
+    .hf-form-custom-style .hf-container input[type="time"],
+    .hf-form-custom-style .hf-container input[type="datetime"],
+    .hf-form-custom-style .hf-container input[type="datetime-local"],
+    .hf-form-custom-style .hf-container input[type="color"],
+    .hf-form-custom-style .hf-container textarea,
+    .hf-form-custom-style .hf-container select {
+        font-size: var(--hf-field-typo-font-size-sm, var(--hf-field-typo-font-size-md, var(--hf-field-typo-font-size, 1em)));
+        letter-spacing: var(--hf-field-typo-letter-spacing-sm, var(--hf-field-typo-letter-spacing-md, var(--hf-field-typo-letter-spacing, inherit)));
+        line-height: var(--hf-field-typo-line-height-sm, var(--hf-field-typo-line-height-md, var(--hf-field-typo-line-height, inherit)));
+    }
+
+    .hf-form-custom-style .hf-file-uploader .qq-upload-button {
+        font-size: var(--hf-upload-typo-font-size-sm, var(--hf-upload-typo-font-size-md, var(--hf-upload-typo-font-size, 1em)));
+        letter-spacing: var(--hf-upload-typo-letter-spacing-sm, var(--hf-upload-typo-letter-spacing-md, var(--hf-upload-typo-letter-spacing, inherit)));
+        line-height: var(--hf-upload-typo-line-height-sm, var(--hf-upload-typo-line-height-md, var(--hf-upload-typo-line-height, inherit)));
+    }
+
+    .hf-form-custom-style .hf-container button,
+    .hf-form-custom-style .hf-container input[type="button"],
+    .hf-form-custom-style .hf-container input[type="reset"],
+    .hf-form-custom-style .hf-container input[type="submit"] {
+        font-size: var(--hf-button-typo-font-size-sm, var(--hf-button-typo-font-size-md, var(--hf-button-typo-font-size, 1em)));
+        letter-spacing: var(--hf-button-typo-letter-spacing-sm, var(--hf-button-typo-letter-spacing-md, var(--hf-button-typo-letter-spacing, inherit)));
+        line-height: var(--hf-button-typo-line-height-sm, var(--hf-button-typo-line-height-md, var(--hf-button-typo-line-height, inherit)))
+    }
+
+    .hf-form-custom-style .hf-container .hf-error-msg {
+        font-size: var(--hf-validation-typo-font-size-sm, var(--hf-validation-typo-font-size-md, var(--hf-validation-typo-font-size, 1em)));
+        letter-spacing: var(--hf-validation-typo-letter-spacing-sm, var(--hf-validation-typo-letter-spacing-md, var(--hf-validation-typo-letter-spacing, inherit)));
+        line-height: var(--hf-validation-typo-line-height-sm, var(--hf-validation-typo-line-height-md, var(--hf-validation-typo-line-height, inherit)));
+    }
+
+    .hf-form-custom-style .hf-form-title {
+        font-size: var(--hf-form-title-typo-font-size-sm, var(--hf-form-title-typo-font-size-md, var(--hf-form-title-typo-font-size, 1em)));
+        letter-spacing: var(--hf-form-title-typo-letter-spacing-sm, var(--hf-form-title-typo-letter-spacing-md, var(--hf-form-title-typo-letter-spacing, inherit)));
+        line-height: var(--hf-form-title-typo-line-height-sm, var(--hf-form-title-typo-line-height-md, var(--hf-form-title-typo-line-height, inherit)));
+    }
+
+    .hf-hashform-block.hf-form-custom-style .hf-form-description {
+        font-size: var(--hf-form-desc-typo-font-size-sm, var(--hf-form-desc-typo-font-size-md, var(--hf-form-desc-typo-font-size, 1em)));
+        letter-spacing: var(--hf-form-desc-typo-letter-spacing-sm, var(--hf-form-desc-typo-letter-spacing-md, var(--hf-form-desc-typo-letter-spacing, inherit)));
+        line-height: var(--hf-form-desc-typo-line-height-sm, var(--hf-form-desc-typo-line-height-md, var(--hf-form-desc-typo-line-height, inherit)))
+    }
+
+    .hf-form-custom-style .hf-form-field.hashform-field-type-heading h1,
+    .hf-form-custom-style .hf-form-field.hashform-field-type-heading h2,
+    .hf-form-custom-style .hf-form-field.hashform-field-type-heading h3,
+    .hf-form-custom-style .hf-form-field.hashform-field-type-heading h4,
+    .hf-form-custom-style .hf-form-field.hashform-field-type-heading h5,
+    .hf-form-custom-style .hf-form-field.hashform-field-type-heading h6 {
+        font-size: var(--hf-heading-typo-font-size-sm, var(--hf-heading-typo-font-size-md, var(--hf-heading-typo-font-size, 1em)));
+        letter-spacing: var(--hf-heading-typo-letter-spacing-sm, var(--hf-heading-typo-letter-spacing-md, var(--hf-heading-typo-letter-spacing, inherit)));
+        line-height: var(--hf-heading-typo-line-height-sm, var(--hf-heading-typo-line-height-md, var(--hf-heading-typo-line-height, inherit)));
+    }
+
+    .hf-hashform-block.hf-form-custom-style .hf-form-field.hashform-field-type-paragraph {
+        font-size: var(--hf-paragraph-typo-font-size-sm, var(--hf-paragraph-typo-font-size-md, var(--hf-paragraph-typo-font-size, 1em)));
+        letter-spacing: var(--hf-paragraph-typo-letter-spacing-sm, var(--hf-paragraph-typo-letter-spacing-md, var(--hf-paragraph-typo-letter-spacing, inherit)));
+        line-height: var(--hf-paragraph-typo-line-height-sm, var(--hf-paragraph-typo-line-height-md, var(--hf-paragraph-typo-line-height, inherit)));
+    }
 }

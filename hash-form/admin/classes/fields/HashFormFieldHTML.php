@@ -52,7 +52,7 @@ class HashFormFieldHTML extends HashFormFieldType {
                 </div>
                 <?php
             } else {
-                echo wp_kses_post(apply_filters('hf_translate_string', $field['description'], 'Hash Form', $field['id'] . ' - ' . 'Field Description'));
+                echo wp_kses_post(apply_filters('hf_translate_string', $field['description'], 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Description'));
             }
             ?>
         </div>

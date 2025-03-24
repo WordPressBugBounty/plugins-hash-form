@@ -26,7 +26,7 @@ class HashFormFieldSpinner extends HashFormFieldType {
         $errors = array();
         $this->remove_commas_from_number($args);
         if (!is_numeric($args['value']) && '' !== $args['value']) {
-            $errors['field' . $args['id']] = apply_filters('hf_translate_string', HashFormFields::get_error_msg($this->field, 'invalid'), 'Hash Form', $args['id'] . ' - ' . 'Field Validation Message');
+            $errors['field' . $args['id']] = apply_filters('hf_translate_string', HashFormFields::get_error_msg($this->field, 'invalid'), 'Hash Form', HashFormBuilder::get_form_title($args['form_id']) . ' - ' . $args['id'] . ' - ' . 'Field Validation Message');
         }
         if ($args['value'] != '') {
             $minnum = HashFormFields::get_option($this->field, 'minnum');

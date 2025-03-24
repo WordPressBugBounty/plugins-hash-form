@@ -41,7 +41,7 @@ class HashFormPreview {
                 <?php
                 require HASHFORM_PATH . 'admin/forms/style/form.php';
                 $form_msg = HashFormHelper::get_var('hf_success');
-                if($form_msg == 'true') {
+                if ($form_msg == 'true') {
                     ?>
                     <span class="hf-success-msg"><?php echo esc_html($form->settings['confirmation_message']); ?></span>
                     <?php

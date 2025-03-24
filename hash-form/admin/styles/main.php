@@ -50,11 +50,11 @@ $id = get_the_ID();
             <ul class="hf-shadow-fields">
                 <li class="hf-shadow-settings-field">
                     <input id="hf-form-shadow-x" data-unit="px" type="number" name="hashform_styles[form][shadow][x]" value="<?php echo esc_attr($hashform_styles['form']['shadow']['x']); ?>">
-                    <label><?php  esc_html_x('H', 'Horizontal', 'hash-form'); ?></label>
+                    <label><?php esc_html_x('H', 'Horizontal', 'hash-form'); ?></label>
                 </li>
                 <li class="hf-shadow-settings-field">
                     <input id="hf-form-shadow-y" data-unit="px" type="number" name="hashform_styles[form][shadow][y]" value="<?php echo esc_attr($hashform_styles['form']['shadow']['y']); ?>">
-                    <label><?php  esc_html_x('V', 'Vertical', 'hash-form'); ?></label>
+                    <label><?php esc_html_x('V', 'Vertical', 'hash-form'); ?></label>
                 </li>
                 <li class="hf-shadow-settings-field">
                     <input id="hf-form-shadow-blur" data-unit="px" type="number" name="hashform_styles[form][shadow][blur]" value="<?php echo esc_attr($hashform_styles['form']['shadow']['blur']); ?>">
@@ -242,11 +242,11 @@ $id = get_the_ID();
                         <ul class="hf-shadow-fields">
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-field-shadow-normal-x" data-unit="px" type="number" name="hashform_styles[field][shadow_normal][x]" value="<?php echo esc_attr($hashform_styles['field']['shadow_normal']['x']); ?>">
-                                <label><?php  esc_html_x('H', 'Horizontal', 'hash-form'); ?></label>
+                                <label><?php esc_html_x('H', 'Horizontal', 'hash-form'); ?></label>
                             </li>
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-field-shadow-normal-y" data-unit="px" type="number" name="hashform_styles[field][shadow_normal][y]" value="<?php echo esc_attr($hashform_styles['field']['shadow_normal']['y']); ?>">
-                                <label><?php  esc_html_x('V', 'Vertical', 'hash-form'); ?></label>
+                                <label><?php esc_html_x('V', 'Vertical', 'hash-form'); ?></label>
                             </li>
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-field-shadow-normal-blur" data-unit="px" type="number" name="hashform_styles[field][shadow_normal][blur]" value="<?php echo esc_attr($hashform_styles['field']['shadow_normal']['blur']); ?>">
@@ -294,11 +294,11 @@ $id = get_the_ID();
                         <ul class="hf-shadow-fields">
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-field-shadow-focus-x" data-unit="px" type="number" name="hashform_styles[field][shadow_focus][x]" value="<?php echo esc_attr($hashform_styles['field']['shadow_focus']['x']); ?>">
-                                <label><?php  esc_html_x('H', 'Horizontal', 'hash-form'); ?></label>
+                                <label><?php esc_html_x('H', 'Horizontal', 'hash-form'); ?></label>
                             </li>
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-field-shadow-focus-y" data-unit="px" type="number" name="hashform_styles[field][shadow_focus][y]" value="<?php echo esc_attr($hashform_styles['field']['shadow_focus']['y']); ?>">
-                                <label><?php  esc_html_x('V', 'Vertical', 'hash-form'); ?></label>
+                                <label><?php esc_html_x('V', 'Vertical', 'hash-form'); ?></label>
                             </li>
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-field-shadow-focus-blur" data-unit="px" type="number" name="hashform_styles[field][shadow_focus][blur]" value="<?php echo esc_attr($hashform_styles['field']['shadow_focus']['blur']); ?>">
@@ -443,11 +443,11 @@ $id = get_the_ID();
                         <ul class="hf-shadow-fields">
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-upload-shadow-normal-x" data-unit="px" type="number" name="hashform_styles[upload][shadow_normal][x]" value="<?php echo esc_attr($hashform_styles['upload']['shadow_normal']['x']); ?>">
-                                <label><?php  esc_html_x('H', 'Horizontal', 'hash-form'); ?></label>
+                                <label><?php esc_html_x('H', 'Horizontal', 'hash-form'); ?></label>
                             </li>
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-upload-shadow-normal-y" data-unit="px" type="number" name="hashform_styles[upload][shadow_normal][y]" value="<?php echo esc_attr($hashform_styles['upload']['shadow_normal']['y']); ?>">
-                                <label><?php  esc_html_x('V', 'Vertical', 'hash-form'); ?></label>
+                                <label><?php esc_html_x('V', 'Vertical', 'hash-form'); ?></label>
                             </li>
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-upload-shadow-normal-blur" data-unit="px" type="number" name="hashform_styles[upload][shadow_normal][blur]" value="<?php echo esc_attr($hashform_styles['upload']['shadow_normal']['blur']); ?>">
@@ -495,11 +495,11 @@ $id = get_the_ID();
                         <ul class="hf-shadow-fields">
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-upload-shadow-hover-x" data-unit="px" type="number" name="hashform_styles[upload][shadow_hover][x]" value="<?php echo esc_attr($hashform_styles['upload']['shadow_hover']['x']); ?>">
-                                <label><?php  esc_html_x('H', 'Horizontal', 'hash-form'); ?></label>
+                                <label><?php esc_html_x('H', 'Horizontal', 'hash-form'); ?></label>
                             </li>
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-upload-shadow-hover-y" data-unit="px" type="number" name="hashform_styles[upload][shadow_hover][y]" value="<?php echo esc_attr($hashform_styles['upload']['shadow_hover']['y']); ?>">
-                                <label><?php  esc_html_x('V', 'Vertical', 'hash-form'); ?></label>
+                                <label><?php esc_html_x('V', 'Vertical', 'hash-form'); ?></label>
                             </li>
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-upload-shadow-hover-blur" data-unit="px" type="number" name="hashform_styles[upload][shadow_hover][blur]" value="<?php echo esc_attr($hashform_styles['upload']['shadow_hover']['blur']); ?>">
@@ -648,11 +648,11 @@ $id = get_the_ID();
                         <ul class="hf-shadow-fields">
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-button-shadow-normal-x" data-unit="px" type="number" name="hashform_styles[button][shadow_normal][x]" value="<?php echo esc_attr($hashform_styles['button']['shadow_normal']['x']); ?>">
-                                <label><?php  esc_html_x('H', 'Horizontal', 'hash-form'); ?></label>
+                                <label><?php esc_html_x('H', 'Horizontal', 'hash-form'); ?></label>
                             </li>
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-button-shadow-normal-y" data-unit="px" type="number" name="hashform_styles[button][shadow_normal][y]" value="<?php echo esc_attr($hashform_styles['button']['shadow_normal']['y']); ?>">
-                                <label><?php  esc_html_x('V', 'Vertical', 'hash-form'); ?></label>
+                                <label><?php esc_html_x('V', 'Vertical', 'hash-form'); ?></label>
                             </li>
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-button-shadow-normal-blur" data-unit="px" type="number" name="hashform_styles[button][shadow_normal][blur]" value="<?php echo esc_attr($hashform_styles['button']['shadow_normal']['blur']); ?>">
@@ -700,11 +700,11 @@ $id = get_the_ID();
                         <ul class="hf-shadow-fields">
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-button-shadow-hover-x" data-unit="px" type="number" name="hashform_styles[button][shadow_hover][x]" value="<?php echo esc_attr($hashform_styles['button']['shadow_hover']['x']); ?>">
-                                <label><?php  esc_html_x('H', 'Horizontal', 'hash-form'); ?></label>
+                                <label><?php esc_html_x('H', 'Horizontal', 'hash-form'); ?></label>
                             </li>
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-button-shadow-hover-y" data-unit="px" type="number" name="hashform_styles[button][shadow_hover][y]" value="<?php echo esc_attr($hashform_styles['button']['shadow_hover']['y']); ?>">
-                                <label><?php  esc_html_x('V', 'Vertical', 'hash-form'); ?></label>
+                                <label><?php esc_html_x('V', 'Vertical', 'hash-form'); ?></label>
                             </li>
                             <li class="hf-shadow-settings-field">
                                 <input id="hf-button-shadow-hover-blur" data-unit="px" type="number" name="hashform_styles[button][shadow_hover][blur]" value="<?php echo esc_attr($hashform_styles['button']['shadow_hover']['blur']); ?>">
