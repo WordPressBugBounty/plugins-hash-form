@@ -20,7 +20,7 @@ class HashFormBlock {
         $all_forms = HashFormHelper::get_all_forms_list_options();
         unset($all_forms['']);
 
-        wp_register_style('hfb-style', HASHFORM_URL . 'css/form-block.css', array('wp-edit-blocks'), HASHFORM_VERSION);
+        wp_register_style('hfb-style', HASHFORM_URL . 'css/form-block.css', array(), HASHFORM_VERSION);
         wp_register_style('hfb-editor', HASHFORM_URL . 'css/editor.css', array(), HASHFORM_VERSION);
         wp_register_script('hfb-blocks', HASHFORM_URL . 'build/index.js', $asset_file['dependencies'], $asset_file['version']);
         wp_localize_script('hfb-blocks', 'hash_form_block_data', array(
