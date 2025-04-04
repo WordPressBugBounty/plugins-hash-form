@@ -795,6 +795,8 @@
     text-decoration: inherit;
     line-height: inherit;
     color: inherit;
+    margin: 0;
+    padding: 0;
 }
 
 .hf-form-field.hf-options-layout-inline .hf-choice-container {
@@ -1224,13 +1226,13 @@
     justify-content: center;
 }
 
-.hf-submit-button {
+.hf-submit-wrap .hf-submit-button {
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
-.hf-submit-button.hf-button-loading:after {
+.hf-submit-wrap .hf-submit-button.hf-button-loading:after {
     content: "";
     width: 1em;
     height: 1em;
