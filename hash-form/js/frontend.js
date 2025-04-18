@@ -75,7 +75,7 @@ jQuery(function ($) {
                         $('body').find('.hf-preview-remove').trigger('click');
                         form.append('<span class="hf-success-msg">' + response.message + '</span>');
                     } else if (response.status == "failed") {
-                        grecaptcha?.reset();
+                        typeof grecaptcha !== "undefined" && grecaptcha?.reset();
                         form.append('<span class="hf-failed-msg">' + response.message + '</span>');
                     } else {
                         $.each(response.message, function (key, value) {
@@ -96,7 +96,7 @@ jQuery(function ($) {
                             firstErrorItem = $('#' + 'hf-field-container-' + errorFieldId);
                         }
 
-                        grecaptcha?.reset();
+                        typeof grecaptcha !== "undefined" && grecaptcha?.reset();
 
                         $('html, body').animate({
                             scrollTop: firstErrorItem.offset().top - 300
