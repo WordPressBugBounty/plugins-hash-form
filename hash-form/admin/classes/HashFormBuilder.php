@@ -115,7 +115,7 @@ class HashFormBuilder {
             return;
         }
 
-        check_ajax_referer('hashform_ajax', 'nonce');
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
 
         $name = HashFormHelper::get_post('name');
         $new_values = array(
@@ -169,7 +169,7 @@ class HashFormBuilder {
             return;
         }
 
-        check_ajax_referer('hashform_ajax', 'nonce');
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
 
         $fields_array = $settings_array = array();
 
@@ -638,6 +638,11 @@ class HashFormBuilder {
 
         $json_vars = htmlspecialchars_decode(nl2br(str_replace('&quot;', '"', HashFormHelper::get_post('hashform_compact_fields'))));
         $vars = HashFormHelper::parse_json_array($json_vars);
+
+        if (!isset($vars['hashform_process_form_nonce']) || !wp_verify_nonce($vars['hashform_process_form_nonce'], 'hashform_process_form_action')) {
+            wp_die(esc_html__('Sorry, Nonce did not verify.', 'hash-form'));
+        }
+
         $email_to_array = array();
         foreach ($vars['email_to'] as $row) {
             $email_to_val = trim($row);
@@ -647,16 +652,19 @@ class HashFormBuilder {
         }
         $vars['email_to'] = implode(',', $email_to_array);
         $id = isset($vars['id']) ? absint($vars['id']) : HashFormHelper::get_var('id', 'absint');
-        unset($vars['id'], $vars['process_form'], $vars['_wp_http_referer']);
+        unset($vars['id'], $vars['hashform_process_form_nonce'], $vars['_wp_http_referer']);
 
         self::update_settings($id, $vars);
         $message = '<span class="mdi mdi-check-circle"></span>' . esc_html__('Form was successfully updated.', 'hash-form');
         wp_die(wp_kses_post($message));
+
     }
 
     public function save_form_style() {
         if (!current_user_can('manage_options'))
             return;
+
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
 
         $json_vars = htmlspecialchars_decode(nl2br(str_replace('&quot;', '"', HashFormHelper::get_post('hashform_compact_fields'))));
         $vars = HashFormHelper::parse_json_array($json_vars);
@@ -693,6 +701,8 @@ class HashFormBuilder {
     }
 
     public function add_more_condition_block() {
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
+
         $form_id = HashFormHelper::get_post('form_id', 'absint', 0);
         $fields = HashFormFields::get_form_fields($form_id);
         ?>

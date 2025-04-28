@@ -62,7 +62,7 @@ $settings = $form->settings ? $form->settings : HashFormHelper::get_form_setting
                 <form method="post" id="hf-settings-form">
                     <input type="hidden" name="id" id="form_id" value="<?php echo esc_attr($id); ?>" />
                     <?php
-                    wp_nonce_field('hashform_process_form_nonce', 'process_form');
+                    wp_nonce_field('hashform_process_form_action', 'hashform_process_form_nonce');
                     foreach ($sections as $key => $section) {
                         ?>
                         <div id="hf-<?php echo esc_attr($key); ?>" class="<?php echo (($current === $key) ? '' : ' hf-hidden'); ?>">

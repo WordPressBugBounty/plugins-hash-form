@@ -31,15 +31,28 @@ wp_nonce_field('hf-styles-nonce', 'hashform_styles_nonce');
     </div>
 
     <?php
-    $hashform_post_type = htmlspecialchars_decode(HashFormHelper::get_var('post_type'));
-    $hashform_post_class = $hashform_post_type == 'hashform-styles' ? 'postbox' : 'submitbox';
+    $hashform_post_class = 'submitbox';
+    $show_publish_button = false;
+
+    if (isset($_GET['post_type']) && $_GET['post_type'] == 'hashform-styles') {
+        $show_publish_button = true;
+        $hashform_post_class = 'postbox';
+    }
+
+    if (isset($_GET['post'])) {
+        $hashform_post_id = htmlspecialchars_decode(HashFormHelper::get_var('post'));
+        if ('publish' !== get_post_status($hashform_post_id)) {
+            $show_publish_button = true;
+            $hashform_post_class = 'postbox';
+        }
+    }
     ?>
     <div class="hf-footer">
         <div id="submitpost" class="<?php echo esc_attr($hashform_post_class); ?>">
             <div id="major-publishing-actions">
                 <div id="publishing-action">
                     <span class="spinner"></span>
-                    <?php if ($hashform_post_type == 'hashform-styles') { ?>
+                    <?php if ($show_publish_button) { ?>
                         <input name="original_publish" type="hidden" id="original_publish" value="Publish">
                         <input type="submit" name="publish" id="publish" class="button button-primary button-large" value="<?php esc_html_e('Publish', 'hash-form'); ?>">
                     <?php } else { ?>

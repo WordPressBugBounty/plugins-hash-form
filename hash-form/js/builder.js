@@ -697,7 +697,7 @@ var hashFormBuilder = hashFormBuilder || {};
                 data: {
                     action: 'hashform_delete_field',
                     field_id: fieldId,
-                    nonce: hashform_backend_js.nonce
+                    backend_nonce: hashform_backend_js.nonce
                 },
                 success: function () {
                     var $thisField = $('#hf-editor-field-id-' + fieldId),
@@ -778,7 +778,7 @@ var hashFormBuilder = hashFormBuilder || {};
                     action: 'hashform_insert_field',
                     form_id: formId,
                     field_type: fieldType,
-                    nonce: hashform_backend_js.nonce,
+                    backend_nonce: hashform_backend_js.nonce,
                 },
                 success: function (msg) {
                     document.getElementById('hf-editor-wrap').classList.add('hf-editor-has-fields');
@@ -1230,12 +1230,12 @@ var hashFormBuilder = hashFormBuilder || {};
                 type: 'POST',
                 url: ajaxurl,
                 data: {
-                    action: 'hashform_update_field_after_move',
+                    action: 'hashform_update_field_after_move', /**Check This */
                     form_id: formId,
                     field: fieldId,
                     section_id: sectionId,
                     previous_form_id: previousFormId,
-                    nonce: hashform_backend_js.nonce
+                    backend_nonce: hashform_backend_js.nonce
                 },
                 success: function () {
                     hashFormBuilder.toggleSectionHolder();
@@ -1269,7 +1269,7 @@ var hashFormBuilder = hashFormBuilder || {};
                     action: 'hashform_insert_field',
                     form_id: formId,
                     field_type: fieldType,
-                    nonce: hashform_backend_js.nonce,
+                    backend_nonce: hashform_backend_js.nonce,
                 },
                 success: function (msg) {
                     let replaceWith;

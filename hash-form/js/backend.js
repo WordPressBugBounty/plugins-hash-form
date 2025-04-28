@@ -197,7 +197,7 @@ var hashFormAdmin = hashFormAdmin || {};
                     action: 'hashform_update_form',
                     hashform_fields: hashform_fields,
                     hashform_settings: hashform_settings,
-                    nonce: hashform_backend_js.nonce
+                    backend_nonce: hashform_backend_js.nonce
                 },
                 success: function (msg) {
                     hashFormAdmin.afterFormSave($thisEle);
@@ -434,7 +434,7 @@ var hashFormAdmin = hashFormAdmin || {};
                     field_id: fieldId,
                     opt_key: optKey,
                     opt_type: optType,
-                    nonce: hashform_backend_js.nonce
+                    backend_nonce: hashform_backend_js.nonce
                 };
 
                 jQuery.post(ajaxurl, data, function (msg) {
@@ -650,7 +650,7 @@ var hashFormAdmin = hashFormAdmin || {};
         initFormSettings: function () {
             $('.hashform-ajax-udpate-button').on('click', hashFormAdmin.submitSettingsBuild);
             $('.hf-multiple-rows').on('click', '.hf-add-email', function () {
-                $(this).closest('.hf-multiple-rows').find('.hf-multiple-email').append('<div class="hf-email-row"><input type="email" name="email_to[]" value=""/><span class="mdi mdi-trash-can-outline hf-delete-email-row"></span></div>');
+                $(this).closest('.hf-multiple-rows').find('.hf-multiple-email').append('<div class="hf-email-row"><input type="email" name="email_to[]" autocomplete="off" value=""/><span class="mdi mdi-trash-can-outline hf-delete-email-row"></span></div>');
             })
             $(document).on('click', '.hf-multiple-rows .hf-delete-email-row', function () {
                 $(this).closest('.hf-email-row').remove();
@@ -666,7 +666,8 @@ var hashFormAdmin = hashFormAdmin || {};
                 type: 'post',
                 data: {
                     action: 'hashform_add_more_condition_block',
-                    form_id: $("#form_id").val()
+                    form_id: $("#form_id").val(),
+                    backend_nonce: hashform_backend_js.nonce
                 },
                 success: function (msg) {
                     parentRepeaterBlock.append(msg);
@@ -683,15 +684,14 @@ var hashFormAdmin = hashFormAdmin || {};
             e.preventDefault();
             var $thisEle = this;
             hashFormAdmin.preFormSave(this);
-            var v = JSON.stringify($formSettings.serializeArray());
-            $('#hashform_compact_fields').val(v);
+            var fields = JSON.stringify($formSettings.serializeArray());
+            $('#hashform_compact_fields').val(fields);
             $.ajax({
                 type: 'POST',
                 url: ajaxurl,
                 data: {
                     action: 'hashform_save_form_settings',
-                    hashform_compact_fields: v,
-                    nonce: hashform_backend_js.nonce
+                    hashform_compact_fields: fields,
                 },
                 success: function (msg) {
                     hashFormAdmin.afterFormSave($thisEle);
@@ -726,15 +726,15 @@ var hashFormAdmin = hashFormAdmin || {};
             e.preventDefault();
             var $thisEle = this;
             hashFormAdmin.preFormSave(this);
-            var v = JSON.stringify($styleSettings.serializeArray());
-            $('#hashform_compact_fields').val(v);
+            var fields = JSON.stringify($styleSettings.serializeArray());
+            $('#hashform_compact_fields').val(fields);
             jQuery.ajax({
                 type: 'POST',
                 url: ajaxurl,
                 data: {
                     action: 'hashform_save_form_style',
-                    'hashform_compact_fields': v,
-                    nonce: hashform_backend_js.nonce
+                    hashform_compact_fields: fields,
+                    backend_nonce: hashform_backend_js.nonce
                 },
                 success: function (msg) {
                     hashFormAdmin.afterFormSave($thisEle);
@@ -767,7 +767,7 @@ var hashFormAdmin = hashFormAdmin || {};
                         action: 'hashform_test_email_template',
                         email_template: emailTemplate,
                         test_email: testEmail,
-                        nonce: hashform_backend_js.nonce
+                        backend_nonce: hashform_backend_js.nonce
                     },
                     success: function (res) {
                         testEmailButton.removeClass('hf-loading-button');
@@ -1073,17 +1073,16 @@ var hashFormAdmin = hashFormAdmin || {};
                 if (optionType)
                     return;
                 this.classList.add('hf-loading-button');
-                var separate = hashFormAdmin.usingSeparateValues(fieldId),
-                    action = 'hashform_import_options';
+                var separate = hashFormAdmin.usingSeparateValues(fieldId);
                 jQuery.ajax({
                     type: 'POST',
                     url: ajaxurl,
                     data: {
-                        action: action,
+                        action: 'hashform_import_options',
                         field_id: fieldId,
                         opts: document.getElementById('hf-bulk-options').value,
                         separate: separate,
-                        nonce: hashform_backend_js.nonce
+                        backend_nonce: hashform_backend_js.nonce
                     },
                     success: function (html) {
                         document.getElementById('hf-field-options-' + fieldId).innerHTML = html;
@@ -1154,7 +1153,7 @@ var hashFormAdmin = hashFormAdmin || {};
                         data: {
                             action: 'hashform_create_form',
                             name: template_name,
-                            nonce: hashform_backend_js.nonce
+                            backend_nonce: hashform_backend_js.nonce
                         },
                         success: function (response) {
                             const res = JSON.parse(response)

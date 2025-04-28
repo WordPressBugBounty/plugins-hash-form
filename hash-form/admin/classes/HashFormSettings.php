@@ -65,7 +65,7 @@ class HashFormSettings {
 
                                     <input type="hidden" name="hashform_action" value="process-form" />
                                     <?php
-                                    wp_nonce_field('hashform_process_form_nonce', 'process_form');
+                                    wp_nonce_field('hashform_process_form_action', 'hashform_process_form_nonce');
                                     foreach ($sections as $key => $section) {
                                         ?>
                                         <div id="hf-<?php echo esc_attr($key); ?>" class="<?php echo ($current === $key) ? '' : 'hf-hidden'; ?>">
@@ -89,8 +89,8 @@ class HashFormSettings {
     }
 
     public static function process_form() {
-        $process_form = HashFormHelper::get_post('process_form');
-        if (!wp_verify_nonce($process_form, 'hashform_process_form_nonce')) {
+        $process_form = HashFormHelper::get_post('hashform_process_form_nonce');
+        if (!wp_verify_nonce($process_form, 'hashform_process_form_action')) {
             wp_die(esc_html__('Permission Denied', 'hash-form'));
         }
 
@@ -117,6 +117,8 @@ class HashFormSettings {
     public function send_test_email() {
         if (!current_user_can('manage_options'))
             return;
+
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
 
         $settings = self::get_settings();
 

@@ -11,7 +11,7 @@ defined('ABSPATH') || die();
                 foreach ($email_to_array as $row) {
                     ?>
                     <div class="hf-email-row">
-                        <input type="email" name="email_to[]" value="<?php echo esc_attr($row); ?>" />
+                        <input type="email" name="email_to[]" autocomplete="off" value="<?php echo esc_attr($row); ?>" />
                         <span class="mdi mdi-trash-can-outline hf-delete-email-row"></span>
                     </div>
                 <?php } ?>
@@ -45,7 +45,7 @@ defined('ABSPATH') || die();
                     </ul>
                 </div>
             </label>
-            <input type="text" name="reply_to_email" value="<?php echo esc_attr($settings['reply_to_email']); ?>" />
+            <input type="text" name="reply_to_email" autocomplete="off" value="<?php echo esc_attr($settings['reply_to_email']); ?>" />
             <p class="description"><?php esc_html_e('Choose the email field by clicking on the TAGS above.', 'hash-form'); ?></p>
         </div>
     </div>

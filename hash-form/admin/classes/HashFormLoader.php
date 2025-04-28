@@ -44,7 +44,11 @@ class HashFormLoader {
             wp_enqueue_script('hashform-backend', HASHFORM_URL . 'js/backend.js', array('jquery', 'jquery-ui-core', 'jquery-ui-draggable', 'jquery-ui-droppable', 'jquery-ui-sortable', 'wp-i18n', 'wp-hooks', 'jquery-ui-dialog', 'jquery-ui-datepicker'), HASHFORM_VERSION, true);
 
             wp_localize_script('hashform-backend', 'hashform_backend_js', array(
-                'nonce' => wp_create_nonce('hashform_ajax'),
+                'nonce' => wp_create_nonce('hashform_backend_ajax'),
+            ));
+
+            wp_localize_script('hashform-builder', 'hashform_backend_js', array(
+                'nonce' => wp_create_nonce('hashform_backend_ajax'),
             ));
         }
 
@@ -61,7 +65,7 @@ class HashFormLoader {
 
         wp_localize_script('hashform-admin-settings', 'hashform_admin_js_obj', array(
             'ajax_url' => admin_url('admin-ajax.php'),
-            'ajax_nonce' => wp_create_nonce('hashform-ajax-nonce'),
+            'nonce' => wp_create_nonce('hashform_admin_settings_ajax'),
             'installing_text' => esc_html__('Installing WP Mail SMTP', 'hash-form'),
             'activating_text' => esc_html__('Activating WP Mail SMTP', 'hash-form'),
             'error' => esc_html__('Error! Reload the page and try again.', 'hash-form'),

@@ -43,6 +43,8 @@ class HashFormSmtp {
         if (!current_user_can('manage_options'))
             return;
 
+        check_ajax_referer('hashform_admin_settings_ajax', 'admin_setting_nonce');
+
         $slug = HashFormHelper::get_post('slug');
         $file = HashFormHelper::get_post('file');
         $success = false;

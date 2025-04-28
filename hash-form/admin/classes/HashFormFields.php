@@ -30,7 +30,7 @@ class HashFormFields {
             return;
         }
 
-        check_ajax_referer('hashform_ajax', 'nonce');
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
         $field_type = HashFormHelper::get_post('field_type', 'sanitize_text_field');
         $form_id = HashFormHelper::get_post('form_id', 'absint', 0);
         self::include_new_field($field_type, $form_id);
@@ -42,7 +42,7 @@ class HashFormFields {
             return;
         }
 
-        check_ajax_referer('hashform_ajax', 'nonce');
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
         $field_id = HashFormHelper::get_post('field_id', 'absint', 0);
         self::destroy_row($field_id);
         wp_die();
@@ -87,6 +87,8 @@ class HashFormFields {
         if (!current_user_can('manage_options')) {
             return;
         }
+
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
 
         $field_id = HashFormHelper::get_post('field_id', 'absint');
         $field = self::get_field_vars($field_id);

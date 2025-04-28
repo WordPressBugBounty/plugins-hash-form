@@ -303,23 +303,22 @@ class HashFormStyles {
             return;
         }
 
-        if (wp_verify_nonce(HashFormHelper::get_var('wp_nonce'), 'hashform-ajax-nonce')) {
-            $font_family = HashFormHelper::get_var('font_family');
-            $all_font = self::font_array();
-            $options = '';
+        check_ajax_referer('hashform_admin_settings_ajax', 'admin_setting_nonce');
 
-            $variants_array = $all_font[$font_family]['variants'];
+        $font_family = HashFormHelper::get_var('font_family');
+        $all_font = self::font_array();
 
-            foreach ($variants_array as $key => $variants) {
-                if ($font_family == 'Default') {
-                    $selected = $key == 'Default' ? true : false;
-                } else {
-                    $selected = $key == '400' ? true : false;
-                }
-                ?>
-                <option <?php selected($selected, true) ?> value="<?php echo esc_attr($key) ?>"><?php echo esc_html($variants); ?></option>';
-                <?php
+        $variants_array = $all_font[$font_family]['variants'];
+
+        foreach ($variants_array as $key => $variants) {
+            if ($font_family == 'Default') {
+                $selected = $key == 'Default' ? true : false;
+            } else {
+                $selected = $key == '400' ? true : false;
             }
+            ?>
+            <option <?php selected($selected, true) ?> value="<?php echo esc_attr($key) ?>"><?php echo esc_html($variants); ?></option>';
+            <?php
         }
         die();
     }
@@ -1163,6 +1162,8 @@ class HashFormStyles {
     public function get_form_preview_html() {
         if (!current_user_can('manage_options'))
             return;
+
+        check_ajax_referer('hashform_admin_settings_ajax', 'admin_setting_nonce');
 
         $form_id = HashFormHelper::get_post('form_id', 'absint');
         $template_id = HashFormHelper::get_post('template_id', 'absint');

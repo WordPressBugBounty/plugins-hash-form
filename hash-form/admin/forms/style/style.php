@@ -49,8 +49,6 @@ $form_style_template = isset($styles['form_style_template']) ? $styles['form_sty
 
                     <div class="hf-form-row" data-condition-toggle="hf-form-style-select" data-condition-val="custom-style">
                         <?php esc_html_e('Choose "Custom Style" when you want to implement your own styles', 'hash-form'); ?>
-                        <br><br>
-                        <?php printf(esc_html__('To create new Custom Style, go to %1sStyle Template%2s page.', 'hash-form'), '<a href="' . esc_url(admin_url('edit.php?post_type=hashform-styles')) . '" target="_blank">', '</a>'); ?>
                     </div>
 
                     <div class="hf-form-row" data-condition-toggle="hf-form-style-select" data-condition-val="custom-style">
@@ -85,6 +83,11 @@ $form_style_template = isset($styles['form_style_template']) ? $styles['form_sty
                             wp_reset_postdata();
                             ?>
                         </select>
+                    </div>
+
+                    <div style="border:2px dashed #2372b1; padding:15px" class="hf-form-row" data-condition-toggle="hf-form-style-select" data-condition-val="custom-style">
+                        <div style="margin-bottom:10px"><?php printf(esc_html__('Build fast with a style template - style your forms in seconds.', 'hash-form')); ?></div>
+                        <a class="button button-primary" href="<?php echo esc_url(admin_url('edit.php?post_type=hashform-styles')); ?>" target="_blank"><?php esc_html_e('Create/Edit Style Template', 'hash-form'); ?></a>
                     </div>
                 </div>
             </form>

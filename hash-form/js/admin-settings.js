@@ -2,7 +2,7 @@
     "use strict";
 
     var ajaxUrl = hashform_admin_js_obj.ajax_url;
-    var adminNonce = hashform_admin_js_obj.ajax_nonce;
+    var adminNonce = hashform_admin_js_obj.nonce;
 
     $('.hf-color-picker').wpColorPicker({
         change: function (event, ui) {
@@ -127,7 +127,7 @@
             data: {
                 action: 'hashform_get_google_font_variants',
                 font_family: font_family,
-                wp_nonce: adminNonce
+                admin_setting_nonce: adminNonce
             },
             beforeSend: function () {
                 $this.closest('.hf-typography-font-family-field').next('.hf-typography-font-style-field').addClass('hf-typography-loading');
@@ -217,7 +217,8 @@
             data: {
                 action: 'hashform_template_style_preview',
                 form_id: formId,
-                template_id: templateId
+                template_id: templateId,
+                admin_setting_nonce: adminNonce
             },
             dataType: "html",
             success: function (data) {
@@ -306,7 +307,8 @@
             data: {
                 action: 'hashform_activate_plugin',
                 slug: 'wp-mail-smtp',
-                file: 'wp_mail_smtp'
+                file: 'wp_mail_smtp',
+                admin_setting_nonce: adminNonce
             },
         }).done(function (result) {
             var result = JSON.parse(result)
@@ -335,7 +337,8 @@
                 data: {
                     action: 'hashform_activate_plugin',
                     slug: 'wp-mail-smtp',
-                    file: 'wp_mail_smtp'
+                    file: 'wp_mail_smtp',
+                    admin_setting_nonce: adminNonce
                 },
             }).done(function (result) {
                 var result = JSON.parse(result)
