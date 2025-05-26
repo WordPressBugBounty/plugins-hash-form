@@ -171,10 +171,10 @@
 .hf-form-custom-style .hf-container input[type="button"],
 .hf-form-custom-style .hf-container input[type="reset"],
 .hf-form-custom-style .hf-container input[type="submit"] {
-    border-top: var(--hf-button-border-top, 1px) var(--hf-button-border, solid) var(--hf-button-border-color-normal, #CCC);
-    border-right: var(--hf-button-border-right, 1px) var(--hf-button-border, solid) var(--hf-button-border-color-normal, #CCC);
-    border-bottom: var(--hf-button-border-bottom, 1px) var(--hf-button-border, solid) var(--hf-button-border-color-normal, #CCC);
-    border-left: var(--hf-button-border-left, 1px) var(--hf-button-border, solid) var(--hf-button-border-color-normal, #CCC);
+    border-top: var(--hf-button-border-top, 0) var(--hf-button-border, solid) var(--hf-button-border-color-normal, #CCC);
+    border-right: var(--hf-button-border-right, 0) var(--hf-button-border, solid) var(--hf-button-border-color-normal, #CCC);
+    border-bottom: var(--hf-button-border-bottom, 0) var(--hf-button-border, solid) var(--hf-button-border-color-normal, #CCC);
+    border-left: var(--hf-button-border-left, 0) var(--hf-button-border, solid) var(--hf-button-border-color-normal, #CCC);
     border-radius: var(--hf-button-border-radius-top, 3px) var(--hf-button-border-radius-right, 3px) var(--hf-button-border-radius-bottom, 3px) var(--hf-button-border-radius-left, 3px);
     padding: var(--hf-button-padding-top, 15px) var(--hf-button-padding-right, 30px) var(--hf-button-padding-bottom, 15px) var(--hf-button-padding-left, 30px);
     font-family: var(--hf-button-typo-font-family);
@@ -197,7 +197,7 @@
 .hf-form-default-style .hf-container input[type="button"],
 .hf-form-default-style .hf-container input[type="reset"],
 .hf-form-default-style .hf-container input[type="submit"] {
-    border: 1px solid #CCC;
+    border: 0;
     border-radius: 3px;
     padding: 15px 30px;
     font-size: 14px;
@@ -218,10 +218,10 @@
 .hf-form-custom-style .hf-container input[type="button"]:hover,
 .hf-form-custom-style .hf-container input[type="reset"]:hover,
 .hf-form-custom-style .hf-container input[type="submit"]:hover {
-    border-top: var(--hf-button-border-top, 1px) var(--hf-button-border, solid) var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
-    border-right: var(--hf-button-border-right, 1px) var(--hf-button-border, solid) var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
-    border-bottom: var(--hf-button-border-bottom, 1px) var(--hf-button-border, solid) var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
-    border-left: var(--hf-button-border-left, 1px) var(--hf-button-border, solid) var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
+    border-top: var(--hf-button-border-top, 0) var(--hf-button-border, solid) var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
+    border-right: var(--hf-button-border-right, 0) var(--hf-button-border, solid) var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
+    border-bottom: var(--hf-button-border-bottom, 0) var(--hf-button-border, solid) var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
+    border-left: var(--hf-button-border-left, 0) var(--hf-button-border, solid) var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
     color: var(--hf-button-color-hover, var(--hf-button-color-normal, inherit));
     background-color: var(--hf-button-bg-color-hover, var(--hf-button-bg-color-normal, transparent));
     box-shadow: var(--hf-button-shadow-hover-x, var(--hf-button-shadow-normal-x, 0)) var(--hf-button-shadow-hover-y, var(--hf-button-shadow-normal-y, 0)) var(--hf-button-shadow-hover-blur, var(--hf-button-shadow-normal-blur, 0)) var(--hf-button-shadow-hover-spread, var(--hf-button-shadow-normal-spread, 0)) var(--hf-button-shadow-hover-color, var(--hf-button-shadow-normal-color, transparent));
