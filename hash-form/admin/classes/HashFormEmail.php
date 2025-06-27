@@ -25,6 +25,7 @@ class HashFormEmail {
 
         $email_to = isset($form_settings['email_to']) ? explode(',', $form_settings['email_to']) : '';
         $email_from = isset($form_settings['email_from']) ? $form_settings['email_from'] : '';
+        $email_from = ($email_from == '[admin_email]') ? get_option('admin_email') : esc_attr($email_from);
         $email_from_name = isset($form_settings['email_from_name']) ? $form_settings['email_from_name'] : '';
         $email_subject = isset($form_settings['email_subject']) ? $form_settings['email_subject'] : '';
         $reply_to_email = isset($form_settings['reply_to_email']) ? $form_settings['reply_to_email'] : '';

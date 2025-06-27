@@ -1,6 +1,16 @@
 (function ($) {
     "use strict";
 
+    function debounce(func, delay) {
+        let timer;
+        return function (...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                func.apply(this, args);
+            }, delay);
+        };
+    }
+
     var ajaxUrl = hashform_admin_js_obj.ajax_url;
     var adminNonce = hashform_admin_js_obj.nonce;
 
@@ -112,7 +122,7 @@
     $(document).on('change', '.hf-typography-font-family', function () {
         var $this = $(this);
         var font_family = $(this).val();
-        var standard_fonts = ['Default', 'Helvetica', 'Verdana', 'Arial', 'Times', 'Georgia', 'Courier', 'Trebuchet', 'Tahoma', 'Palatino'];
+        var standard_fonts = ['inherit', 'Helvetica', 'Verdana', 'Arial', 'Times', 'Georgia', 'Courier', 'Trebuchet', 'Tahoma', 'Palatino'];
         if (!standard_fonts.includes(font_family)) {
             var fontId = $this.attr('id');
             var $fontId = $('link#' + fontId);
@@ -207,28 +217,6 @@
         });
     });
 
-    $('#hf-template-preview-form-id').on('change', function () {
-        const formId = $(this).val();
-        const templateId = $('#post_ID').val();
-        $('.hf-form-wrap').html('');
-        $.ajax({
-            url: ajaxUrl,
-            type: 'POST',
-            data: {
-                action: 'hashform_template_style_preview',
-                form_id: formId,
-                template_id: templateId,
-                admin_setting_nonce: adminNonce
-            },
-            dataType: "html",
-            success: function (data) {
-                if (formId) {
-                    data = data.replace('hf-container-' + formId, 'hf-container-00');
-                }
-                $('.hf-form-wrap').html(data);
-            }
-        });
-    })
 
     // Custom File Upload
     $(".hf-dropzone").change(function () {
@@ -365,13 +353,59 @@
     }).on('focusout', function () {
         $(this).parent().removeClass('hf-field-focussed');
     })
+
+    $('#hf-template-preview-form-id').on('change', debounce(function () {
+        const formId = $(this).val();
+        const templateId = $('#post_ID').val();
+        var formData = new FormData($('form#post')[0]);
+        formData.append('action', 'hashform_template_style_preview');
+        formData.append('form_id', formId);
+        formData.append('template_id', templateId);
+        formData.append('admin_setting_nonce', adminNonce);
+        $('.hf-form-wrap').addClass('hf-content-loading');
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            beforeSend: function (xhr) {
+                console.log('Starting AJAX...');
+            },
+            success: function (response) {
+                if (response.success) {
+                    $('#hf-template-preview-iframe').remove();
+                    var newIframe = $('<iframe>', {
+                        id: 'hf-template-preview-iframe'
+                    }).appendTo('.hf-template-preview')[0];
+                    setTimeout(function () {
+                        var doc = newIframe.contentDocument || newIframe.contentWindow.document;
+                        doc.open();
+                        doc.write(response.data);
+                        doc.close();
+                        doc.addEventListener('click', e => e.preventDefault(), true);
+                        doc.addEventListener('mousedown', e => e.preventDefault(), true);
+                        doc.addEventListener('mouseup', e => e.preventDefault(), true);
+                    }, 0);
+                    $('.hf-form-wrap').removeClass('hf-content-loading');
+                }
+            }
+        });
+    }, 1000)).trigger('change');
 })(jQuery);
 
 function hfDynamicCss(control, style, val) {
-    ctrlEscaped = control.replaceAll('(', '\\(').replaceAll(')', '\\)');
-    jQuery('style.' + ctrlEscaped).remove();
+    var iframe = jQuery('#hf-template-preview-iframe')[0];
+    var doc = iframe.contentDocument || iframe.contentWindow.document;
+    if (doc.document) doc = doc.document;
+    var formid = jQuery(document).find('#hf-template-preview-form-id').val();
+    formid = formid ? formid : '00';
+
+    const ctrlEscaped = control.replaceAll('(', '\\(').replaceAll(')', '\\)');
+    jQuery(doc).find('style.' + ctrlEscaped).remove();
+
     if (val) {
         //console.log(style);
-        jQuery('head').append('<style class="' + control + '">body #hf-container-00{' + style + '}</style>');
+        jQuery(doc).find('head').append('<style class="' + control + '">body #hf-container-' + formid + '{' + style + '}</style>');
     }
 }

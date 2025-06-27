@@ -74,7 +74,7 @@ $next_url = $next_entry_id ? admin_url('admin.php?page=hashform-entries&hashform
                         foreach ($files_arr as $file) {
                             $file_info = pathinfo($file);
                             $file_name = $file_info['basename'];
-                            $file_extension = $file_info['extension'];
+                            $file_extension = isset($file_info['extension']) ? $file_info['extension'] : '';
 
                             $upload_value .= '<div class="hf-form-entry-preview">';
                             $upload_value .= '<div class="hf-form-entry-preview-image"><a href="' . esc_url($file) . '" target="_blank">';

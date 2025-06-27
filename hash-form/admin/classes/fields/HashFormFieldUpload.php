@@ -63,24 +63,32 @@ class HashFormFieldUpload extends HashFormFieldType {
     public function set_value_before_save($files) {
         $new_files = array();
         $files_arr = explode(',', $files);
+        $field = $this->get_field();
         HashFormBuilder::remove_old_temp_files();
 
-        foreach ($files_arr as $file) {
-            $file_info = pathinfo($file);
-            $file_name = $file_info['basename'];
-            $upload_dir = wp_upload_dir();
+        do_action('hashform_file_before_upload_action', array(
+            'files_arr' => $files_arr,
+            'form_id' => isset($field->form_id) ? $field->form_id : ''
+        ));
 
-            $file_path = $upload_dir['basedir'] . HASHFORM_UPLOAD_DIR;
-            $file_url = $upload_dir['baseurl'] . HASHFORM_UPLOAD_DIR;
-            $temp_file_path = $file_path . '/temp/' . $file_name;
-            $to_path = $file_path . '/' . $file_name;
-            $to_url = $file_url . '/' . $file_name;
+        if (apply_filters('hashform_store_local', true)) {
+            foreach ($files_arr as $file) {
+                $file_info = pathinfo($file);
+                $file_name = $file_info['basename'];
+                $upload_dir = wp_upload_dir();
 
-            if (copy($temp_file_path, $to_path)) {
-                $new_files[] = $to_url;
+                $file_path = $upload_dir['basedir'] . HASHFORM_UPLOAD_DIR;
+                $file_url = $upload_dir['baseurl'] . HASHFORM_UPLOAD_DIR;
+                $temp_file_path = $file_path . '/temp/' . $file_name;
+                $to_path = $file_path . '/' . $file_name;
+                $to_url = $file_url . '/' . $file_name;
+
+                if (copy($temp_file_path, $to_path)) {
+                    $new_files[] = $to_url;
+                }
             }
         }
-        return implode(',', $new_files);
+        return implode(',', apply_filters('hashform_file_upload_filters', $new_files));
     }
 
 }

@@ -106,7 +106,7 @@ class HashFormStyles {
 
     public static function default_font_array() {
         return array(
-            'Default' => array(
+            'inherit' => array(
                 'family' => 'Default',
                 'variants' => array(
                     'Default' => 'Default',
@@ -327,7 +327,7 @@ class HashFormStyles {
         $fonts_url = '';
         $subsets = 'latin,latin-ext';
         $fonts = $font_family_array = $variants_array = array();
-        $standard_fonts = ['Default', 'Helvetica', 'Verdana', 'Arial', 'Times', 'Georgia', 'Courier', 'Trebuchet', 'Tahoma', 'Palatino'];
+        $standard_fonts = ['inherit', 'Helvetica', 'Verdana', 'Arial', 'Times', 'Georgia', 'Courier', 'Trebuchet', 'Tahoma', 'Palatino'];
         $all_font = self::font_array();
         $custom_fonts = self::custom_fonts();
 
@@ -1164,19 +1164,23 @@ class HashFormStyles {
             return;
 
         check_ajax_referer('hashform_admin_settings_ajax', 'admin_setting_nonce');
+        ob_start();
+        remove_action('wp_head', 'print_emoji_detection_script', 7);
+        remove_action('wp_print_styles', 'print_emoji_styles');
+        wp_head();
 
         $form_id = HashFormHelper::get_post('form_id', 'absint');
         $template_id = HashFormHelper::get_post('template_id', 'absint');
-        $hashform_styles = get_post_meta($template_id, 'hashform_styles', true);
+        $hashform_styles = HashFormHelper::get_post('hashform_styles', 'sanitize_text_field', '', self::get_styles_sanitize_array());
 
         add_filter('hashform_form_classes', array($this, 'update_form_class'));
-
         if (empty($form_id)) {
             include(HASHFORM_PATH . 'admin/styles/demo-preview.php');
         } else {
             include(HASHFORM_PATH . 'admin/styles/form-preview.php');
         }
-        die();
+        wp_footer();
+        wp_send_json_success(ob_get_clean());
     }
 
     public function update_form_class($classes) {

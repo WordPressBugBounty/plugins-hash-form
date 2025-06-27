@@ -187,6 +187,10 @@
     color: #333;
 }
 
+body:has(#hf-wrap){
+    overflow: hidden;
+}
+
 /* Main Panel */
 .hf-body {
     display: flex;
@@ -2236,4 +2240,19 @@ form.hf-success .hf-copied {
 
 .hashform-notice a.notice-dismiss {
     text-decoration: none;
+}
+
+
+.hf-template-preview,
+.hf-form-preview {
+    width: 100%;
+    height: calc(100% - 10px);
+    position: relative;
+}
+
+#hf-template-preview-iframe,
+#hf-form-preview-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
 }

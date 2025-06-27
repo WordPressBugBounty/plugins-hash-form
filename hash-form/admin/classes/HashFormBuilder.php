@@ -14,6 +14,7 @@ class HashFormBuilder {
         add_action('wp_ajax_hashform_create_form', array($this, 'create_form'));
         add_action('wp_ajax_hashform_save_form_settings', array($this, 'save_form_settings'));
         add_action('wp_ajax_hashform_save_form_style', array($this, 'save_form_style'));
+        add_action('wp_ajax_hashform_form_preview', array($this, 'form_preview'));
         add_action('wp_ajax_hashform_add_more_condition_block', array($this, 'add_more_condition_block'));
         add_action('admin_footer', array($this, 'init_overlay_html'));
 
@@ -661,8 +662,9 @@ class HashFormBuilder {
     }
 
     public function save_form_style() {
-        if (!current_user_can('manage_options'))
+        if (!current_user_can('manage_options')) {
             return;
+        }
 
         check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
 
@@ -673,6 +675,26 @@ class HashFormBuilder {
         self::update_style($id, $vars);
         $message = '<span class="mdi mdi-check-circle"></span>' . esc_html__('Form was successfully updated.', 'hash-form');
         wp_die(wp_kses_post($message));
+    }
+
+    public function form_preview() {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
+
+        ob_start();
+        remove_action('wp_head', 'print_emoji_detection_script', 7);
+        remove_action('wp_print_styles', 'print_emoji_styles');
+        wp_head();
+
+        $form_id = HashFormHelper::get_post('form_id', 'absint');
+
+        HashFormPreview::show_form($form_id);
+        wp_footer();
+        wp_send_json_success(ob_get_clean());
+
     }
 
     public static function update_settings($id, $values) {

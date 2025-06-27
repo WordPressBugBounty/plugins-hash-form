@@ -670,7 +670,7 @@ class HashFormHelper {
     }
 
     public static function get_options_presets() {
-        return array(
+        return apply_filters('hash_form_option_presets', array(
             'hf-countries-opts' => array(
                 'label' => esc_html__('Countries', 'hash-form'),
                 'options' => self::get_countries()
@@ -695,7 +695,7 @@ class HashFormHelper {
                 'label' => esc_html__('Likely', 'hash-form'),
                 'options' => self::get_likely()
             ),
-        );
+        ));
     }
 
     public static function get_user_id_param($user_id) {

@@ -185,8 +185,8 @@
     text-transform: var(--hf-button-typo-text-transform, inherit);
     text-decoration: var(--hf-button-typo-text-decoration, inherit);
     line-height: var(--hf-button-typo-line-height, 1.2);
-    color: var(--hf-button-color-normal, #666);
-    background-color: var(--hf-button-bg-color-normal, transparent);
+    color: var(--hf-button-color-normal, #FFF);
+    background-color: var(--hf-button-bg-color-normal, #000);
     box-shadow: var(--hf-button-shadow-normal-x, 0) var(--hf-button-shadow-normal-y, 0) var(--hf-button-shadow-normal-blur, 0) var(--hf-button-shadow-normal-spread, 0) var(--hf-button-shadow-normal-color, transparent);
     outline: 0;
     min-height: 0;
@@ -222,8 +222,8 @@
     border-right: var(--hf-button-border-right, 0) var(--hf-button-border, solid) var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
     border-bottom: var(--hf-button-border-bottom, 0) var(--hf-button-border, solid) var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
     border-left: var(--hf-button-border-left, 0) var(--hf-button-border, solid) var(--hf-button-border-color-hover, var(--hf-button-border-color-normal, #CCC));
-    color: var(--hf-button-color-hover, var(--hf-button-color-normal, inherit));
-    background-color: var(--hf-button-bg-color-hover, var(--hf-button-bg-color-normal, transparent));
+    color: var(--hf-button-color-hover, var(--hf-button-color-normal, #FFF));
+    background-color: var(--hf-button-bg-color-hover, var(--hf-button-bg-color-normal, #000));
     box-shadow: var(--hf-button-shadow-hover-x, var(--hf-button-shadow-normal-x, 0)) var(--hf-button-shadow-hover-y, var(--hf-button-shadow-normal-y, 0)) var(--hf-button-shadow-hover-blur, var(--hf-button-shadow-normal-blur, 0)) var(--hf-button-shadow-hover-spread, var(--hf-button-shadow-normal-spread, 0)) var(--hf-button-shadow-hover-color, var(--hf-button-shadow-normal-color, transparent));
 }
 
@@ -1852,4 +1852,10 @@ body.wp-admin.rtl .ui-datepicker {
         letter-spacing: var(--hf-paragraph-typo-letter-spacing-sm, var(--hf-paragraph-typo-letter-spacing-md, var(--hf-paragraph-typo-letter-spacing, inherit)));
         line-height: var(--hf-paragraph-typo-line-height-sm, var(--hf-paragraph-typo-line-height-md, var(--hf-paragraph-typo-line-height, inherit)));
     }
+}
+
+body > .hf-form-tempate{
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px;
 }

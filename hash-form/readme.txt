@@ -2,8 +2,8 @@
 Contributors: hashthemes
 Tags: form, form builder, drag and drop, contact form
 Requires at least: 6.3
-Tested up to: 6.7
-Stable tag: 1.3.1
+Tested up to: 6.8
+Stable tag: 1.3.2
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -116,6 +116,11 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 11. Global Email Settings Page
 
 == Changelog ==
+= 1.3.2 - 27 Jun, 2025 =
+* Form preview page - Updated
+* Google Font issue - Fixed
+* Other CSS fixes
+
 = 1.3.1 - 26 May, 2025 =
 * CSS fixes - Updated
 

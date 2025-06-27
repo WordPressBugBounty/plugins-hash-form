@@ -155,6 +155,12 @@
     letter-spacing: 1px;
 }
 
+.hf-style-form-panel .hf-form-wrap{
+    padding: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+}
 
 /* Tab */
 .hf-tab-container {
@@ -828,30 +834,3 @@ ul.hf-shadow-fields {
     align-items: center;
     gap: 4px;
 }
-
-/*
-.hf-preview-close{
-    position: fixed;
-    top: 30px;
-    right: 30px;
-}
-
-.hf-preview-close a{
-    text-decoration: none;
-    height: 46px;
-    width: 46px;
-    background: #000;
-    color: #FFF;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    border-radius: 3px;
-}
-position: sticky;
-    top: -30px;
-.post-type-hashform-styles .hf-body,
-.post-type-hashform-styles .hf-fields-sidebar{
-    overflow: visible;
-}
-*/
