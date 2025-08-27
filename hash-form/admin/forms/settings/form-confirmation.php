@@ -1,5 +1,11 @@
 <?php
 defined('ABSPATH') || die();
+
+$confirmation_types = apply_filters('hf_confirmation_types', array(
+    'show_message' => __('Message', 'hash-form'),
+    'show_page' => __('Show Page', 'hash-form'),
+    'redirect_url' => __('Redirect URL', 'hash-form'),
+));
 ?>
 
 <div class="hf-form-container hf-grid-container">
@@ -7,9 +13,13 @@ defined('ABSPATH') || die();
         <div class="hf-grid-3">
             <label><?php esc_html_e('Confirmation Type', 'hash-form'); ?></label>
             <select name="confirmation_type" data-condition="toggle" id="hf-form-conformation-type">
-                <option value="show_message" <?php selected($settings['confirmation_type'], 'show_message'); ?>><?php esc_html_e('Message', 'hash-form'); ?></option>
-                <option value="show_page" <?php selected($settings['confirmation_type'], 'show_page'); ?>><?php esc_html_e('Show Page', 'hash-form'); ?></option>
-                <option value="redirect_url" <?php selected($settings['confirmation_type'], 'redirect_url'); ?>><?php esc_html_e('Redirect URL', 'hash-form'); ?></option>
+                <?php
+                foreach ($confirmation_types as $key => $val) {
+                    ?>
+                    <option value="<?php echo esc_attr($key) ?>" <?php selected($settings['confirmation_type'], $key); ?>><?php echo esc_html($val); ?></option>
+                    <?php
+                }
+                ?>
             </select>
         </div>
     </div>

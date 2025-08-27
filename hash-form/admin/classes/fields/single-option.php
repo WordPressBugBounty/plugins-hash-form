@@ -4,12 +4,15 @@ defined('ABSPATH') || die();
 if ($field['type'] == 'image_select') {
     $field_type = $field['select_option_type'] ? esc_attr($field['select_option_type']) : 'radio';
     $field_name = 'default_value_' . absint($field['id']) . '[' . esc_attr($opt_key) . ']';
-} else if ($field['type'] == 'select') {
+} else if ($field['type'] == 'radio') {
+    $field_type = $field['type'];
+    $field_name = 'default_value_' . absint($field['id']);
+} else if ($field['type'] == 'checkbox') {
+    $field_type = $field['type'];
+    $field_name = 'default_value_' . esc_attr($field['id']) . '[' . esc_attr($opt_key) . ']';
+} else {
     $field_type = 'radio';
     $field_name = 'default_value_' . absint($field['id']);
-} else {
-    $field_type = $field['type'];
-    $field_name = $field_type == 'radio' ? 'default_value_' . absint($field['id']) : 'default_value_' . esc_attr($field['id']) . '[' . esc_attr($opt_key) . ']';
 }
 ?>
 <li id="hf-option-list-<?php echo absint($field['id']) . '-' . esc_attr($opt_key); ?>" data-optkey="<?php echo esc_attr($opt_key); ?>" class="<?php echo ($opt_key === '000' ? ' hf-hidden hf-option-template' : ''); ?>">

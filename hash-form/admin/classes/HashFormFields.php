@@ -92,7 +92,7 @@ class HashFormFields {
 
         $field_id = HashFormHelper::get_post('field_id', 'absint');
         $field = self::get_field_vars($field_id);
-        if (!in_array($field->type, array('radio', 'checkbox', 'select'))) {
+        if (!in_array($field->type, apply_filters('hash_form_choices_fields', array('radio', 'checkbox', 'select')))) {
             return;
         }
 
@@ -373,7 +373,6 @@ class HashFormFields {
     }
 
     public static function fill_field(&$values, $field, $form_id) {
-        global $wpdb;
         $values['field_key'] = HashFormHelper::get_unique_key('hashform_fields', 'field_key');
         $values['form_id'] = $form_id;
         $cols_array = array('name', 'description', 'type', 'field_order', 'field_options', 'options', 'default_value', 'required');

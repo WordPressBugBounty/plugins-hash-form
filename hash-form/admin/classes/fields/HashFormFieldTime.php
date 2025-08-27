@@ -22,10 +22,10 @@ class HashFormFieldTime extends HashFormFieldType {
 
     protected function input_html() {
         $field = $this->get_field();
-        $step = intval($field['step']);
+        $step = isset($field['step']) ? intval($field['step']) : '60';
         $step = $step ? $step : 60;
         ?>
-        <input type="text" class="hf-timepicker" data-step="<?php echo absint($step); ?>" data-min-time="<?php echo esc_attr($field['min_time']); ?>" data-max-time="<?php echo esc_attr($field['max_time']); ?>" <?php $this->field_attrs(); ?>>
+        <input type="text" class="hf-timepicker" data-step="<?php echo absint($step); ?>" data-min-time="<?php echo isset($field['min_time']) ? esc_attr($field['min_time']) : '00:00'; ?>" data-max-time="<?php echo isset($field['max_time']) ? esc_attr($field['max_time']) : '23:59'; ?>" <?php $this->field_attrs(); ?>>
         <?php
     }
 

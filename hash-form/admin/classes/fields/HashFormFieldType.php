@@ -67,7 +67,7 @@ abstract class HashFormFieldType {
                     ?>
                     <?php if (!!$field['required']) { ?>
                         <span class="hf-field-required" aria-hidden="true">
-                            <?php echo esc_html($field['required_indicator']); ?>
+                            <?php echo isset($field['required_indicator']) ? esc_html($field['required_indicator']) : '*'; ?>
                         </span>
                     <?php } ?>
                 </label>
@@ -113,7 +113,7 @@ abstract class HashFormFieldType {
             $hide_label = isset($field['hide_label']) && $field['hide_label'] ? $field['hide_label'] : '';
             $container_class[] = 'hf-label-position-' . trim($label_position);
             $container_class[] = 'hf-label-alignment-' . trim($label_alignment);
-            $container_class[] = $field['classes'] ? esc_attr($field['classes']) : '';
+            $container_class[] = isset($field['classes']) && $field['classes'] ? esc_attr($field['classes']) : '';
 
             if ($field['type'] === 'radio' || $field['type'] === 'checkbox' || $field['type'] === 'image_select') {
                 $options_layout = isset($field['options_layout']) && $field['options_layout'] ? $field['options_layout'] : 'inline';
@@ -199,7 +199,7 @@ abstract class HashFormFieldType {
                 </span>
 
                 <span id="hf-editor-field-required-<?php echo esc_attr($id); ?>" class="hf-field-required<?php echo (!$field['required'] ? ' hf-hidden' : ''); ?>">
-                    <?php echo esc_html($field['required_indicator']); ?>
+                    <?php echo isset($field['required_indicator']) ? esc_html($field['required_indicator']) : '*'; ?>
                 </span>
             </label>
             <?php
@@ -371,7 +371,7 @@ abstract class HashFormFieldType {
         $html_id = $this->html_id();
         $this->hidden_field_option();
         foreach ($field['options'] as $opt_key => $opt) {
-            $field_val = $opt['label'];
+            $field_val = isset($opt['label']) ? $opt['label'] : '';
             $default_value = (array) $field['default_value'];
             $checked = in_array($field_val, $default_value) ? 'checked' : '';
             require(HASHFORM_PATH . 'admin/classes/fields/single-option.php');

@@ -27,7 +27,7 @@ class HashFormFieldSeparator extends HashFormFieldType {
     protected function input_html() {
         $field = $this->get_field();
         ?>
-        <div class="hf-separator-border" style="border-bottom-style:<?php echo esc_attr($field['border_style']); ?>; border-bottom-width:<?php echo esc_attr($field['border_width']) . 'px'; ?>;" id="field_change_style_<?php echo absint($field['id']); ?>"></div>
+        <div class="hf-separator-border" style="border-bottom-style:<?php echo isset($field['border_style']) ? esc_attr($field['border_style']) : 'solid'; ?>; border-bottom-width:<?php echo (isset($field['border_width']) ? esc_attr($field['border_width']) : '2') . 'px'; ?>;" id="field_change_style_<?php echo absint($field['id']); ?>"></div>
         <?php
     }
 

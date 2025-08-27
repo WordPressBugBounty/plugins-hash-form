@@ -25,7 +25,7 @@ class HashFormSettings {
 
     public static function display_form() {
         $settings = self::get_settings();
-        $sections = array(
+        $sections = apply_filters('hash_form_settings_sections', array(
             'captcha-settings' => array(
                 'name' => esc_html__('Captcha', 'hash-form'),
                 'icon' => 'mdi mdi-security',
@@ -33,10 +33,14 @@ class HashFormSettings {
             'email-settings' => array(
                 'name' => esc_html__('Email Settings', 'hash-form'),
                 'icon' => 'mdi mdi-email-multiple-outline'
-            ),
-        );
-        $current = 'captcha-settings'
-            ?>
+            )
+        ));
+        $vars = apply_filters('hash_form_settings_vars', array(
+            'current' => 'captcha-settings'
+        ));
+        extract($vars);
+        ?>
+
         <div class="hf-settings-wrap wrap">
             <h1></h1>
             <div id="hf-settings-wrap">
@@ -48,14 +52,18 @@ class HashFormSettings {
                         <div class="hf-body">
                             <div class="hf-fields-sidebar">
                                 <ul class="hf-settings-tab">
-                                    <?php foreach ($sections as $key => $section) { ?>
+                                    <?php
+                                    foreach ($sections as $key => $section) {
+                                        ?>
                                         <li class="<?php echo esc_attr($current === $key ? 'hf-active' : ''); ?>">
                                             <a href="#hf-<?php echo esc_attr($key); ?>">
                                                 <i class="<?php echo esc_attr($section['icon']); ?>"></i>
                                                 <?php echo wp_kses_post($section['name']); ?>
                                             </a>
                                         </li>
-                                    <?php } ?>
+                                        <?php
+                                    }
+                                    ?>
                                 </ul>
                             </div>
 
@@ -71,12 +79,23 @@ class HashFormSettings {
                                         <div id="hf-<?php echo esc_attr($key); ?>" class="<?php echo ($current === $key) ? '' : 'hf-hidden'; ?>">
                                             <h3><?php echo esc_html($section['name']); ?></h3>
                                             <?php
-                                            include(HASHFORM_PATH . 'admin/settings/' . $key . '.php');
+                                            $path = '';
+
+                                            if (file_exists(HASHFORM_PATH . 'admin/settings/' . $key . '.php')) {
+                                                $path = HASHFORM_PATH . 'admin/settings/' . $key . '.php';
+                                            } else {
+                                                $path = apply_filters('hash_form_settings_sections_path', $key);
+                                            }
+                                            include($path);
+
                                             ?>
                                         </div>
-                                    <?php } ?>
+                                        <?php
+                                    }
+                                    ?>
                                 </div>
                             </div>
+
                         </div>
                         <div class="hf-footer">
                             <input class="button button-primary button-large" type="submit" value="<?php esc_attr_e('Update', 'hash-form'); ?>" />
@@ -182,11 +201,11 @@ class HashFormSettings {
     }
 
     public static function checkbox_settings() {
-        return array();
+        return apply_filters('hash_form_settings_checkbox', array());
     }
 
     public static function default_values() {
-        return array(
+        return apply_filters('hash_form_settings_default', array(
             're_type' => 'v2',
             'pubkey_v2' => '',
             'privkey_v2' => '',
@@ -196,11 +215,11 @@ class HashFormSettings {
             're_threshold' => '0.5',
             'header_image' => '',
             'email_template' => 'template1',
-        );
+        ));
     }
 
     public static function sanitize_rules() {
-        return array(
+        return apply_filters('hash_form_settings_sanitize', array(
             're_type' => 'sanitize_text_field',
             'pubkey_v2' => 'sanitize_text_field',
             'privkey_v2' => 'sanitize_text_field',
@@ -210,7 +229,7 @@ class HashFormSettings {
             're_threshold' => 'sanitize_text_field',
             'header_image' => 'sanitize_text_field',
             'email_template' => 'sanitize_text_field',
-        );
+        ));
     }
 
 }

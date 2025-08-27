@@ -26,7 +26,7 @@ class HashFormFieldRadio extends HashFormFieldType {
         <div class="hf-choice-container">
             <?php
             foreach ($options as $option_key => $option) {
-                $label = isset($option['label']) ? $option['label'] : $option;
+                $label = isset($option['label']) ? $option['label'] : '';
                 ?>
                 <div class="hf-choice hf-checkbox">
                     <label for="<?php echo esc_attr($this->html_id('-' . $option_key)); ?>">

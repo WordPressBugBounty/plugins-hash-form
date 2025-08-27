@@ -359,6 +359,8 @@ class HashFormEntry {
             return;
         }
 
+        do_action('hash_form_before_submit', $data);
+
         $form_id = $data['form_id'];
         $form = HashFormBuilder::get_form_vars($form_id);
 

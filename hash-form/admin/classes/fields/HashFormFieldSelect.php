@@ -23,7 +23,7 @@ class HashFormFieldSelect extends HashFormFieldType {
         $field = $this->get_field();
         $options = $field['options'] ? $field['options'] : array();
         $default = $field['default_value'] ? $field['default_value'] : '';
-        $placeholder = trim($field['placeholder']);
+        $placeholder = isset($field['placeholder']) && $field['placeholder'] ? $field['placeholder'] : '';
         ?>
         <select <?php $this->field_attrs(); ?>>
             <?php
@@ -33,8 +33,9 @@ class HashFormFieldSelect extends HashFormFieldType {
                 <?php
             }
             foreach ($options as $option) {
+                $label = isset($option['label']) ? $option['label'] : '';
                 ?>
-                <option value="<?php echo esc_attr($option['label']); ?>" <?php selected(($option['label'] == $default), true); ?>><?php echo esc_html($option['label']); ?></option>
+                <option value="<?php echo esc_attr($label); ?>" <?php selected(($label == $default), true); ?>><?php echo esc_html($label); ?></option>
                 <?php
             }
             ?>

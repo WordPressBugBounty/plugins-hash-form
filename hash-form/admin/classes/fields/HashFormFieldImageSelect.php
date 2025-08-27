@@ -44,22 +44,23 @@ class HashFormFieldImageSelect extends HashFormFieldType {
         <div class="hf-choice-container">
             <?php
             foreach ($options as $option_key => $option) {
+                $label = isset($option['label']) ? $option['label'] : '';
                 ?>
                 <div class="hf-choice hf-<?php echo esc_attr($field_type); ?>">
                     <label for="<?php echo esc_attr($this->html_id('-' . $option_key)); ?>">
-                        <input type="<?php echo esc_attr($field_type); ?>" name="<?php echo esc_attr($this->html_name()) . '[]'; ?>" id="<?php echo esc_attr($this->html_id('-' . $option_key)); ?>" value="<?php echo esc_attr($option['label']); ?>" <?php checked(in_array($option['label'], $default), true); ?>>
+                        <input type="<?php echo esc_attr($field_type); ?>" name="<?php echo esc_attr($this->html_name()) . '[]'; ?>" id="<?php echo esc_attr($this->html_id('-' . $option_key)); ?>" value="<?php echo esc_attr($label); ?>" <?php checked(in_array($label, $default), true); ?>>
                         <div class="hf-field-is-container hf-field-is-has-label">
                             <div class="hf-field-is-image">
                                 <span class="hf-field-is-checked mdi-check-circle"></span>
                                 <?php
                                 if (isset($option['image_id']) && $option['image_id']) {
                                     ?>
-                                    <img src="<?php echo esc_url($this->get_url($option['image_id'])); ?>" alt="<?php echo esc_attr($option['label']); ?>">
+                                    <img src="<?php echo esc_url($this->get_url($option['image_id'])); ?>" alt="<?php echo esc_attr($label); ?>">
                                     <?php
                                 }
                                 ?>
                             </div>
-                            <div class="hf-field-is-label"><?php echo esc_html($option['label']); ?></div>
+                            <div class="hf-field-is-label"><?php echo esc_html($label); ?></div>
                         </div>
                     </label>
                 </div>

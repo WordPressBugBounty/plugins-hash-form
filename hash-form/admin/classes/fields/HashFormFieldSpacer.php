@@ -27,7 +27,7 @@ class HashFormFieldSpacer extends HashFormFieldType {
     protected function input_html() {
         $field = $this->get_field();
         ?>
-        <div id="field_change_height_<?php echo esc_attr($this->field_id); ?>" style="height:<?php echo esc_attr($field['spacer_height']) . 'px'; ?>;" <?php $this->field_attrs(); ?>></div>
+        <div id="field_change_height_<?php echo esc_attr($this->field_id); ?>" style="height:<?php echo (isset($field['spacer_height']) ? esc_attr($field['spacer_height']) : '50') . 'px'; ?>;" <?php $this->field_attrs(); ?>></div>
         <?php
     }
 

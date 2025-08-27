@@ -781,7 +781,7 @@ class HashFormBuilder {
 
     public static function get_show_hide_conditions($id) {
         $form = HashFormBuilder::get_form_vars($id);
-        $settings = $form->settings ? $form->settings : array();
+        $settings = isset($form->settings) ? $form->settings : array();
         $conditions = array();
         if (isset($settings['condition_action']) && $settings['condition_action']) {
             foreach ($settings['condition_action'] as $key => $row) {

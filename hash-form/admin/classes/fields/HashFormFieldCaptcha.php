@@ -46,7 +46,7 @@ class HashFormFieldCaptcha extends HashFormFieldType {
             return '';
         ?>
 
-        <div id="<?php echo esc_attr($this->html_id()); ?>" class="g-recaptcha" data-sitekey="<?php echo ($settings['re_type'] == 'v3' ? esc_attr($settings['pubkey_v3']) : esc_attr($settings['pubkey_v2'])); ?>" data-size="<?php echo esc_attr($this->captcha_size($settings)); ?>" data-theme="<?php echo esc_attr($this->field['captcha_theme']); ?>"></div>
+        <div id="<?php echo esc_attr($this->html_id()); ?>" class="g-recaptcha" data-sitekey="<?php echo ($settings['re_type'] == 'v3' ? esc_attr($settings['pubkey_v3']) : esc_attr($settings['pubkey_v2'])); ?>" data-size="<?php echo esc_attr($this->captcha_size($settings)); ?>" data-theme="<?php echo isset($this->field['captcha_theme']) ? esc_attr($this->field['captcha_theme']) : ''; ?>"></div>
         <?php
     }
 
@@ -70,6 +70,9 @@ class HashFormFieldCaptcha extends HashFormFieldType {
     protected function captcha_size($settings) {
         if ($settings['re_type'] == 'v3') {
             return 'invisible';
+        }
+        if (!isset($this->field['captcha_size'])) {
+            return 'normal';
         }
         return $this->field['captcha_size'] === 'default' ? 'normal' : $this->field['captcha_size'];
     }

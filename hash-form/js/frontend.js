@@ -302,7 +302,7 @@ jQuery(function ($) {
 
                 switch (compareCondition) {
                     case 'equal':
-                        if (isArrayVals ? arrayValsCompare(compareValue, arrayVals, 'equal') : (value == compareValue)) {
+                        if (isArrayVals ? arrayValsCompare(compareValue, arrayVals, 'equal') : arrayValsCompare(value, compareValue.split(/\s*,\s*/), 'equal')) {
                             if (actionField.length) {
                                 if (conditionAction == 'show') {
                                     actionField.show();
@@ -323,7 +323,7 @@ jQuery(function ($) {
                         break;
 
                     case 'not_equal':
-                        if (!(isArrayVals ? arrayValsCompare(compareValue, arrayVals, 'equal') : (value == compareValue))) {
+                        if (!(isArrayVals ? arrayValsCompare(compareValue, arrayVals, 'equal') : arrayValsCompare(value, compareValue.split(/\s*,\s*/), 'equal'))) {
                             if (actionField.length) {
                                 if (conditionAction == 'show') {
                                     actionField.show();

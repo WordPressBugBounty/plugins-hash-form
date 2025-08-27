@@ -142,8 +142,6 @@ var hashFormBuilder = hashFormBuilder || {};
             $('#hf-add-fields-panel').on('click', '.hf-add-field', hashFormBuilder.addFieldClick);
 
             hashFormBuilder.renumberMultiSteps();
-            $editorWrap.on('click', '.hf-step-item', hashFormBuilder.reorderStep);
-
             hashFormBuilder.resetToFirstStep();
         },
 
@@ -1579,27 +1577,8 @@ var hashFormBuilder = hashFormBuilder || {};
             var i, containerClass,
                 steps = $('.hf-step-num');
 
-            if (steps.length > 1) {
-                $('#hf-first-step').removeClass('hf-hidden');
-                for (i = 0; i < steps.length; i++) {
-                    steps[i].textContent = (i + 1);
-                }
-            } else {
-                $('#hf-first-step').addClass('hf-hidden');
-            }
-        },
-
-        toggleCollapseStep: function (field) {
-            var toCollapse = hashFormBuilder.getAllFieldsForStep(field.get(0).parentNode.closest('li.hf-editor-field-box').nextElementSibling);
-            hashFormBuilder.toggleStep(field, toCollapse);
-        },
-
-        reorderStep: function () {
-            var field = $(this).closest('.hf-editor-form-field[data-type="multi_step"]');
-            if (field.length) {
-                hashFormBuilder.toggleCollapseStep(field);
-            } else {
-                hashFormBuilder.toggleCollapseFirstStep();
+            for (i = 0; i < steps.length; i++) {
+                steps[i].textContent = (i + 1);
             }
         },
 
@@ -1611,38 +1590,8 @@ var hashFormBuilder = hashFormBuilder || {};
             if (firstField.getAttribute('data-type') === 'multi_step') {
                 return;
             }
-            hashFormBuilder.toggleStep(jQuery(topLevel), toCollapse);
         },
 
-        toggleStep: function (field, toCollapse) {
-            var i,
-                fieldCount = toCollapse.length;
-
-            jQuery('ul#hf-editor-fields > li.hf-editor-field-box').each(function () {
-                const tfield = $(this),
-                    isStepField = tfield.find('.hf-editor-form-field[data-type="multi_step"]');
-
-                if (isStepField.length < 1) {
-                    tfield.slideUp(150, function () {
-                        tfield.hide();
-                    });
-                }
-            });
-
-            for (i = 0; i < fieldCount; i++) {
-                const stepItem = $(toCollapse[i]);
-                if (stepItem.find('.hf-editor-form-field[data-type="multi_step"]').length > 0) {
-                    break;
-                }
-                if (i === fieldCount - 1) {
-                    stepItem.slideDown(150, function () {
-                        toCollapse.show();
-                    });
-                } else {
-                    stepItem.slideDown(150);
-                }
-            }
-        },
 
         getAllFieldsForStep: function (firstWrapper) {
             var $fieldsForPage, currentWrapper;

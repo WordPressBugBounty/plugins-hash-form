@@ -52,7 +52,7 @@ class HashFormFieldAddress extends HashFormFieldType {
         $field_key = $field['field_key'];
         $label = $sub_field['label'];
         $type = $sub_field['type'];
-        $desc = $field['desc'][$name];
+        $desc = isset($field['desc'][$name]) ? $field['desc'][$name] : '';
         $placeholder = isset($field['placeholder'][$name]) ? $field['placeholder'][$name] : '';
         $value = isset($field['default_value'][$name]) ? $field['default_value'][$name] : '';
         $disable = isset($field['disable'][$name]) ? $field['disable'][$name] : 'on';

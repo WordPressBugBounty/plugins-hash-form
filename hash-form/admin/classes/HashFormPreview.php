@@ -39,12 +39,15 @@ class HashFormPreview {
         <div class="hf-form-tempate">
             <form enctype="multipart/form-data" method="post" class="<?php echo esc_attr(implode(' ', array_filter($form_class))); ?>" id="hf-form-id-<?php echo esc_attr($form->form_key); ?>" novalidate>
                 <?php
-                require HASHFORM_PATH . 'admin/forms/style/form.php';
-                $form_msg = HashFormHelper::get_var('hf_success');
-                if ($form_msg == 'true') {
-                    ?>
-                    <span class="hf-success-msg"><?php echo esc_html($form->settings['confirmation_message']); ?></span>
-                    <?php
+                do_action('hash_form_before_form_start', $form);
+                if (apply_filters('hash_form_should_show_form', true)) {
+                    require HASHFORM_PATH . 'admin/forms/style/form.php';
+                    $form_msg = HashFormHelper::get_var('hf_success');
+                    if ($form_msg == 'true') {
+                        ?>
+                        <span class="hf-success-msg"><?php echo esc_html($form->settings['confirmation_message']); ?></span>
+                        <?php
+                    }
                 }
                 ?>
             </form>

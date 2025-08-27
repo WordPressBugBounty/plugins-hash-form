@@ -3,7 +3,6 @@ defined('ABSPATH') || die();
 ?>
 
 <div id="hf-editor-wrap" class="<?php echo ($has_fields ? 'hf-editor-has-fields' : ''); ?>">
-    <?php do_action('hashform_before_form_builder_editor_fields'); ?>
     <ul id="hf-editor-fields" class="hf-editor-sorting inside">
         <?php
         if (!empty($vars['fields'])) {

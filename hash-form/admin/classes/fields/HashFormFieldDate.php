@@ -21,7 +21,7 @@ class HashFormFieldDate extends HashFormFieldType {
     protected function input_html() {
         $field = $this->get_field();
         ?>
-        <input type="text" data-format="<?php echo esc_attr($field['date_format']); ?>" <?php $this->field_attrs(); ?> autocomplete="off" />
+        <input type="text" data-format="<?php echo isset($field['date_format']) ? esc_attr($field['date_format']) : 'MM dd, yy'; ?>" <?php $this->field_attrs(); ?> autocomplete="off" />
         <?php
     }
 

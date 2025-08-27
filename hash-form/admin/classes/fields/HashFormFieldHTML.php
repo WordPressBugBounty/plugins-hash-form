@@ -23,6 +23,8 @@ class HashFormFieldHTML extends HashFormFieldType {
 
     public function show_primary_options() {
         $field = $this->get_field();
+
+        do_action('hf_before_html_primary_option');
         ?>
         <div class="hf-form-row">
             <label><?php esc_html_e('Content', 'hash-form'); ?></label>
