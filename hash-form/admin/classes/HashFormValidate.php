@@ -87,7 +87,7 @@ class HashFormValidate {
         $hidden_arrays = array();
 
         foreach ($sh_conditions as $cond) {
-            $compare_to = $values['item_meta'][$cond['compare_to']];
+            $compare_to = isset($values['item_meta'][$cond['compare_to']]) ? $values['item_meta'][$cond['compare_to']] : '';
             $compareValue = $cond['compare_value'];
             $condition = false;
 

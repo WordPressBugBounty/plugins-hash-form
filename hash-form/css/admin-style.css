@@ -2256,3 +2256,73 @@ form.hf-success .hf-copied {
     height: 100%;
     border: none;
 }
+
+.hf-footer .button {
+    padding: 13px 20px;
+    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 1;
+    outline: 0 !important;
+    box-shadow: none !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 9;
+}
+
+.hf-footer .button.hf-button-loader:after {
+    content: "";
+    border: 2px solid #FFF;
+    border-radius: 50%;
+    border-right-color: transparent;
+    height: 8px;
+    width: 8px;
+    animation-name: hf-spin;
+    animation-duration: 0.3s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+
+
+/* Alert */
+.hf-alert {
+    width: 300px;
+    top: -100px;
+    right: 100px;
+    position: fixed;
+    padding: 20px;
+    color: #FFF;
+    border-radius: 4px;
+    font-size: 16px;
+    z-index: 99999;
+    transition: all 0.2s ease;
+    visibility: hidden;
+    background: #EEE;
+}
+
+.hf-alert .hf-alert-message {
+    padding-right: 30px;
+}
+
+.hf-alert .icofont-close-line {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.hf-alert-active {
+    top: 100px;
+    visibility: visible;
+}
+
+.hf-alert-success {
+    background-color: #42BA96;
+}
+
+.hf-alert-warning {
+    background-color: #DF4759;
+}

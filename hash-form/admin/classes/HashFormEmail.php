@@ -34,12 +34,16 @@ class HashFormEmail {
         $settings = HashFormSettings::get_settings();
         $email_template = $settings['email_template'] ? sanitize_text_field($settings['email_template']) : 'template1';
         $header_image = sanitize_text_field($settings['header_image']);
-        $email_msg = isset($form_settings['email_message']) ? sanitize_text_field($form_settings['email_message']) : '';
-        $email_table = $this->get_entry_rows($email_template);
         $form_title = $this->form->name;
         $file_img_placeholder = HASHFORM_URL . 'img/attachment.png';
 
+        $replace_keys = apply_filters('hashform_replace_keys_arr', array('email_message'));
+
+        $frm_table = '';
+        $count = 0;
+
         foreach ($metas as $item => $value) {
+            $count++;
             $reply_to_email = str_replace('#field_id_' . absint($item), $value['value'], $reply_to_email);
             $email_subject = str_replace('#field_id_' . absint($item), $value['value'], $email_subject);
             $reply_to_ar = str_replace(absint($item), $value['value'], $reply_to_ar);
@@ -78,24 +82,45 @@ class HashFormEmail {
                 foreach ($files_arr as $file) {
                     $file_info = pathinfo($file);
                     $file_name = $file_info['basename'];
-                    $file_label = $file_info['filename'];
                     $file_extension = $file_info['extension'];
-                    $upload_dir = wp_upload_dir();
-                    $attachments[] = $upload_dir['basedir'] . HASHFORM_UPLOAD_DIR . '/' . $file_name;
 
-                    $upload_value .= '<a href="' . esc_url($file) . '">';
-                    $upload_value .= '<img src="' . esc_url(in_array($file_extension, array('jpg', 'jpeg', 'png', 'gif', 'bmp')) ? $file : $file_img_placeholder) . '">';
-                    $upload_value .= '<label>' . esc_html($file_label) . '</label>';
-                    $upload_value .= '</a>';
+                    $upload_value .= '<div style="margin-bottom: 10px;padding-bottom: 10px;border-bottom: 1px solid #EEE;">';
+                    $upload_value .= '<div><a href="' . esc_url($file) . '" target="_blank">';
+                    if (in_array($file_extension, array('jpg', 'jpeg', 'png', 'gif', 'bmp'))) {
+                        $upload_value .= '<img style="width:150px" src="' . esc_url($file) . '">';
+                    } else {
+                        $upload_value .= '<img style="width: 40px;border: 1px solid #666;border-radius: 6px;padding: 4px;" src="' . esc_url($file_img_placeholder) . '">';
+                    }
+                    $upload_value .= '</a></div>';
+                    $upload_value .= '<label><a href="' . esc_url($file) . '" target="_blank">';
+                    $upload_value .= esc_html($file_name) . '</a></label>';
+                    $upload_value .= '</div>';
                 }
                 $entry_value = $upload_value;
             }
-            $email_msg = str_replace('#field_id_' . $item, $entry_value, $email_msg);
+            $frm_table .= call_user_func('HashFormEmail::' . $email_template, $value['name'], $entry_value, $count);
+
+            foreach ($replace_keys as $key) {
+                if (isset($form_settings[$key])) {
+                    $form_settings_val = $form_settings[$key];
+                    if ($form_settings_val && is_string($form_settings_val)) {
+                        $form_settings[$key] = str_replace('#field_id_' . $item, $entry_value, $form_settings_val);
+                    }
+                }
+            }
         }
 
-        $email_msg = str_replace('#form_title', $form_title, $email_msg);
-        $email_msg = str_replace('#form_details', $email_table, $email_msg);
-        $email_message = empty($email_msg) ? '' : wpautop($email_msg);
+        foreach ($replace_keys as $key) {
+            if (isset($form_settings[$key])) {
+                $form_settings_val = $form_settings[$key];
+                if ($form_settings_val && is_string($form_settings_val)) {
+                    $key_val = str_replace('#form_title', $form_title, $form_settings_val);
+                    $form_settings[$key] = str_replace('#form_details', $frm_table, $key_val);
+                }
+            }
+        }
+
+        $email_message = empty($form_settings['email_message']) ? '' : wpautop($form_settings['email_message']);
 
         ob_start();
         include(HASHFORM_PATH . 'admin/settings/email-templates/' . $email_template . '.php');
@@ -173,72 +198,6 @@ class HashFormEmail {
         }
     }
 
-    public function get_entry_rows($email_template) {
-        $settings = HashFormSettings::get_settings();
-        $entry = HashFormEntry::get_entry_vars($this->entry_id);
-        $entry_rows = '';
-        $file_img_placeholder = HASHFORM_URL . 'img/attachment.png';
-        $count = 0;
-        foreach ($entry->metas as $id => $value) {
-            $count++;
-            $title = $value['name'];
-            $entry_value = HashFormHelper::unserialize_or_decode($value['value']);
-            $entry_type = $value['type'];
-            if (is_array($entry_value)) {
-                if ($entry_type == 'name') {
-                    $entry_value = implode(' ', array_filter($entry_value));
-                } elseif ($entry_type == 'repeater_field') {
-                    $entry_val = '<table><thead><tr>';
-                    foreach (array_keys($entry_value) as $key) {
-                        $entry_val .= '<th>' . $key . '</th>';
-                    }
-                    $entry_val .= '</tr></thead><tbody>';
-                    $out = array();
-                    foreach ($entry_value as $rowkey => $row) {
-                        foreach ($row as $colkey => $col) {
-                            $out[$colkey][$rowkey] = $col;
-                        }
-                    }
-                    foreach ($out as $key => $val) {
-                        foreach ($val as $eval) {
-                            $entry_val .= '<td>' . $eval . '</td>';
-                        }
-                        $entry_val .= '</tr>';
-                    }
-                    $entry_val .= '</tbody></table>';
-                    $entry_value = $entry_val;
-                } else {
-                    $entry_value = implode(',<br>', array_filter($entry_value));
-                }
-            }
-
-            if ($entry_type == 'upload' && $entry_value) {
-                $files_arr = explode(',', $entry_value);
-                $upload_value = '';
-                foreach ($files_arr as $file) {
-                    $file_info = pathinfo($file);
-                    $file_name = $file_info['basename'];
-                    $file_extension = $file_info['extension'];
-
-                    $upload_value .= '<div style="margin-bottom: 10px;padding-bottom: 10px;border-bottom: 1px solid #EEE;">';
-                    $upload_value .= '<div><a href="' . esc_url($file) . '" target="_blank">';
-                    if (in_array($file_extension, array('jpg', 'jpeg', 'png', 'gif', 'bmp'))) {
-                        $upload_value .= '<img style="width:150px" src="' . esc_url($file) . '">';
-                    } else {
-                        $upload_value .= '<img style="width: 40px;border: 1px solid #666;border-radius: 6px;padding: 4px;" src="' . esc_url($file_img_placeholder) . '">';
-                    }
-                    $upload_value .= '</a></div>';
-                    $upload_value .= '<label><a href="' . esc_url($file) . '" target="_blank">';
-                    $upload_value .= esc_html($file_name) . '</a></label>';
-                    $upload_value .= '</div>';
-                }
-                $entry_value = $upload_value;
-            }
-            $entry_rows .= call_user_func('HashFormEmail::' . $email_template, $title, $entry_value, $count);
-        }
-        return $entry_rows;
-    }
-
     public static function template1($title, $entry_value, $count) {
         ob_start();
         ?>
@@ -302,6 +261,71 @@ class HashFormEmail {
         <?php
         $form_html = ob_get_clean();
         return $form_html;
+    }
+
+    public static function get_entry_rows($email_template, $entry_id) {
+        $settings = HashFormSettings::get_settings();
+        $entry = HashFormEntry::get_entry_vars($entry_id);
+        $entry_rows = '';
+        $file_img_placeholder = HASHFORM_URL . 'img/attachment.png';
+        $count = 0;
+        foreach ($entry->metas as $id => $value) {
+            $count++;
+            $title = $value['name'];
+            $entry_value = HashFormHelper::unserialize_or_decode($value['value']);
+            $entry_type = $value['type'];
+            if (is_array($entry_value)) {
+                if ($entry_type == 'name') {
+                    $entry_value = implode(' ', array_filter($entry_value));
+                } elseif ($entry_type == 'repeater_field') {
+                    $entry_val = '<table><thead><tr>';
+                    foreach (array_keys($entry_value) as $key) {
+                        $entry_val .= '<th>' . $key . '</th>';
+                    }
+                    $entry_val .= '</tr></thead><tbody>';
+                    $out = array();
+                    foreach ($entry_value as $rowkey => $row) {
+                        foreach ($row as $colkey => $col) {
+                            $out[$colkey][$rowkey] = $col;
+                        }
+                    }
+                    foreach ($out as $key => $val) {
+                        foreach ($val as $eval) {
+                            $entry_val .= '<td>' . $eval . '</td>';
+                        }
+                        $entry_val .= '</tr>';
+                    }
+                    $entry_val .= '</tbody></table>';
+                    $entry_value = $entry_val;
+                } else {
+                    $entry_value = implode(',<br>', array_filter($entry_value));
+                }
+            }
+
+            if ($entry_type == 'upload' && $entry_value) {
+                $files_arr = explode(',', $entry_value);
+                $upload_value = '';
+                foreach ($files_arr as $file) {
+                    $file_info = pathinfo($file);
+                    $file_name = $file_info['basename'];
+                    $file_extension = $file_info['extension'];
+
+                    $upload_value .= '<div style="margin-bottom: 10px;padding-bottom: 10px;border-bottom: 1px solid #EEE;">';
+                    $upload_value .= '<div><a href="' . esc_url($file) . '" target="_blank">';
+                    if (in_array($file_extension, array('jpg', 'jpeg', 'png', 'gif', 'bmp'))) {
+                        $upload_value .= '<img style="width:150px" src="' . esc_url($file) . '">';
+                    } else {
+                        $upload_value .= '<img style="width: 40px;border: 1px solid #666;border-radius: 6px;padding: 4px;" src="' . esc_url($file_img_placeholder) . '">';
+                    }
+                    $upload_value .= '</a></div>';
+                    $upload_value .= '<label><a href="' . esc_url($file) . '" target="_blank">';
+                    $upload_value .= esc_html($file_name) . '</a></label>';
+                    $upload_value .= '</div>';
+                }
+                $entry_value = $upload_value;
+            }
+        }
+        return $entry_rows;
     }
 
 }

@@ -6,11 +6,14 @@ class HashFormStyles {
     public function __construct() {
         add_action('init', array($this, 'register_post_type'));
         add_action('add_meta_boxes', array($this, 'settings_metabox'));
-        add_action('save_post', array($this, 'save_metabox_settings'));
+        add_action('wp_ajax_hashform_save_style_template', array($this, 'save_metabox_settings'));
         add_action('wp_ajax_hashform_get_google_font_variants', array($this, 'get_google_font_variants'));
         add_action('admin_menu', array($this, 'remove_publish_button'));
         add_action('wp_ajax_hashform_template_style_preview', array($this, 'get_form_preview_html'));
         add_action('admin_init', array($this, 'assign_hashform_style_capabilities'), 9999);
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
+        add_action('admin_footer', array($this, 'hf_alert'));
+        add_filter('post_row_actions', array($this, 'remove_edit_link'), 10, 2);
     }
 
     public function register_post_type() {
@@ -38,6 +41,8 @@ class HashFormStyles {
             'show_in_menu' => 'hashform',
             'menu_icon' => 'dashicons-cart',
             'supports' => array('title'),
+            'template' => array(),
+            'template_lock' => false,
             'capability_type' => array('hashform_style', 'hashform_styles'),
             'capabilities' => array(
                 'edit_post' => 'edit_hashform_style',
@@ -81,6 +86,13 @@ class HashFormStyles {
         }
     }
 
+    public function remove_edit_link($actions, $post) {
+        if ($post->post_type === 'hashform-styles') {
+            unset($actions['inline hide-if-no-js']); // Quick Edit
+        }
+        return $actions;
+    }
+
     public function settings_metabox() {
         add_meta_box('hashform-styles-metabox', esc_html__('Hash Form Styles', 'hash-form'), array($this, 'settings_metabox_callback'), 'hashform-styles', 'advanced', 'high');
     }
@@ -89,19 +101,35 @@ class HashFormStyles {
         include HASHFORM_PATH . 'admin/styles/settings.php';
     }
 
-    public static function save_metabox_settings($post_id) {
+    public static function save_metabox_settings() {
         if (!current_user_can('manage_options')) {
             return;
         }
 
         if (wp_verify_nonce(HashFormHelper::get_post('hashform_styles_nonce'), 'hf-styles-nonce')) {
+            $postID = HashFormHelper::get_post('post_ID');
+            $newLayout = !get_post($postID);
+
+            if ($newLayout) {
+                $postID = wp_insert_post([
+                    'ID' => $postID
+                ]);
+            }
+            wp_update_post([
+                'ID' => $postID,
+                'post_type' => 'hashform-styles',
+                'post_title' => HashFormHelper::get_post('post_title'),
+                'post_status' => 'publish'
+            ]);
             $hashform_styles = HashFormHelper::get_post('hashform_styles', 'sanitize_text_field', '', self::get_styles_sanitize_array());
-            update_post_meta($post_id, 'hashform_styles', $hashform_styles);
+            update_post_meta($postID, 'hashform_styles', $hashform_styles);
+            wp_send_json_success($newLayout ? array('redirect' => admin_url("post.php?post=$postID&action=edit")) : array('message' => esc_html__('Saved successfully!', 'hash-form')));
         }
     }
 
     public function remove_publish_button() {
         remove_meta_box('submitdiv', 'hashform-styles', 'side');
+        remove_meta_box('pageparentdiv', 'hashform-styles', 'side');
     }
 
     public static function default_font_array() {
@@ -1197,6 +1225,25 @@ class HashFormStyles {
         return $google_font_array;
     }
 
+    public function enqueue_scripts() {
+        global $post_type;
+        if ('hashform-styles' == $post_type) {
+            wp_enqueue_script('hf-style-template', HASHFORM_URL . 'js/style-template.js', array('jquery'), HASHFORM_VERSION);
+            wp_localize_script('hf-style-template', 'hf_st_obj', array(
+                'admin_url' => admin_url('post.php'),
+                'ajaxurl' => admin_url('admin-ajax.php'),
+            ));
+        }
+    }
+
+    public function hf_alert() {
+        ?>
+        <div class="hf-alert">
+            <span class="hf-alert-message"></span>
+            <i class="icofont-close-line"></i>
+        </div>
+        <?php
+    }
 }
 
 new HashFormStyles();

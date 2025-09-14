@@ -18,6 +18,10 @@
     float: none;
 }
 
+.post-type-hashform-styles #submitpost{
+    min-width: 0;
+}
+
 .post-type-hashform-styles {
     height: 100vh;
     overflow: hidden;

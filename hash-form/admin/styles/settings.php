@@ -51,13 +51,12 @@ wp_nonce_field('hf-styles-nonce', 'hashform_styles_nonce');
         <div id="submitpost" class="<?php echo esc_attr($hashform_post_class); ?>">
             <div id="major-publishing-actions">
                 <div id="publishing-action">
-                    <span class="spinner"></span>
                     <?php if ($show_publish_button) { ?>
                         <input name="original_publish" type="hidden" id="original_publish" value="Publish">
-                        <input type="submit" name="publish" id="publish" class="button button-primary button-large" value="<?php esc_html_e('Publish', 'hash-form'); ?>">
+                        <button type="submit" name="publish" id="publish" class="button button-primary button-large"><?php esc_html_e('Publish', 'hash-form'); ?></button>
                     <?php } else { ?>
                         <input name="original_publish" type="hidden" id="original_publish" value="Update">
-                        <input type="submit" name="save" id="publish" class="button button-primary button-large" value="<?php esc_html_e('Update', 'hash-form'); ?>">
+                        <button type="submit" name="save" id="publish" class="button button-primary button-large"><?php esc_html_e('Update', 'hash-form'); ?></button>
                     <?php } ?>
                 </div>
             </div>
