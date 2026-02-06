@@ -24,7 +24,7 @@ class HashFormFieldUrl extends HashFormFieldType {
         }
 
         if (!empty($value) && !preg_match('/^http(s)?:\/\/(?:localhost|(?:[\da-z\.-]+\.[\da-z\.-]+))/i', $value)) {
-            $errors['field' . $args['id']] = apply_filters('hf_translate_string', HashFormFields::get_error_msg($this->field, 'invalid'), 'Hash Form', HashFormBuilder::get_form_title($args['form_id']) . ' - ' . $args['id'] . ' - ' . 'Email Auto Responder Subject');
+            $errors['field' . $args['id']] = apply_filters('hashform_translate_string', HashFormFields::get_error_msg($this->field, 'invalid'), 'Hash Form', HashFormBuilder::get_form_title($args['form_id']) . ' - ' . $args['id'] . ' - ' . 'Email Auto Responder Subject');
         }
 
         return $errors;

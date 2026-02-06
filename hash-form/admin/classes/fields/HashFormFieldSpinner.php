@@ -26,7 +26,7 @@ class HashFormFieldSpinner extends HashFormFieldType {
         $errors = array();
         $this->remove_commas_from_number($args);
         if (!is_numeric($args['value']) && '' !== $args['value']) {
-            $errors['field' . $args['id']] = apply_filters('hf_translate_string', HashFormFields::get_error_msg($this->field, 'invalid'), 'Hash Form', HashFormBuilder::get_form_title($args['form_id']) . ' - ' . $args['id'] . ' - ' . 'Field Validation Message');
+            $errors['field' . $args['id']] = apply_filters('hashform_translate_string', HashFormFields::get_error_msg($this->field, 'invalid'), 'Hash Form', HashFormBuilder::get_form_title($args['form_id']) . ' - ' . $args['id'] . ' - ' . 'Field Validation Message');
         }
         if ($args['value'] != '') {
             $minnum = HashFormFields::get_option($this->field, 'minnum');
@@ -56,6 +56,7 @@ class HashFormFieldSpinner extends HashFormFieldType {
         if (!$result) {
             return;
         }
+        /* translators: 1: nearest number, 2: nearest number */
         $errors['field' . $args['id']] = sprintf(__('Please enter a valid value. Two nearest valid values are %1$s and %2$s', 'hash-form'), floatval($result[0]), floatval($result[1]));
     }
 

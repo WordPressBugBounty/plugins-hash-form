@@ -2,9 +2,9 @@
 Contributors: hashthemes
 Tags: form, form builder, drag and drop, contact form
 Requires at least: 6.3
-Tested up to: 6.8
-Stable tag: 1.3.4
-Requires PHP: 7.4
+Tested up to: 6.9
+Stable tag: 1.3.8
+Requires PHP: 7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,11 +97,6 @@ The easy way to install the plugin is via WordPress.org plugin directory.
 <li>Activate Plugin from "Plugins" menu in WordPress.</li>
 </ol>
 
-== Frequently Asked Questions ==
-= How can I report security bugs? =
-
-You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team help validate, triage and handle any security vulnerabilities. [Report a security vulnerability.](https://patchstack.com/database/vdp/9e5fbfa4-59bf-4372-86ea-76312f38d4a7)
-
 == Screenshots ==
 1. Form Builder Screen
 2. Form Builder Screen With Fields
@@ -116,6 +111,21 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 11. Global Email Settings Page
 
 == Changelog ==
+= 1.3.8 - 6 Dec, 2025 =
+* Compatibility test with WordPress version 6.9
+
+= 1.3.7 - 3 Dec, 2025 =
+* Translation fixes
+* Function naming prefix hf_ replaced with hashform_
+
+= 1.3.6 - 26 Nov, 2025 =
+* Zip code field not displaying in Address field - Fixed
+* Plugin Check error fixed
+
+= 1.3.5 - 10 Oct, 2025 =
+* Proper escaping functions added
+* Security fixes
+
 = 1.3.4 - 14 Sep, 2025 =
 * Ajax saving added for Hashform Style
 * Conditional logic refinements

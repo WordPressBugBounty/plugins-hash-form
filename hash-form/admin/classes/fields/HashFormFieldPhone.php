@@ -20,7 +20,7 @@ class HashFormFieldPhone extends HashFormFieldType {
         $max_length = intval(HashFormFields::get_option($this->field, 'max'));
 
         if (!preg_match($pattern, $args['value'])) {
-            $errors['field' . $args['id']] = apply_filters('hf_translate_string', HashFormFields::get_error_msg($this->field, 'invalid'), 'Hash Form', HashFormBuilder::get_form_title($args['form_id']) . ' - ' . $args['id'] . ' - ' . 'Field Validation Message');
+            $errors['field' . $args['id']] = apply_filters('hashform_translate_string', HashFormFields::get_error_msg($this->field, 'invalid'), 'Hash Form', HashFormBuilder::get_form_title($args['form_id']) . ' - ' . $args['id'] . ' - ' . 'Field Validation Message');
         }
 
         if ($max_length && strlen($args['value']) > $max_length) {

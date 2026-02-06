@@ -15,8 +15,8 @@ class HashFormFields {
     public static function get_form_fields($form_id) {
         global $wpdb;
         $form_id = absint($form_id);
-        $query = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}hashform_fields WHERE form_id=%d ORDER BY field_order", $form_id);
-        $results = $wpdb->get_results($query);
+        $results = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}hashform_fields WHERE form_id=%d ORDER BY field_order", $form_id));
+
         foreach ($results as $value) {
             foreach ($value as $key => $val) {
                 $value->$key = maybe_unserialize($val);
@@ -51,9 +51,11 @@ class HashFormFields {
     public static function include_new_field($field_type, $form_id) {
         $field_values = self::setup_new_field_vars($field_type, $form_id);
         $field_id = HashFormFields::create_row($field_values);
+
         if (!$field_id) {
             return false;
         }
+
         $field = self::get_field_vars($field_id);
         $field_array = self::covert_field_obj_to_array($field);
         $field_obj = HashFormFields::get_field_class($field_array['type'], $field_array);
@@ -62,8 +64,8 @@ class HashFormFields {
 
     public static function setup_new_field_vars($type = '', $form_id = '') {
         global $wpdb;
-        $sql = $wpdb->prepare("SELECT field_order FROM {$wpdb->prefix}hashform_fields WHERE form_id=%d ORDER BY field_order DESC", $form_id);
-        $field_count = $wpdb->get_var($sql);
+
+        $field_count = $wpdb->get_var($wpdb->prepare("SELECT field_order FROM {$wpdb->prefix}hashform_fields WHERE form_id=%d ORDER BY field_order DESC", $form_id));
         $values = self::get_default_field($type);
         $values['field_key'] = HashFormHelper::get_unique_key('hashform_fields', 'field_key');
         $values['form_id'] = $form_id;
@@ -356,14 +358,13 @@ class HashFormFields {
     public static function duplicate_fields($old_form_id, $form_id) {
         global $wpdb;
 
-        $query = $wpdb->prepare("SELECT hfi.*, hfm.name AS form_name 
+        $fields = $wpdb->get_results($wpdb->prepare("SELECT hfi.*, hfm.name AS form_name 
             FROM {$wpdb->prefix}hashform_fields hfi 
             LEFT OUTER JOIN {$wpdb->prefix}hashform_forms hfm 
             ON hfi.form_id = hfm.id 
             WHERE hfi.form_id=%d 
             ORDER BY 'field_order'", $old_form_id
-        );
-        $fields = $wpdb->get_results($query);
+        ));
 
         foreach ((array) $fields as $field) {
             $values = array();
@@ -399,23 +400,22 @@ class HashFormFields {
     public static function destroy_row($field_id) {
         global $wpdb;
         $field = self::get_field_vars($field_id);
+
         if (!$field) {
             return false;
         }
 
-        $query = $wpdb->prepare('DELETE FROM ' . $wpdb->prefix . 'hashform_entry_meta WHERE field_id=%d', absint($field_id));
-        $wpdb->query($query);
-
-        $query = $wpdb->prepare('DELETE FROM ' . $wpdb->prefix . 'hashform_fields WHERE id=%d', absint($field_id));
-        return $wpdb->query($query);
+        $wpdb->query($wpdb->prepare('DELETE FROM ' . $wpdb->prefix . 'hashform_entry_meta WHERE field_id=%d', absint($field_id)));
+        return $wpdb->query($wpdb->prepare('DELETE FROM ' . $wpdb->prefix . 'hashform_fields WHERE id=%d', absint($field_id)));
     }
 
     public static function get_field_vars($field_id) {
-        if (empty($field_id))
+        if (empty($field_id)) {
             return;
+        }
+
         global $wpdb;
-        $query = $wpdb->prepare('SELECT * FROM ' . $wpdb->prefix . 'hashform_fields WHERE id=%d', absint($field_id)); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-        $results = $wpdb->get_row($query);
+        $results = $wpdb->get_row($wpdb->prepare('SELECT * FROM ' . $wpdb->prefix . 'hashform_fields WHERE id=%d', absint($field_id)));
         if (empty($results)) {
             return $results;
         }
@@ -454,8 +454,11 @@ class HashFormFields {
         $max_length = intval(HashFormFields::get_option($field, 'max'));
 
         $defaults = array(
+            /* translators: 1: field name */
             'invalid' => sprintf(esc_html__('%s is invalid.', 'hash-form'), $field_name),
+            /* translators: 1: field name */
             'blank' => sprintf(esc_html__('%s is required.', 'hash-form'), $field_name),
+            /* translators: 1: max length of characters */
             'max_char' => sprintf(esc_html__('%s characters only allowed.', 'hash-form'), $max_length),
         );
         $msg = HashFormFields::get_option($field, $error);

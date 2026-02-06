@@ -8,7 +8,12 @@ defined('ABSPATH') || die();
     <input type="hidden" name="field_options[grid_id_<?php echo absint($field_id); ?>]" value="<?php echo isset($field['grid_id']) ? esc_attr($field['grid_id']) : ''; ?>" id="hf-grid-class-<?php echo esc_attr($field_id); ?>" />
 
     <div class="hf-field-panel-header">
-        <h3><?php printf(esc_html__('%s Field', 'hash-form'), esc_html($type_name)); ?></h3>
+        <h3>
+            <?php
+            /* translators: 1: field name */
+            printf(esc_html__('%s Field', 'hash-form'), esc_html($type_name));
+            ?>
+        </h3>
         <div class="hf-field-panel-id">(ID <?php echo esc_html($field_id); ?>)</div>
     </div>
 
@@ -17,8 +22,16 @@ defined('ABSPATH') || die();
         if ($field_type === 'captcha' && !HashFormFieldCaptcha::should_show_captcha()) {
             ?>
             <div class="hf-form-row">
-                <?php printf(esc_html__('Captchas will not work untill the Site and Secret Keys are set up. Add Keys %1$shere%2$s.', 'hash-form'), '<a href="?page=hashform-settings" target="_blank">', '</a>'); ?>
-                <label class="hf-field-desc"><?php printf(esc_html__('Tutorial to %1$sGenerate Site and Secret Keys%2$s', 'hash-form'), '<a href="https://hashthemes.com/articles/generate-site-key-and-secret-key-from-google-recaptcha/" target="_blank">', '</a>'); ?></label>
+                <?php
+                /* translators: 1: link open, 2: link close */
+                printf(esc_html__('Captchas will not work untill the Site and Secret Keys are set up. Add Keys %1$shere%2$s.', 'hash-form'), '<a href="?page=hashform-settings" target="_blank">', '</a>');
+                ?>
+                <label class="hf-field-desc">
+                    <?php
+                    /* translators: 1: link open, 2: link close */
+                    printf(esc_html__('Tutorial to %1$sGenerate Site and Secret Keys%2$s', 'hash-form'), '<a href="https://hashthemes.com/articles/generate-site-key-and-secret-key-from-google-recaptcha/" target="_blank">', '</a>');
+                    ?>
+                </label>
             </div>
             <?php
         }
@@ -140,7 +153,7 @@ defined('ABSPATH') || die();
                 </select>
             </div>
             <?php
-            $columns = array(
+            $hashform_columns = array(
                 'small' => esc_html__('Small', 'hash-form'),
                 'medium' => esc_html__('Medium', 'hash-form'),
                 'large' => esc_html__('Large', 'hash-form'),
@@ -150,9 +163,9 @@ defined('ABSPATH') || die();
             <div class="hf-form-row">
                 <label><?php esc_html_e('Image Size', 'hash-form'); ?></label>
                 <select name="field_options[image_size_<?php echo absint($field_id); ?>]">
-                    <?php foreach ($columns as $col => $col_label) { ?>
-                        <option value="<?php echo esc_attr($col); ?>" <?php selected($field['image_size'], $col); ?>>
-                            <?php echo esc_html($col_label); ?>
+                    <?php foreach ($hashform_columns as $hashform_col => $hashform_col_label) { ?>
+                        <option value="<?php echo esc_attr($hashform_col); ?>" <?php selected($field['image_size'], $hashform_col); ?>>
+                            <?php echo esc_html($hashform_col_label); ?>
                         </option>
                     <?php } ?>
                 </select>
@@ -161,27 +174,27 @@ defined('ABSPATH') || die();
         }
 
         if ($field_type === 'image') {
-            $image_id = $image = '';
+            $hashform_image_id = $hashform_image = '';
             if (isset($field['image_id'])) {
-                $image_id = $field['image_id'];
-                $image = wp_get_attachment_image_src($field['image_id'], 'full');
-                $image = isset($image[0]) ? $image[0] : '';
+                $hashform_image_id = $field['image_id'];
+                $hashform_image = wp_get_attachment_image_src($field['image_id'], 'full');
+                $hashform_image = isset($hashform_image[0]) ? $hashform_image[0] : '';
             }
             ?>
             <div class="hf-form-row">
                 <label><?php esc_html_e('Select Image', 'hash-form'); ?></label>
                 <div class="hf-image-preview">
-                    <input type="hidden" class="hf-image-id" name="field_options[image_id_<?php echo esc_attr($field_id); ?>]" id="hf-field-image-<?php echo absint($field_id); ?>" value="<?php echo esc_attr($image_id); ?>" />
-                    <div class="hf-image-preview-wrap<?php echo ($image ? '' : ' hf-hidden'); ?>">
+                    <input type="hidden" class="hf-image-id" name="field_options[image_id_<?php echo esc_attr($field_id); ?>]" id="hf-field-image-<?php echo absint($field_id); ?>" value="<?php echo esc_attr($hashform_image_id); ?>" />
+                    <div class="hf-image-preview-wrap<?php echo ($hashform_image ? '' : ' hf-hidden'); ?>">
                         <div class="hf-image-preview-box">
-                            <img id="hf-image-preview-<?php echo absint($field_id); ?>" src="<?php echo esc_url($image); ?>" />
+                            <img id="hf-image-preview-<?php echo absint($field_id); ?>" src="<?php echo esc_url($hashform_image); ?>" />
                         </div>
                         <button type="button" class="button hf-remove-image">
                             <span class="mdi mdi-trash-can-outline"></span>
                             <?php esc_html_e('Delete', 'hash-form'); ?>
                         </button>
                     </div>
-                    <button type="button" class="button hf-choose-image<?php echo ($image ? ' hf-hidden' : ''); ?>">
+                    <button type="button" class="button hf-choose-image<?php echo ($hashform_image ? ' hf-hidden' : ''); ?>">
                         <span class="mdi mdi-tray-arrow-up"></span>
                         <?php esc_attr_e('Upload image', 'hash-form'); ?>
                     </button>

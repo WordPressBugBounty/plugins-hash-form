@@ -20,7 +20,12 @@ class HashFormSmtp {
                 <h3><?php esc_html_e("Why Use SMTP?", "hash-form"); ?></h3>
                 <p><?php esc_html_e("WordPress’ email feature uses the Hypertext Preprocessor (PHP) mail() function by default. However, it is not the most effective tool as it may trigger spam filters and send error messages to its users.", "hash-form"); ?></p>
                 <p><?php esc_html_e("The Simple Mail Transfer Protocol (SMTP) server is better for WordPress website owners who frequently exchange emails with their visitors. It offers high security and deliverability to ensure properly sent emails. To use it, connect your email service to a third-party SMTP provider and install an SMTP plugin on your WordPress site.", "hash-form"); ?></p>
-                <p><?php printf(esc_html__("See Detail Article %1shere%2s", "hash-form"), '<a href="https://hashthemes.com/what-is-smtp-and-best-wordpress-smtp-plugins/" target="_blank">', '</a>'); ?></p>
+                <p>
+                    <?php
+                    /* translators: 1: link open, 2:link close */
+                    echo sprintf(esc_html__('See Detail Article %1$shere%2$s', 'hash-form'), '<a href="https://hashthemes.com/what-is-smtp-and-best-wordpress-smtp-plugins/" target="_blank">', '</a>');
+                    ?>
+                </p>
                 <?php
                 $all_plugins = get_plugins();
                 if (!array_key_exists('wp-mail-smtp/wp_mail_smtp.php', $all_plugins)) {

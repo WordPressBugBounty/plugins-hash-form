@@ -29,7 +29,7 @@ class HashFormFieldAddress extends HashFormFieldType {
                 'type' => 'text',
                 'label' => esc_html__('State/Province', 'hash-form')
             ),
-            'zip' => array(
+            'postal' => array(
                 'type' => 'number',
                 'label' => esc_html__('Zip/Postal', 'hash-form')
             ),
@@ -62,7 +62,6 @@ class HashFormFieldAddress extends HashFormFieldType {
             <div class="hf-sub-field-label">
                 <?php echo esc_html($label); ?>
                 <label class="hf-field-show-hide">
-                    <input type="hidden" name="field_options[disable_<?php echo esc_attr($field_id); ?>][<?php echo esc_attr($name); ?>]" value="on">
                     <input type="checkbox" name="field_options[disable_<?php echo esc_attr($field_id); ?>][<?php echo esc_attr($name); ?>]" id="hf-disable-<?php echo esc_attr($name); ?>-<?php echo esc_attr($field_id); ?>" data-changeme="hf-subfield-disable-<?php echo esc_attr($name); ?>-<?php echo esc_attr($field_id); ?>" value="off" data-disablefield="hf-subfield-container-<?php echo esc_attr($name); ?>-<?php echo esc_attr($field_id); ?>" <?php checked(($disable == 'off'), true) ?>>
                     <label for="hf-disable-<?php echo esc_attr($name); ?>-<?php echo esc_attr($field_id); ?>"></label>
                 </label>
@@ -131,13 +130,13 @@ class HashFormFieldAddress extends HashFormFieldType {
                 $label = isset($field['desc'][$name]) ? $field['desc'][$name] : '';
                 $type = $sub_field['type'];
 
-                if (is_admin() || $disable == 'on') {
+                if (is_admin() || !($disable == 'off')) {
                     ?>
                     <div id="hf-subfield-container-<?php echo esc_attr($name) . '-' . esc_attr($field_id); ?>" class="hf-subfield-element hf-subfield-element-<?php echo esc_attr($name); ?> hf-grid-6 <?php echo esc_attr($class); ?>" data-sub-field-name="<?php echo esc_attr($name); ?>">
                         <?php
                         if ($type !== 'select') {
                             ?>
-                            <input type="<?php echo esc_attr($type); ?>" id="hf-field-<?php echo esc_attr($field_key); ?>-<?php echo esc_attr($name); ?>" value="<?php echo esc_attr(apply_filters('hf_translate_string', $value, 'Hash Form', $field['id'] . ' - ' . ucwords($name) . ' Value')); ?>" name="<?php echo esc_attr($this->html_name()) . '[' . esc_attr($name) . ']'; ?>" placeholder="<?php echo esc_attr(apply_filters('hf_translate_string', $placeholder, 'Hash Form', $field['id'] . ' - ' . ucwords($name) . ' Placeholder')); ?>">
+                            <input type="<?php echo esc_attr($type); ?>" id="hf-field-<?php echo esc_attr($field_key); ?>-<?php echo esc_attr($name); ?>" value="<?php echo esc_attr(apply_filters('hashform_translate_string', $value, 'Hash Form', $field['id'] . ' - ' . ucwords($name) . ' Value')); ?>" name="<?php echo esc_attr($this->html_name()) . '[' . esc_attr($name) . ']'; ?>" placeholder="<?php echo esc_attr(apply_filters('hashform_translate_string', $placeholder, 'Hash Form', $field['id'] . ' - ' . ucwords($name) . ' Placeholder')); ?>">
                             <?php
                         } else {
                             $this->get_country_select(HashFormHelper::get_countries());
@@ -145,7 +144,7 @@ class HashFormFieldAddress extends HashFormFieldType {
                         ?>
                         <div class="hf-field-desc" id="hf-subfield-desc-<?php echo esc_attr($name); ?>-<?php echo esc_attr($field_id); ?>">
                             <?php
-                            echo esc_html(apply_filters('hf_translate_string', $label, 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . ucwords($name) . ' Label'));
+                            echo esc_html(apply_filters('hashform_translate_string', $label, 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . ucwords($name) . ' Label'));
                             ?>
                         </div>
                     </div>

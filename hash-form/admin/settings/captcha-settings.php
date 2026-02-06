@@ -3,8 +3,18 @@ defined('ABSPATH') || die();
 
 $captcha_lang = array('en' => 'English', 'af' => 'Afrikaans', 'am' => 'Amharic', 'ar' => 'Arabic', 'hy' => 'Armenian', 'az' => 'Azerbaijani', 'eu' => 'Basque', 'bn' => 'Bengali', 'bg' => 'Bulgarian', 'ca' => 'Catalan', 'zh-HK' => 'Chinese Hong Kong', 'zh-CN' => 'Chinese Simplified', 'zh-TW' => 'Chinese Traditional', 'hr' => 'Croatian', 'cs' => 'Czech', 'da' => 'Danish', 'nl' => 'Dutch', 'en-GB' => 'English/UK', 'et' => 'Estonian', 'fa' => 'Farsi/Persian', 'fil' => 'Filipino', 'fi' => 'Finnish', 'fr' => 'French', 'fr-CA' => 'French/Canadian', 'gl' => 'Galician', 'ka' => 'Georgian', 'de' => 'German', 'de-AT' => 'German/Austria', 'de-CH' => 'German/Switzerland', 'el' => 'Greek', 'gu' => 'Gujarati', 'he' => 'Hebrew', 'iw' => 'Hebrew', 'hi' => 'Hindi', 'hu' => 'Hungarian', 'is' => 'Icelandic', 'id' => 'Indonesian', 'it' => 'Italian', 'ja' => 'Japanese', 'kn' => 'Kannada', 'ko' => 'Korean', 'lo' => 'Laothian', 'lv' => 'Latvian', 'lt' => 'Lithuanian', 'ml' => 'Malayalam', 'ms' => 'Malaysian', 'mr' => 'Marathi', 'no' => 'Norwegian', 'pl' => 'Polish', 'pt' => 'Portuguese', 'pt-BR' => 'Portuguese/Brazilian', 'pt-PT' => 'Portuguese/Portugal', 'ro' => 'Romanian', 'ru' => 'Russian', 'sr' => 'Serbian', 'si' => 'Sinhalese', 'sk' => 'Slovak', 'sl' => 'Slovenian', 'es' => 'Spanish', 'es-419' => 'Spanish/Latin America', 'sw' => 'Swahili', 'sv' => 'Swedish', 'ta' => 'Tamil', 'te' => 'Telugu', 'th' => 'Thai', 'tr' => 'Turkish', 'uk' => 'Ukrainian', 'ur' => 'Urdu', 'vi' => 'Vietnamese', 'zu' => 'Zulu');
 ?>
-<p><?php printf(esc_html__('%1$s requires a Site and Secret keys. Sign up for a %2$sfree %1$s key%3$s.', 'hash-form'), esc_html('reCAPTCHA'), '<a href="' . esc_url('https://www.google.com/recaptcha/') . '" target="_blank">', '</a>'); ?></p>
-<p><?php printf(esc_html__('Tutorial to %1$sGenerate Site and Secret Keys%2$s', 'hash-form'), '<a href="https://hashthemes.com/articles/generate-site-key-and-secret-key-from-google-recaptcha/" target="_blank">', '</a>'); ?></p>
+<p>
+    <?php
+    /* translators: 1: recatpcha text, 2: link open, 3: link close */
+    printf(esc_html__('%1$s requires a Site and Secret keys. Sign up for a %2$sfree %1$s key%3$s.', 'hash-form'), esc_html('reCAPTCHA'), '<a href="' . esc_url('https://www.google.com/recaptcha/') . '" target="_blank">', '</a>');
+    ?>
+</p>
+<p>
+    <?php
+    /* translators: 1: link open, 2: link close */
+    printf(esc_html__('Tutorial to %1$sGenerate Site and Secret Keys%2$s', 'hash-form'), '<a href="https://hashthemes.com/articles/generate-site-key-and-secret-key-from-google-recaptcha/" target="_blank">', '</a>');
+    ?>
+</p>
 
 <div class="hf-form-container hf-grid-container">
     <div class="hf-settings-row">

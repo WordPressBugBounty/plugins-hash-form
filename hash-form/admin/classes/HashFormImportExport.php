@@ -28,8 +28,7 @@ class HashFormImportExport {
 
         global $wpdb;
 
-        $query = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}hashform_forms WHERE id=%d", $id);
-        $forms = $wpdb->get_results($query);
+        $forms = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}hashform_forms WHERE id=%d", $id));
 
         foreach ($forms as $form) {
             $form_styles = $form->styles ? unserialize($form->styles) : [];
@@ -70,7 +69,7 @@ class HashFormImportExport {
 
             nocache_headers();
             header('Content-Type: application/json; charset=utf-8');
-            header('Content-Disposition: attachment; filename=hf-' . $id . '-' . date('m-d-Y') . '.json');
+            header('Content-Disposition: attachment; filename=hf-' . $id . '-' . gmdate('m-d-Y') . '.json');
             header("Expires: 0");
 
             echo wp_json_encode($exdat);
@@ -100,7 +99,7 @@ class HashFormImportExport {
 
             nocache_headers();
             header('Content-Type: application/json; charset=utf-8');
-            header('Content-Disposition: attachment; filename=hf-style-' . $id . '-' . date('m-d-Y') . '.json');
+            header('Content-Disposition: attachment; filename=hf-style-' . $id . '-' . gmdate('m-d-Y') . '.json');
             header("Expires: 0");
 
             echo wp_json_encode($hashform_styles);
@@ -125,25 +124,25 @@ class HashFormImportExport {
 
         global $wpdb;
 
-        $filename = sanitize_text_field(wp_unslash($_FILES['hashform_import_file']['name']));
+        $filename = isset($_FILES['hashform_import_file']['name']) ? sanitize_text_field(wp_unslash($_FILES['hashform_import_file']['name'])) : '';
         $extension = explode('.', $filename);
         $extension = end($extension);
 
         if ($extension != 'json') {
-            wp_die(esc_html__('Please upload a valid .json file'));
+            wp_die(esc_html__('Please upload a valid .json file', 'hash-form'));
         }
 
-        $hashform_import_file = sanitize_text_field($_FILES['hashform_import_file']['tmp_name']);
+        $hashform_import_file = isset($_FILES['hashform_import_file']['tmp_name']) ? sanitize_text_field($_FILES['hashform_import_file']['tmp_name']) : '';
 
         if (empty($hashform_import_file)) {
-            wp_die(esc_html__('Please upload a file to import'));
+            wp_die(esc_html__('Please upload a file to import', 'hash-form'));
         }
 
         // Retrieve the settings from the file and convert the json object to an array.
         $imdat = json_decode(file_get_contents($hashform_import_file), true);
 
         if (!(isset($imdat['options']) && isset($imdat['settings']) && isset($imdat['styles']))) {
-            wp_die(esc_html__('Please upload a valid file to import'));
+            wp_die(esc_html__('Please upload a valid file to import', 'hash-form'));
         }
 
         $options = HashFormHelper::recursive_parse_args($imdat['options'], HashFormHelper::get_form_options_default());
@@ -181,8 +180,7 @@ class HashFormImportExport {
         }
 
         $wpdb->update($wpdb->prefix . 'hashform_forms', $form, array('id' => $form_id));
-        $query = $wpdb->prepare("DELETE FROM {$wpdb->prefix}hashform_fields WHERE form_id=%d", $form_id);
-        $wpdb->query($query);
+        $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->prefix}hashform_fields WHERE form_id=%d", $form_id));
 
         if (isset($imdat['field']) && is_array($imdat['field']) && !empty($imdat['field'])) {
             foreach ($imdat['field'] as $field) {
@@ -218,20 +216,18 @@ class HashFormImportExport {
             return;
         }
 
-        global $wpdb;
-
-        $filename = sanitize_text_field(wp_unslash($_FILES['hashform_import_file']['name']));
+        $filename = isset($_FILES['hashform_import_file']['name']) ? sanitize_text_field(wp_unslash($_FILES['hashform_import_file']['name'])) : '';
         $extension = explode('.', $filename);
         $extension = end($extension);
 
         if ($extension != 'json') {
-            wp_die(esc_html__('Please upload a valid .json file'));
+            wp_die(esc_html__('Please upload a valid .json file', 'hash-form'));
         }
 
-        $hashform_import_file = sanitize_text_field($_FILES['hashform_import_file']['tmp_name']);
+        $hashform_import_file = isset($_FILES['hashform_import_file']['tmp_name']) ? sanitize_text_field($_FILES['hashform_import_file']['tmp_name']) : '';
 
         if (empty($hashform_import_file)) {
-            wp_die(esc_html__('Please upload a file to import'));
+            wp_die(esc_html__('Please upload a file to import', 'hash-form'));
         }
 
         // Retrieve the settings from the file and convert the json object to an array.

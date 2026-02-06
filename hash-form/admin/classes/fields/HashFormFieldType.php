@@ -63,7 +63,7 @@ abstract class HashFormFieldType {
             <?php if ($display['label'] && !empty(trim($field['name'])) && (!($field['type'] == 'captcha' && $settings['re_type'] === 'v3'))) { ?>
                 <label class="hf-field-label <?php echo (!$field['name'] || ((isset($field['hide_label']) && $field['hide_label']))) ? 'hf-hidden' : ''; ?>">
                     <?php
-                    echo esc_html(apply_filters('hf_translate_string', $field['name'], 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Label'));
+                    echo esc_html(apply_filters('hashform_translate_string', $field['name'], 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Label'));
                     ?>
                     <?php if (!!$field['required']) { ?>
                         <span class="hf-field-required" aria-hidden="true">
@@ -80,7 +80,7 @@ abstract class HashFormFieldType {
                     ?>
                     <div class="hf-field-desc">
                         <?php
-                        echo esc_html(apply_filters('hf_translate_string', $field['description'], 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Description'));
+                        echo esc_html(apply_filters('hashform_translate_string', $field['description'], 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Description'));
                         ?>
                     </div>
                 <?php } ?>
@@ -168,7 +168,7 @@ abstract class HashFormFieldType {
         ?>
         <li id="hf-editor-field-id-<?php echo esc_attr($field['id']); ?>" class="<?php echo esc_attr(implode(' ', $classes)); ?>" data-fid="<?php echo esc_attr($field['id']); ?>" data-formid="<?php echo esc_attr('divider' === $field['type'] ? esc_attr($field['form_select']) : esc_attr($field['form_id'])); ?>" data-type="<?php echo esc_attr($field['type']); ?>">
 
-            <div id="hf-editor-field-container-<?php echo esc_attr($field['id']); ?>" class="hf-editor-field-container" style="<?php echo ($field_max_width ? ('--hf-width:' . esc_attr($field_max_width) . esc_attr($field_max_width_unit) . ';') : ''); ?><?php echo ((isset($image_max_width) && $image_max_width) ? '--hf-image-width: ' . esc_attr($image_max_width) . esc_attr($image_max_width_unit) : ''); ?>">
+            <div id="hf-editor-field-container-<?php echo esc_attr($field['id']); ?>" class="hf-editor-field-container" style="<?php echo ($field_max_width ? ('--hf-width:' . esc_attr($field_max_width) . esc_attr($field_max_width_unit)) : ''); ?><?php echo ((isset($image_max_width) && $image_max_width) ? '--hf-image-width: ' . esc_attr($image_max_width) . esc_attr($image_max_width_unit) : ''); ?>">
                 <div class="hf-editor-action-buttons">
                     <a href="#" class="hf-editor-move-action" title="<?php esc_attr_e('Move Field', 'hash-form'); ?>" data-container="body" aria-label="<?php esc_attr_e('Move Field', 'hash-form'); ?>"><span class="mdi mdi-cursor-move"></span></a>
                     <a href="#" class="hf-editor-delete-action" title="<?php esc_attr_e('Delete', 'hash-form'); ?>" data-container="body" aria-label="<?php esc_attr_e('Delete', 'hash-form'); ?>" data-deletefield="<?php echo esc_attr($field['id']); ?>"><span class="mdi mdi-trash-can-outline"></span></a>
@@ -322,7 +322,7 @@ abstract class HashFormFieldType {
         $field_type = $field['type'];
         $field_id = $field['id'];
         $all_field_types = HashFormFields::field_selection();
-        $type_name = $all_field_types[$field_type]['name'];
+        $type_name = isset($all_field_types[$field_type]['name']) ? $all_field_types[$field_type]['name'] : esc_html__('Text', 'hash-form');
 
         include(HASHFORM_PATH . 'admin/classes/fields/settings.php');
     }
@@ -399,6 +399,7 @@ abstract class HashFormFieldType {
         ?>
         <h4 class="hf-field-heading">
             <?php
+            /* translators: 1: field name */
             printf(esc_html__('%s Options', 'hash-form'), esc_html($field['name']));
             ?>
         </h4>
@@ -452,7 +453,7 @@ abstract class HashFormFieldType {
                 'line2' => '',
                 'city' => '',
                 'state' => '',
-                'zip' => '',
+                'postal' => '',
                 'country' => ''
             )
         );

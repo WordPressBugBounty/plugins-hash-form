@@ -9,21 +9,50 @@ class HashFormUploadedFileXhr {
      * Save the file to the specified path
      * @return boolean TRUE on success
      */
-    function save($path) {
-        $input = fopen("php://input", "r");
-        $temp = tmpfile();
-        $realSize = stream_copy_to_stream($input, $temp);
-        fclose($input);
+    public function save($path) {
+        global $wp_filesystem;
 
-        if ($realSize != $this->getSize()) {
+        // Initialize the WordPress Filesystem API
+        if (empty($wp_filesystem)) {
+            require_once(ABSPATH . '/wp-admin/includes/file.php');
+            // Attempt direct connection; if it fails, this might prompt for credentials elsewhere
+            if (!WP_Filesystem()) {
+                // Log error or handle failure to initialize filesystem
+                // error_log('Failed to initialize WP_Filesystem.');
+                return false;
+            }
+        }
+
+        // Read the raw input stream into memory
+        // (This replaces the initial fopen("php://input"), stream_copy_to_stream, and fclose($input))
+        $raw_input_data = file_get_contents('php://input');
+
+        if ($raw_input_data === false) {
             return false;
         }
 
-        $target = fopen($path, "w");
-        fseek($temp, 0, SEEK_SET);
-        stream_copy_to_stream($temp, $target);
-        fclose($target);
-        return true;
+        $realSize = strlen($raw_input_data);
+
+        // Perform size validation
+        if ($realSize != $this->getSize()) {
+            // Clear the data from memory
+            $raw_input_data = null;
+            return false;
+        }
+
+        // Write data to the target file using WP_Filesystem
+        // (This replaces tmpfile(), fseek(), fopen($path), stream_copy_to_stream, and fclose($target))
+        $result = $wp_filesystem->put_contents(
+            $path,
+            $raw_input_data,
+            FS_CHMOD_FILE // Optional: Sets recommended file permissions (e.g., 0644)
+        );
+
+        // Clear the data from memory after writing
+        $raw_input_data = null;
+
+        // Return success status
+        return $result; // put_contents returns true on success, false on failure.
     }
 
     function getName() {
@@ -84,7 +113,7 @@ class HashFormFileUploader {
 
         if ($postSize < $this->sizeLimit || $uploadSize < $this->sizeLimit) {
             $size = max(1, $this->sizeLimit / 1024 / 1024) . 'M';
-            die("{'error':'increase post_max_size and upload_max_filesize to $size'}");
+            die(esc_html("{'error':'increase post_max_size and upload_max_filesize to $size'}"));
         }
     }
 
@@ -110,7 +139,18 @@ class HashFormFileUploader {
         $upload_url = $upload_url . '/temp';
         $unallowed_extensions = array('php', 'exe', 'ini', 'perl', 'asp');
 
-        if (!is_writable($uploadDirectory)) {
+        global $wp_filesystem;
+
+        // Initialize the WP_Filesystem if not already done
+        if (!function_exists('WP_Filesystem')) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+        }
+
+        if (!$wp_filesystem) {
+            WP_Filesystem();
+        }
+
+        if (!$wp_filesystem->is_writable($uploadDirectory)) {
             return array('error' => esc_html__('Server error. Upload directory isn\'t writable.', 'hash-form'));
         }
 
@@ -133,7 +173,7 @@ class HashFormFileUploader {
         $ext = @$pathinfo['extension'];  // hide notices if extension is empty
 
         if (in_array(strtolower($ext), $unallowed_extensions)) {
-            return array('error' => esc_html__('This type of file is not allowed.'));
+            return array('error' => esc_html__('This type of file is not allowed.', 'hash-form'));
         }
 
         if ($this->allowedExtensions && !in_array(strtolower($ext), $this->allowedExtensions)) {
@@ -144,7 +184,7 @@ class HashFormFileUploader {
         if (!$replaceOldFile) {
             /// don't overwrite previous files that were uploaded
             while (file_exists($uploadDirectory . $filename . '.' . $ext)) {
-                $filename .= rand(10, 99);
+                $filename .= wp_rand(10, 99);
             }
         }
 
@@ -162,13 +202,24 @@ class HashFormFileUploader {
     }
 
     protected function ensureUploadDirectory($path) {
+        global $wp_filesystem;
+
+        // Initialize the WP_Filesystem if not already done
+        if (!function_exists('WP_Filesystem')) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+        }
+
+        if (!$wp_filesystem) {
+            WP_Filesystem();
+        }
+
         if (!is_dir($path)) {
-            mkdir($path, 0755);
+            $wp_filesystem->mkdir($path, 0755);
             file_put_contents($path . '/.htaccess', file_get_contents(HASHFORM_PATH . 'admin/stubs/htaccess.stub'));
         }
 
         if (!is_dir($path . '/temp')) {
-            mkdir($path . '/temp', 0755);
+            $wp_filesystem->mkdir($path . '/temp', 0755);
             file_put_contents($path . '/temp/.htaccess', file_get_contents(HASHFORM_PATH . 'admin/stubs/htaccess.stub'));
         }
 

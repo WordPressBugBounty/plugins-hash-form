@@ -22,7 +22,7 @@ class HashFormBlock {
 
         wp_register_style('hfb-style', HASHFORM_URL . 'css/form-block.css', array(), HASHFORM_VERSION);
         wp_register_style('hfb-editor', HASHFORM_URL . 'css/editor.css', array(), HASHFORM_VERSION);
-        wp_register_script('hfb-blocks', HASHFORM_URL . 'build/index.js', $asset_file['dependencies'], $asset_file['version']);
+        wp_register_script('hfb-blocks', HASHFORM_URL . 'build/index.js', $asset_file['dependencies'], $asset_file['version'], false);
         wp_localize_script('hfb-blocks', 'hash_form_block_data', array(
             'forms' => $all_forms,
             'create_form_link' => esc_url(add_query_arg('page', 'hashform', admin_url('admin.php')))
@@ -423,9 +423,11 @@ class HashFormBlock {
             self::$stylesheet = $this->get_stylesheet($attr);
             add_action('wp_footer', array($this, 'print_stylesheet'), 11);
         }
+
         if (!is_admin()) {
-            echo '<div ' . get_block_wrapper_attributes(['class' => 'wp-block-hash-form', 'id' => $attr['id']]) . '>';
+            echo '<div ' . get_block_wrapper_attributes(['class' => 'wp-block-hash-form', 'id' => esc_attr($attr['id'])]) . '>';
         }
+
         echo do_shortcode('[hashform id="' . $form_id . '"]');
         if (!is_admin()) {
             echo '</div>';
@@ -461,17 +463,21 @@ class HashFormBlock {
     public function get_stylesheet($blockAttrs) {
         $block_css_arr = [];
         $block_css = '';
+
         foreach ($blockAttrs as $attrs => $value) {
             $family = '';
             $weight = '';
+
             if (str_contains($attrs, 'Family')) {
                 $family = $value;
                 $weight = $blockAttrs[str_replace('Family', 'Weight', $attrs)];
             }
+
             if ($family && $family != 'inherit') {
                 self::blocks_google_font($family, $weight ? str_replace('italic', 'i', $weight) : 400);
             }
         }
+
         // Get CSS for the Block.
         if (isset($blockAttrs['hfStyle'])) {
             $block_css_arr[$blockAttrs['id']] = is_array($blockAttrs['hfStyle']) ? '' : $blockAttrs['hfStyle'];
@@ -500,6 +506,7 @@ class HashFormBlock {
                         array_push(self::$gfonts[$font_family]['fontvariants'], $font_weight);
                     }
                 }
+
                 if (isset($font_subset) && !empty($font_subset)) {
                     if (!in_array($font_subset, self::$gfonts[$font_family]['fontsubsets'], true)) {
                         array_push(self::$gfonts[$font_family]['fontsubsets'], $font_subset);
@@ -519,7 +526,7 @@ class HashFormBlock {
         wp_enqueue_style('sb-style-frontend');
         wp_add_inline_style('sb-style-frontend', $this->strip_whitespace(self::$stylesheet));
         $frontend_gfonts = $this->frontend_gfonts();
-        wp_enqueue_style('sb-fonts-frontend', $frontend_gfonts, array(), NULL);
+        wp_enqueue_style('sb-fonts-frontend', $frontend_gfonts, array(), HASHFORM_VERSION);
     }
 
     public function strip_whitespace($css) {

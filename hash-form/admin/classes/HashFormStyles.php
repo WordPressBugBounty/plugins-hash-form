@@ -393,14 +393,14 @@ class HashFormStyles {
     public static function custom_fonts() {
         $fonts = array();
 
-        $query = array(
+        $sqlquery = array(
             'post_type' => 'hashform-styles',
             'post_status' => array('publish', 'private'),
             'numberposts' => -1,
             'orderby' => 'title',
             'order' => 'ASC',
         );
-        $styles = get_posts($query);
+        $styles = get_posts($sqlquery);
 
         if ($styles) {
             foreach ($styles as $style) {
@@ -597,7 +597,7 @@ class HashFormStyles {
                         echo '--hf' . esc_attr($prefix) . '-font-weight : ' . esc_attr($weight) . ';';
                     }
 
-                    echo '--hf' . esc_attr($prefix) . '-' . str_replace('_', '-', esc_attr($key)) . ' : ' . esc_attr($value) . esc_attr($unit) . ';';
+                    echo '--hf' . esc_attr($prefix) . '-' . esc_attr(str_replace('_', '-', $key)) . ' : ' . esc_attr($value) . esc_attr($unit) . ';';
                 }
             }
         }
@@ -1228,7 +1228,7 @@ class HashFormStyles {
     public function enqueue_scripts() {
         global $post_type;
         if ('hashform-styles' == $post_type) {
-            wp_enqueue_script('hf-style-template', HASHFORM_URL . 'js/style-template.js', array('jquery'), HASHFORM_VERSION);
+            wp_enqueue_script('hf-style-template', HASHFORM_URL . 'js/style-template.js', array('jquery'), HASHFORM_VERSION, false);
             wp_localize_script('hf-style-template', 'hf_st_obj', array(
                 'admin_url' => admin_url('post.php'),
                 'ajaxurl' => admin_url('admin-ajax.php'),

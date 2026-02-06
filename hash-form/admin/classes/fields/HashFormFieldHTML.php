@@ -24,7 +24,7 @@ class HashFormFieldHTML extends HashFormFieldType {
     public function show_primary_options() {
         $field = $this->get_field();
 
-        do_action('hf_before_html_primary_option');
+        do_action('hashform_before_html_primary_option');
         ?>
         <div class="hf-form-row">
             <label><?php esc_html_e('Content', 'hash-form'); ?></label>
@@ -54,7 +54,7 @@ class HashFormFieldHTML extends HashFormFieldType {
                 </div>
                 <?php
             } else {
-                echo wp_kses_post(apply_filters('hf_translate_string', $field['description'], 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Description'));
+                echo wp_kses_post(apply_filters('hashform_translate_string', $field['description'], 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Description'));
             }
             ?>
         </div>

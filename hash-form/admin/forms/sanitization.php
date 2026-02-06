@@ -37,7 +37,7 @@ function hashform_sanitize_color($color) {
 }
 
 function hashform_sanitize_url($url) {
-    $sanitized_url = strip_tags(stripslashes(filter_var($url, FILTER_VALIDATE_URL)));
+    $sanitized_url = wp_strip_all_tags(stripslashes(filter_var($url, FILTER_VALIDATE_URL)));
     return $sanitized_url;
 }
 

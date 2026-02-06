@@ -3,7 +3,7 @@
 /*
  * Plugin Name: Hash Form - Drag & Drop Form Builder
  * Description: Design, Embed, Connect: Your Ultimate Form Companion for WordPress
- * Version: 1.3.4
+ * Version: 1.3.8
  * Author: HashThemes
  * Author URI: https://hashthemes.com/
  * Text Domain: hash-form
@@ -15,7 +15,7 @@
 
 defined('ABSPATH') || die();
 
-define('HASHFORM_VERSION', '1.3.4');
+define('HASHFORM_VERSION', '1.3.8');
 define('HASHFORM_FILE', __FILE__);
 define('HASHFORM_PATH', plugin_dir_path(HASHFORM_FILE));
 define('HASHFORM_URL', plugin_dir_url(HASHFORM_FILE));
@@ -97,10 +97,12 @@ add_filter('wpmu_drop_tables', 'hashform_on_delete_blog');
 
 function hashform_on_delete_blog($tables) {
     global $wpdb;
-    $id = isset($_REQUEST['id']) ? intval($_REQUEST['id']) : 0;
+    $id = HashFormHelper::get_request('id');
+
     $tables[] = $wpdb->get_blog_prefix($id) . 'hashform_fields';
     $tables[] = $wpdb->get_blog_prefix($id) . 'hashform_forms';
     $tables[] = $wpdb->get_blog_prefix($id) . 'hashform_entries';
     $tables[] = $wpdb->get_blog_prefix($id) . 'hashform_entry_meta';
+
     return $tables;
 }

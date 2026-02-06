@@ -69,14 +69,14 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_section(
             'enable_style', [
-                'label' => esc_html__('Custom Style', 'hash-elements'),
+                'label' => esc_html__('Custom Style', 'hash-form'),
                 'tab' => Controls_Manager::TAB_STYLE,
             ]
         );
 
         $this->add_control(
             'enable_custom_style', [
-                'label' => esc_html__('Enable Custom Style', 'totalplus'),
+                'label' => esc_html__('Enable Custom Style', 'hash-form'),
                 'type' => Controls_Manager::SWITCHER,
                 'return_value' => 'yes',
             ]
@@ -87,7 +87,7 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_section(
             'form_style', [
-                'label' => esc_html__('Form', 'hash-elements'),
+                'label' => esc_html__('Form', 'hash-form'),
                 'tab' => Controls_Manager::TAB_STYLE,
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -97,7 +97,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'column_gap', [
-                'label' => esc_html__('Column Gap', 'hash-elements'),
+                'label' => esc_html__('Column Gap', 'hash-form'),
                 'type' => Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [
@@ -118,7 +118,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'row_gap', [
-                'label' => esc_html__('Row Gap', 'hash-elements'),
+                'label' => esc_html__('Row Gap', 'hash-form'),
                 'type' => Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [
@@ -141,7 +141,7 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_section(
             'label_style', [
-                'label' => esc_html__('Label', 'hash-elements'),
+                'label' => esc_html__('Label', 'hash-form'),
                 'tab' => Controls_Manager::TAB_STYLE,
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -152,7 +152,7 @@ class HashFormElement extends Widget_Base {
         $this->add_group_control(
             Group_Control_Typography::get_type(), [
                 'name' => 'label_typography',
-                'label' => esc_html__('Typography', 'hash-elements'),
+                'label' => esc_html__('Typography', 'hash-form'),
                 'selector' => '{{WRAPPER}} .hf-container .hf-field-label',
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -162,7 +162,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'label_color', [
-                'label' => esc_html__('Color', 'hash-elements'),
+                'label' => esc_html__('Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-label-typo-font-color: {{VALUE}}',
@@ -172,7 +172,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'required_color', [
-                'label' => esc_html__('Required Color', 'hash-elements'),
+                'label' => esc_html__('Required Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-label-required-color: {{VALUE}}',
@@ -182,7 +182,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'label_spacing', [
-                'label' => esc_html__('Spacing', 'hash-elements'),
+                'label' => esc_html__('Spacing', 'hash-form'),
                 'type' => Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em'],
                 'selectors' => [
@@ -195,7 +195,7 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_section(
             'description_style', [
-                'label' => esc_html__('Description', 'hash-elements'),
+                'label' => esc_html__('Description', 'hash-form'),
                 'tab' => Controls_Manager::TAB_STYLE,
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -206,7 +206,7 @@ class HashFormElement extends Widget_Base {
         $this->add_group_control(
             Group_Control_Typography::get_type(), [
                 'name' => 'description_typography',
-                'label' => esc_html__('Typography', 'hash-elements'),
+                'label' => esc_html__('Typography', 'hash-form'),
                 'selector' => '{{WRAPPER}} .hf-container .hf-field-desc',
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -216,7 +216,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'description_color', [
-                'label' => esc_html__('Color', 'hash-elements'),
+                'label' => esc_html__('Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-desc-typo-font-color: {{VALUE}}',
@@ -226,7 +226,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'description_spacing', [
-                'label' => esc_html__('Spacing', 'hash-elements'),
+                'label' => esc_html__('Spacing', 'hash-form'),
                 'type' => Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em'],
                 'selectors' => [
@@ -239,7 +239,7 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_section(
             'fields_style', [
-                'label' => esc_html__('Fields', 'hash-elements'),
+                'label' => esc_html__('Fields', 'hash-form'),
                 'tab' => Controls_Manager::TAB_STYLE,
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -250,7 +250,7 @@ class HashFormElement extends Widget_Base {
         $this->add_group_control(
             Group_Control_Typography::get_type(), [
                 'name' => 'fields_typography',
-                'label' => esc_html__('Typography', 'hash-elements'),
+                'label' => esc_html__('Typography', 'hash-form'),
                 'selector' => '{{WRAPPER}} .hf-container input[type="text"], {{WRAPPER}} .hf-container input[type="email"], {{WRAPPER}} .hf-container input[type="url"], {{WRAPPER}} .hf-container input[type="password"], {{WRAPPER}} .hf-container input[type="search"], {{WRAPPER}} .hf-container input[type="number"], {{WRAPPER}} .hf-container input[type="tel"], {{WRAPPER}} .hf-container input[type="range"], {{WRAPPER}} .hf-container input[type="date"], {{WRAPPER}} .hf-container input[type="month"], {{WRAPPER}} .hf-container input[type="week"], {{WRAPPER}} .hf-container input[type="time"], {{WRAPPER}} .hf-container input[type="datetime"], {{WRAPPER}} .hf-container input[type="datetime-local"], {{WRAPPER}} .hf-container input[type="color"], {{WRAPPER}} .hf-container textarea, {{WRAPPER}} .hf-container select',
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -264,13 +264,13 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_tab(
             'fields_normal_tab', [
-                'label' => esc_html__('Normal', 'textdomain'),
+                'label' => esc_html__('Normal', 'hash-form'),
             ]
         );
 
         $this->add_control(
             'fields_color', [
-                'label' => esc_html__('Color', 'hash-elements'),
+                'label' => esc_html__('Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-field-color-normal: {{VALUE}}',
@@ -280,7 +280,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'fields_bg_color', [
-                'label' => esc_html__('Background Color', 'hash-elements'),
+                'label' => esc_html__('Background Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-field-bg-color-normal: {{VALUE}}',
@@ -306,13 +306,13 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_tab(
             'fields_hover_tab', [
-                'label' => esc_html__('Focus', 'textdomain'),
+                'label' => esc_html__('Focus', 'hash-form'),
             ]
         );
 
         $this->add_control(
             'fields_color_focus', [
-                'label' => esc_html__('Color', 'hash-elements'),
+                'label' => esc_html__('Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-field-color-focus: {{VALUE}}',
@@ -322,7 +322,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'fields_bg_color_focus', [
-                'label' => esc_html__('Background Color', 'hash-elements'),
+                'label' => esc_html__('Background Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-field-bg-color-focus: {{VALUE}}',
@@ -350,7 +350,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'fields_border_radius', [
-                'label' => esc_html__('Border Radius', 'hash-elements'),
+                'label' => esc_html__('Border Radius', 'hash-form'),
                 'type' => Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em'],
                 'selectors' => [
@@ -361,7 +361,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'fields_padding', [
-                'label' => esc_html__('Padding', 'hash-elements'),
+                'label' => esc_html__('Padding', 'hash-form'),
                 'type' => Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em'],
                 'selectors' => [
@@ -374,7 +374,7 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_section(
             'upload_style', [
-                'label' => esc_html__('Upload Button', 'hash-elements'),
+                'label' => esc_html__('Upload Button', 'hash-form'),
                 'tab' => Controls_Manager::TAB_STYLE,
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -385,7 +385,7 @@ class HashFormElement extends Widget_Base {
         $this->add_group_control(
             Group_Control_Typography::get_type(), [
                 'name' => 'upload_typography',
-                'label' => esc_html__('Typography', 'hash-elements'),
+                'label' => esc_html__('Typography', 'hash-form'),
                 'selector' => '{{WRAPPER}} .hf-file-uploader .qq-upload-button',
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -399,13 +399,13 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_tab(
             'upload_normal_tab', [
-                'label' => esc_html__('Normal', 'textdomain'),
+                'label' => esc_html__('Normal', 'hash-form'),
             ]
         );
 
         $this->add_control(
             'upload_color', [
-                'label' => esc_html__('Color', 'hash-elements'),
+                'label' => esc_html__('Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-upload-color-normal: {{VALUE}}',
@@ -415,7 +415,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'upload_bg_color', [
-                'label' => esc_html__('Background Color', 'hash-elements'),
+                'label' => esc_html__('Background Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-upload-bg-color-normal: {{VALUE}}',
@@ -441,13 +441,13 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_tab(
             'upload_hover_tab', [
-                'label' => esc_html__('Hover', 'textdomain'),
+                'label' => esc_html__('Hover', 'hash-form'),
             ]
         );
 
         $this->add_control(
             'upload_color_hover', [
-                'label' => esc_html__('Color', 'hash-elements'),
+                'label' => esc_html__('Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-upload-color-hover: {{VALUE}}',
@@ -457,7 +457,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'upload_bg_color_hover', [
-                'label' => esc_html__('Background Color', 'hash-elements'),
+                'label' => esc_html__('Background Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-upload-bg-color-hover: {{VALUE}}',
@@ -485,7 +485,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'upload_border_radius', [
-                'label' => esc_html__('Border Radius', 'hash-elements'),
+                'label' => esc_html__('Border Radius', 'hash-form'),
                 'type' => Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em'],
                 'selectors' => [
@@ -496,7 +496,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'upload_padding', [
-                'label' => esc_html__('Padding', 'hash-elements'),
+                'label' => esc_html__('Padding', 'hash-form'),
                 'type' => Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em'],
                 'selectors' => [
@@ -509,7 +509,7 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_section(
             'button_style', [
-                'label' => esc_html__('Submit Button', 'hash-elements'),
+                'label' => esc_html__('Submit Button', 'hash-form'),
                 'tab' => Controls_Manager::TAB_STYLE,
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -520,7 +520,7 @@ class HashFormElement extends Widget_Base {
         $this->add_group_control(
             Group_Control_Typography::get_type(), [
                 'name' => 'button_typography',
-                'label' => esc_html__('Typography', 'hash-elements'),
+                'label' => esc_html__('Typography', 'hash-form'),
                 'selector' => '{{WRAPPER}} .hf-container button, .hf-container input[type="button"], .hf-container input[type="reset"], .hf-container input[type="submit"]',
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -534,13 +534,13 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_tab(
             'button_normal_tab', [
-                'label' => esc_html__('Normal', 'textdomain'),
+                'label' => esc_html__('Normal', 'hash-form'),
             ]
         );
 
         $this->add_control(
             'button_color', [
-                'label' => esc_html__('Color', 'hash-elements'),
+                'label' => esc_html__('Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-button-color-normal: {{VALUE}}',
@@ -550,7 +550,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'button_bg_color', [
-                'label' => esc_html__('Background Color', 'hash-elements'),
+                'label' => esc_html__('Background Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-button-bg-color-normal: {{VALUE}}',
@@ -576,13 +576,13 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_tab(
             'button_hover_tab', [
-                'label' => esc_html__('Hover', 'textdomain'),
+                'label' => esc_html__('Hover', 'hash-form'),
             ]
         );
 
         $this->add_control(
             'button_color_hover', [
-                'label' => esc_html__('Color', 'hash-elements'),
+                'label' => esc_html__('Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-button-color-hover: {{VALUE}}',
@@ -592,7 +592,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'button_bg_color_hover', [
-                'label' => esc_html__('Background Color', 'hash-elements'),
+                'label' => esc_html__('Background Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-button-bg-color-hover: {{VALUE}}',
@@ -620,7 +620,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'button_border_radius', [
-                'label' => esc_html__('Border Radius', 'hash-elements'),
+                'label' => esc_html__('Border Radius', 'hash-form'),
                 'type' => Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em'],
                 'selectors' => [
@@ -631,7 +631,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'button_padding', [
-                'label' => esc_html__('Padding', 'hash-elements'),
+                'label' => esc_html__('Padding', 'hash-form'),
                 'type' => Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em'],
                 'selectors' => [
@@ -644,7 +644,7 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_section(
             'Validation_style', [
-                'label' => esc_html__('Validation Text', 'hash-elements'),
+                'label' => esc_html__('Validation Text', 'hash-form'),
                 'tab' => Controls_Manager::TAB_STYLE,
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -655,7 +655,7 @@ class HashFormElement extends Widget_Base {
         $this->add_group_control(
             Group_Control_Typography::get_type(), [
                 'name' => 'validation_typography',
-                'label' => esc_html__('Typography', 'hash-elements'),
+                'label' => esc_html__('Typography', 'hash-form'),
                 'selector' => '{{WRAPPER}} .hf-container .hf-error-msg',
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -665,7 +665,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'validation_color', [
-                'label' => esc_html__('Color', 'hash-elements'),
+                'label' => esc_html__('Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-validation-typo-font-color: {{VALUE}}',
@@ -675,19 +675,19 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'validation_text_alignment', [
-                'label' => esc_html__('Text Alignment', 'totalplus'),
+                'label' => esc_html__('Text Alignment', 'hash-form'),
                 'type' => Controls_Manager::CHOOSE,
                 'options' => [
                     'left' => [
-                        'title' => esc_html__('Left', 'totalplus'),
+                        'title' => esc_html__('Left', 'hash-form'),
                         'icon' => 'eicon-text-align-left',
                     ],
                     'center' => [
-                        'title' => esc_html__('Center', 'totalplus'),
+                        'title' => esc_html__('Center', 'hash-form'),
                         'icon' => 'eicon-text-align-center',
                     ],
                     'right' => [
-                        'title' => esc_html__('Right', 'totalplus'),
+                        'title' => esc_html__('Right', 'hash-form'),
                         'icon' => 'eicon-text-align-right',
                     ],
                 ],
@@ -702,7 +702,7 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_section(
             'form_title_style', [
-                'label' => esc_html__('Form Title', 'hash-elements'),
+                'label' => esc_html__('Form Title', 'hash-form'),
                 'tab' => Controls_Manager::TAB_STYLE,
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -713,7 +713,7 @@ class HashFormElement extends Widget_Base {
         $this->add_group_control(
             Group_Control_Typography::get_type(), [
                 'name' => 'form_title_typography',
-                'label' => esc_html__('Typography', 'hash-elements'),
+                'label' => esc_html__('Typography', 'hash-form'),
                 'selector' => '{{WRAPPER}} .hf-form-title',
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -723,7 +723,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'form_title_color', [
-                'label' => esc_html__('Color', 'hash-elements'),
+                'label' => esc_html__('Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-form-title-typo-font-color: {{VALUE}}',
@@ -733,7 +733,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'form_title_spacing', [
-                'label' => esc_html__('Spacing', 'hash-elements'),
+                'label' => esc_html__('Spacing', 'hash-form'),
                 'type' => Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em'],
                 'selectors' => [
@@ -746,7 +746,7 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_section(
             'form_desc_style', [
-                'label' => esc_html__('Form Description', 'hash-elements'),
+                'label' => esc_html__('Form Description', 'hash-form'),
                 'tab' => Controls_Manager::TAB_STYLE,
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -757,7 +757,7 @@ class HashFormElement extends Widget_Base {
         $this->add_group_control(
             Group_Control_Typography::get_type(), [
                 'name' => 'form_desc_typography',
-                'label' => esc_html__('Typography', 'hash-elements'),
+                'label' => esc_html__('Typography', 'hash-form'),
                 'selector' => '{{WRAPPER}} .hf-form-description p',
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -767,7 +767,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'form_desc_color', [
-                'label' => esc_html__('Color', 'hash-elements'),
+                'label' => esc_html__('Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-form-desc-typo-font-color: {{VALUE}}',
@@ -777,7 +777,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'form_desc_spacing', [
-                'label' => esc_html__('Spacing', 'hash-elements'),
+                'label' => esc_html__('Spacing', 'hash-form'),
                 'type' => Controls_Manager::DIMENSIONS,
                 'size_units' => ['px', '%', 'em'],
                 'selectors' => [
@@ -790,7 +790,7 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_section(
             'heading_style', [
-                'label' => esc_html__('Heading', 'hash-elements'),
+                'label' => esc_html__('Heading', 'hash-form'),
                 'tab' => Controls_Manager::TAB_STYLE,
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -801,7 +801,7 @@ class HashFormElement extends Widget_Base {
         $this->add_group_control(
             Group_Control_Typography::get_type(), [
                 'name' => 'heading_typography',
-                'label' => esc_html__('Typography', 'hash-elements'),
+                'label' => esc_html__('Typography', 'hash-form'),
                 'selector' => '{{WRAPPER}} .hf-form-field.hashform-field-type-heading h1, {{WRAPPER}} .hf-form-field.hashform-field-type-heading h2, {{WRAPPER}} .hf-form-field.hashform-field-type-heading h3, {{WRAPPER}} .hf-form-field.hashform-field-type-heading h4, {{WRAPPER}} .hf-form-field.hashform-field-type-heading h5, {{WRAPPER}} .hf-form-field.hashform-field-type-heading h6',
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -811,7 +811,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'heading_color', [
-                'label' => esc_html__('Color', 'hash-elements'),
+                'label' => esc_html__('Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-heading-typo-font-color: {{VALUE}}',
@@ -823,7 +823,7 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_section(
             'paragraph_style', [
-                'label' => esc_html__('Paragraph', 'hash-elements'),
+                'label' => esc_html__('Paragraph', 'hash-form'),
                 'tab' => Controls_Manager::TAB_STYLE,
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -834,7 +834,7 @@ class HashFormElement extends Widget_Base {
         $this->add_group_control(
             Group_Control_Typography::get_type(), [
                 'name' => 'paragraph_typography',
-                'label' => esc_html__('Typography', 'hash-elements'),
+                'label' => esc_html__('Typography', 'hash-form'),
                 'selector' => '{{WRAPPER}} .hf-form-field.hashform-field-type-paragraph p',
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -844,7 +844,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'paragraph_color', [
-                'label' => esc_html__('Color', 'hash-elements'),
+                'label' => esc_html__('Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-paragraph-typo-font-color: {{VALUE}}',
@@ -856,7 +856,7 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_section(
             'divider_style', [
-                'label' => esc_html__('Divider', 'hash-elements'),
+                'label' => esc_html__('Divider', 'hash-form'),
                 'tab' => Controls_Manager::TAB_STYLE,
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -866,7 +866,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'divider_color', [
-                'label' => esc_html__('Color', 'hash-elements'),
+                'label' => esc_html__('Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-divider-color: {{VALUE}}',
@@ -878,7 +878,7 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_section(
             'star_style', [
-                'label' => esc_html__('Star', 'hash-elements'),
+                'label' => esc_html__('Star', 'hash-form'),
                 'tab' => Controls_Manager::TAB_STYLE,
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -888,7 +888,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'star_size', [
-                'label' => esc_html__('Size', 'hash-elements'),
+                'label' => esc_html__('Size', 'hash-form'),
                 'type' => Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [
@@ -909,7 +909,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'star_color', [
-                'label' => esc_html__('Color', 'hash-elements'),
+                'label' => esc_html__('Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-star-color: {{VALUE}}',
@@ -919,7 +919,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'star_color_active', [
-                'label' => esc_html__('Color (Active)', 'hash-elements'),
+                'label' => esc_html__('Color (Active)', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-star-color-active: {{VALUE}}',
@@ -931,7 +931,7 @@ class HashFormElement extends Widget_Base {
 
         $this->start_controls_section(
             'range_slider_style', [
-                'label' => esc_html__('Range Slider', 'hash-elements'),
+                'label' => esc_html__('Range Slider', 'hash-form'),
                 'tab' => Controls_Manager::TAB_STYLE,
                 'condition' => [
                     'enable_custom_style' => 'yes'
@@ -941,7 +941,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'range_slider_height', [
-                'label' => esc_html__('Height', 'hash-elements'),
+                'label' => esc_html__('Height', 'hash-form'),
                 'type' => Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [
@@ -962,7 +962,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'range_slider_handle_size', [
-                'label' => esc_html__('Handle Size', 'hash-elements'),
+                'label' => esc_html__('Handle Size', 'hash-form'),
                 'type' => Controls_Manager::SLIDER,
                 'size_units' => ['px', 'em', 'rem'],
                 'range' => [
@@ -983,7 +983,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'range_slider_bar_color', [
-                'label' => esc_html__('Bar Color', 'hash-elements'),
+                'label' => esc_html__('Bar Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-range-color: {{VALUE}}',
@@ -993,7 +993,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'rangle_slider_bar_color_active', [
-                'label' => esc_html__('Color (Active)', 'hash-elements'),
+                'label' => esc_html__('Color (Active)', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-range-color-active: {{VALUE}}',
@@ -1003,7 +1003,7 @@ class HashFormElement extends Widget_Base {
 
         $this->add_control(
             'range_handle_color', [
-                'label' => esc_html__('Handle Color', 'hash-elements'),
+                'label' => esc_html__('Handle Color', 'hash-form'),
                 'type' => Controls_Manager::COLOR,
                 'selectors' => [
                     '{{WRAPPER}}' => '--hf-range-handle-color: {{VALUE}}',

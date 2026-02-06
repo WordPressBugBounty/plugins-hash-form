@@ -32,17 +32,17 @@ wp_nonce_field('hf-styles-nonce', 'hashform_styles_nonce');
 
     <?php
     $hashform_post_class = 'submitbox';
-    $show_publish_button = false;
+    $hashform_show_publish_button = false;
 
-    if (isset($_GET['post_type']) && $_GET['post_type'] == 'hashform-styles') {
-        $show_publish_button = true;
+    if (HashFormHelper::get_var('post_type') == 'hashform-styles') {
+        $hashform_show_publish_button = true;
         $hashform_post_class = 'postbox';
     }
 
-    if (isset($_GET['post'])) {
+    if (HashFormHelper::get_var('post')) {
         $hashform_post_id = htmlspecialchars_decode(HashFormHelper::get_var('post'));
         if ('publish' !== get_post_status($hashform_post_id)) {
-            $show_publish_button = true;
+            $hashform_show_publish_button = true;
             $hashform_post_class = 'postbox';
         }
     }
@@ -51,13 +51,19 @@ wp_nonce_field('hf-styles-nonce', 'hashform_styles_nonce');
         <div id="submitpost" class="<?php echo esc_attr($hashform_post_class); ?>">
             <div id="major-publishing-actions">
                 <div id="publishing-action">
-                    <?php if ($show_publish_button) { ?>
+                    <?php
+                    if ($hashform_show_publish_button) {
+                        ?>
                         <input name="original_publish" type="hidden" id="original_publish" value="Publish">
                         <button type="submit" name="publish" id="publish" class="button button-primary button-large"><?php esc_html_e('Publish', 'hash-form'); ?></button>
-                    <?php } else { ?>
+                        <?php
+                    } else {
+                        ?>
                         <input name="original_publish" type="hidden" id="original_publish" value="Update">
                         <button type="submit" name="save" id="publish" class="button button-primary button-large"><?php esc_html_e('Update', 'hash-form'); ?></button>
-                    <?php } ?>
+                        <?php
+                    }
+                    ?>
                 </div>
             </div>
         </div>

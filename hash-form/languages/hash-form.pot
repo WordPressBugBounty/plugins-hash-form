@@ -10,149 +10,162 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-04-28 17:54+0000\n"
+"POT-Creation-Date: 2025-12-03 16:22+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: hash-form\n"
-"\n"
 "Language: \n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;"
 
-#: admin/classes/HashFormEntry.php:206
+#. 1: form count singular & plural
+#: admin/classes/HashFormEntry.php:215
 #, php-format
 msgid "%1$s Entry Permanently Deleted"
 msgid_plural "%1$s Entries Permanently Deleted"
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/classes/HashFormBuilder.php:281 admin/classes/HashFormBuilder.php:392
-#: admin/classes/HashFormEntry.php:155 admin/classes/HashFormEntry.php:277
+#. 1: form count singular & plural, 2: link open, 3: link close
+#. 1: form count singular & plural
+#: admin/classes/HashFormBuilder.php:283 admin/classes/HashFormBuilder.php:401
+#: admin/classes/HashFormEntry.php:157 admin/classes/HashFormEntry.php:284
 #, php-format
 msgid "%1$s form moved to the Trash. %2$sUndo%3$s"
 msgid_plural "%1$s forms moved to the Trash. %2$sUndo%3$s"
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/classes/HashFormBuilder.php:334
+#. 1: form count singular & plural
+#: admin/classes/HashFormBuilder.php:342
 #, php-format
 msgid "%1$s Form Permanently Deleted"
 msgid_plural "%1$s Forms Permanently Deleted"
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/classes/HashFormBuilder.php:307 admin/classes/HashFormBuilder.php:413
-#: admin/classes/HashFormEntry.php:180 admin/classes/HashFormEntry.php:296
+#. 1: form count singular & plural
+#: admin/classes/HashFormBuilder.php:315 admin/classes/HashFormBuilder.php:424
+#: admin/classes/HashFormEntry.php:189 admin/classes/HashFormEntry.php:305
 #, php-format
 msgid "%1$s form permanently deleted."
 msgid_plural "%1$s forms permanently deleted."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/classes/HashFormBuilder.php:280 admin/classes/HashFormBuilder.php:401
-#: admin/classes/HashFormEntry.php:154 admin/classes/HashFormEntry.php:285
+#. 1: form count singular & plural
+#: admin/classes/HashFormBuilder.php:281 admin/classes/HashFormBuilder.php:411
+#: admin/classes/HashFormEntry.php:155 admin/classes/HashFormEntry.php:293
 #, php-format
 msgid "%1$s form restored from the Trash."
 msgid_plural "%1$s forms restored from the Trash."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/settings/captcha-settings.php:6
+#. 1: recatpcha text, 2: link open, 3: link close
+#: admin/settings/captcha-settings.php:9
 #, php-format
 msgid ""
 "%1$s requires a Site and Secret keys. Sign up for a %2$sfree %1$s key%3$s."
 msgstr ""
 
-#: admin/classes/HashFormListing.php:67
-#: admin/classes/HashFormEntryListing.php:115
+#. 1: form name
+#. 1: entry id
+#: admin/classes/HashFormListing.php:68
+#: admin/classes/HashFormEntryListing.php:116
 #, php-format
 msgid "%s (Edit)"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:460
+#. 1: max length of characters
+#: admin/classes/HashFormFields.php:462
 #, php-format
 msgid "%s characters only allowed."
 msgstr ""
 
-#: admin/classes/fields/settings.php:11
+#. 1: field name
+#: admin/classes/fields/settings.php:14
 #, php-format
 msgid "%s Field"
 msgstr ""
 
+#. 1: field name
 #: admin/classes/HashFormFields.php:458
 #, php-format
 msgid "%s is invalid."
 msgstr ""
 
-#: admin/classes/HashFormFields.php:459
+#. 1: field name
+#: admin/classes/HashFormFields.php:460
 #, php-format
 msgid "%s is required."
 msgstr ""
 
-#: admin/classes/fields/HashFormFieldType.php:402
+#. 1: field name
+#: admin/classes/fields/HashFormFieldType.php:403
 #, php-format
 msgid "%s Options"
 msgstr ""
 
-#: admin/forms/style/style.php:57
+#: admin/forms/style/style.php:56
 msgid "--Select Style--"
 msgstr ""
 
-#: admin/classes/fields/settings.php:455
+#: admin/classes/fields/settings.php:468
 msgid "1 Column"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:618
+#: admin/classes/HashFormHelper.php:621
 msgid "18-24"
 msgstr ""
 
-#: admin/classes/fields/settings.php:458
+#: admin/classes/fields/settings.php:471
 msgid "2 Columns"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:619
+#: admin/classes/HashFormHelper.php:622
 msgid "25-34"
 msgstr ""
 
-#: admin/classes/fields/settings.php:461
+#: admin/classes/fields/settings.php:474
 msgid "3 Columns"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:620
+#: admin/classes/HashFormHelper.php:623
 msgid "35-44"
 msgstr ""
 
-#: admin/classes/fields/settings.php:464
+#: admin/classes/fields/settings.php:477
 msgid "4 Columns"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:621
+#: admin/classes/HashFormHelper.php:624
 msgid "45-54"
 msgstr ""
 
-#: admin/classes/fields/settings.php:467
+#: admin/classes/fields/settings.php:480
 msgid "5 Columns"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:622
+#: admin/classes/HashFormHelper.php:625
 msgid "55-64"
 msgstr ""
 
-#: admin/classes/fields/settings.php:470
+#: admin/classes/fields/settings.php:483
 msgid "6 Columns"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:623
+#: admin/classes/HashFormHelper.php:626
 msgid "65 or Above"
 msgstr ""
 
-#: admin/settings/captcha-settings.php:50
+#: admin/settings/captcha-settings.php:60
 msgid ""
 "A score of 0 is likely to be a bot and a score of 1 is likely not a bot. "
 "Setting a lower threshold will allow more bots, but it will also stop fewer "
 "real users."
 msgstr ""
 
-#: admin/classes/HashFormSmtp.php:32
+#: admin/classes/HashFormSmtp.php:37
 msgid "Activate WP Mail SMTP Plugin"
 msgstr ""
 
@@ -168,7 +181,7 @@ msgstr ""
 msgid "Add Fields"
 msgstr ""
 
-#: admin/forms/build/builder.php:35
+#: admin/forms/build/builder.php:34
 msgid "Add Fields Here"
 msgstr ""
 
@@ -176,16 +189,16 @@ msgstr ""
 msgid "Add More Email"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:90
+#: admin/classes/HashFormBuilder.php:91
 msgid "Add New"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:21
+#: admin/classes/HashFormStyles.php:24
 msgctxt "add new on admin bar"
 msgid "Style Template"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:23
+#: admin/classes/HashFormStyles.php:26
 msgid "Add New Style Template"
 msgstr ""
 
@@ -193,11 +206,11 @@ msgstr ""
 msgid "Add Option"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:138 admin/styles/demo-preview.php:74
+#: admin/classes/HashFormFields.php:140 admin/styles/demo-preview.php:74
 msgid "Address"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:20
+#: admin/classes/HashFormStyles.php:23
 msgctxt "admin menu"
 msgid "Style Template"
 msgstr ""
@@ -206,16 +219,16 @@ msgstr ""
 msgid "Afghanistan"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:679
+#: admin/classes/HashFormHelper.php:682
 msgid "Age"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:644 admin/styles/demo-preview.php:174
+#: admin/classes/HashFormHelper.php:647 admin/styles/demo-preview.php:174
 #: admin/styles/demo-preview.php:210 admin/styles/demo-preview.php:258
 msgid "Agree"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:691
+#: admin/classes/HashFormHelper.php:694
 msgid "Agreement"
 msgstr ""
 
@@ -231,9 +244,9 @@ msgstr ""
 msgid "Algeria"
 msgstr ""
 
-#: admin/classes/HashFormListing.php:275
-#: admin/classes/HashFormEntryListing.php:222
-#: admin/classes/HashFormEntryListing.php:281
+#: admin/classes/HashFormListing.php:270
+#: admin/classes/HashFormEntryListing.php:219
+#: admin/classes/HashFormEntryListing.php:278
 msgid "All"
 msgstr ""
 
@@ -253,7 +266,7 @@ msgstr ""
 msgid "Anguilla"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:156
+#: admin/classes/HashFormHelper.php:159
 msgid "at"
 msgstr ""
 
@@ -261,10 +274,13 @@ msgstr ""
 msgid "Auto Responder"
 msgstr ""
 
-#: admin/classes/fields/settings.php:374
+#: admin/classes/fields/settings.php:387
 msgid "Automatic Width"
 msgstr ""
 
+#: admin/classes/HashFormElement.php:283 admin/classes/HashFormElement.php:325
+#: admin/classes/HashFormElement.php:418 admin/classes/HashFormElement.php:460
+#: admin/classes/HashFormElement.php:553 admin/classes/HashFormElement.php:595
 #: admin/styles/main.php:41 admin/styles/main.php:233 admin/styles/main.php:434
 #: admin/styles/main.php:639
 msgid "Background Color"
@@ -278,7 +294,7 @@ msgstr ""
 msgid "Background Color (Hover)"
 msgstr ""
 
-#: admin/styles/main.php:948
+#: admin/classes/HashFormElement.php:986 admin/styles/main.php:948
 msgid "Bar Color"
 msgstr ""
 
@@ -305,8 +321,10 @@ msgstr ""
 msgid "Border Color (Hover)"
 msgstr ""
 
-#: admin/styles/main.php:112 admin/styles/main.php:360
-#: admin/styles/main.php:560 admin/styles/main.php:765
+#: admin/classes/HashFormElement.php:353 admin/classes/HashFormElement.php:488
+#: admin/classes/HashFormElement.php:623 admin/styles/main.php:112
+#: admin/styles/main.php:360 admin/styles/main.php:560
+#: admin/styles/main.php:765
 msgid "Border Radius"
 msgstr ""
 
@@ -342,19 +360,19 @@ msgstr ""
 msgid "Box Shadow (Hover)"
 msgstr ""
 
-#: admin/settings/captcha-settings.php:41
+#: admin/settings/captcha-settings.php:51
 msgid "Browser Default"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:547
+#: admin/classes/HashFormBuilder.php:555
 msgid "Build"
 msgstr ""
 
-#: admin/forms/style/style.php:89
+#: admin/forms/style/style.php:88
 msgid "Build fast with a style template - style your forms in seconds."
 msgstr ""
 
-#: admin/forms/build/builder.php:45
+#: admin/forms/build/builder.php:44
 #: admin/classes/fields/HashFormFieldType.php:346
 msgid "Bulk Edit Options"
 msgstr ""
@@ -363,7 +381,7 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:287
+#: admin/classes/HashFormStyles.php:315
 msgid "Capitalize"
 msgstr ""
 
@@ -371,38 +389,39 @@ msgstr ""
 msgid "Captcha"
 msgstr ""
 
-#: admin/classes/fields/settings.php:20
+#. 1: link open, 2: link close
+#: admin/classes/fields/settings.php:27
 #, php-format
 msgid ""
 "Captchas will not work untill the Site and Secret Keys are set up. Add Keys "
 "%1$shere%2$s."
 msgstr ""
 
-#: admin/styles/main.php:841 admin/forms/build/sidebar.php:105
-#: admin/classes/fields/settings.php:61 admin/classes/fields/settings.php:122
-#: admin/classes/fields/settings.php:539
+#: admin/classes/HashFormElement.php:686 admin/styles/main.php:841
+#: admin/forms/build/sidebar.php:105 admin/classes/fields/settings.php:74
+#: admin/classes/fields/settings.php:135 admin/classes/fields/settings.php:552
 msgid "Center"
 msgstr ""
 
-#: admin/settings/captcha-settings.php:13
+#: admin/settings/captcha-settings.php:23
 msgid "Checkbox (V2)"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:154 admin/styles/demo-preview.php:184
+#: admin/classes/HashFormFields.php:156 admin/styles/demo-preview.php:184
 msgid "Checkboxes"
 msgstr ""
 
-#: admin/forms/style/style.php:51
+#: admin/forms/style/style.php:50
 msgid "Choose \"Custom Style\" when you want to implement your own styles"
 msgstr ""
 
-#: admin/forms/style/style.php:47
+#: admin/forms/style/style.php:46
 msgid ""
 "Choose \"Default Style\" when you want to implement Hash Form plugin styles "
 "with minimal designs."
 msgstr ""
 
-#: admin/forms/style/style.php:41
+#: admin/forms/style/style.php:40
 msgid ""
 "Choose \"No Style\" when you don't want to implement Hash Form plugin style "
 "and let theme style take over."
@@ -420,7 +439,7 @@ msgstr ""
 msgid "Choose Form to Preview"
 msgstr ""
 
-#: admin/forms/style/style.php:55
+#: admin/forms/style/style.php:54
 msgid "Choose Template Style"
 msgstr ""
 
@@ -437,21 +456,29 @@ msgstr ""
 msgid "City"
 msgstr ""
 
-#: admin/forms/build/builder.php:36
+#: admin/forms/build/builder.php:35
 msgid "Click or drag a field from the sidebar to add it to your form"
 msgstr ""
 
-#: admin/forms/shortcode-overlay.php:19 admin/classes/HashFormBuilder.php:516
-#: admin/styles/settings.php:66 admin/forms/build/builder.php:47
+#: admin/forms/shortcode-overlay.php:19 admin/classes/HashFormBuilder.php:524
+#: admin/styles/settings.php:71 admin/forms/build/builder.php:46
 msgid "Close"
 msgstr ""
 
-#: admin/styles/main.php:226 admin/styles/main.php:427
-#: admin/styles/main.php:632 admin/styles/main.php:901
-#: admin/styles/main.php:918
+#: admin/classes/HashFormElement.php:165 admin/classes/HashFormElement.php:219
+#: admin/classes/HashFormElement.php:273 admin/classes/HashFormElement.php:315
+#: admin/classes/HashFormElement.php:408 admin/classes/HashFormElement.php:450
+#: admin/classes/HashFormElement.php:543 admin/classes/HashFormElement.php:585
+#: admin/classes/HashFormElement.php:668 admin/classes/HashFormElement.php:726
+#: admin/classes/HashFormElement.php:770 admin/classes/HashFormElement.php:814
+#: admin/classes/HashFormElement.php:847 admin/classes/HashFormElement.php:869
+#: admin/classes/HashFormElement.php:912 admin/styles/main.php:226
+#: admin/styles/main.php:427 admin/styles/main.php:632
+#: admin/styles/main.php:901 admin/styles/main.php:918
 msgid "Color"
 msgstr ""
 
+#: admin/classes/HashFormElement.php:922 admin/classes/HashFormElement.php:996
 #: admin/styles/main.php:924
 msgid "Color (Active)"
 msgstr ""
@@ -464,7 +491,7 @@ msgstr ""
 msgid "Color (Hover)"
 msgstr ""
 
-#: admin/styles/main.php:25
+#: admin/classes/HashFormElement.php:100 admin/styles/main.php:25
 msgid "Column Gap"
 msgstr ""
 
@@ -476,12 +503,12 @@ msgstr ""
 msgid "Confirmation"
 msgstr ""
 
-#: admin/forms/settings/form-confirmation.php:8
+#: admin/forms/settings/form-confirmation.php:14
 msgid "Confirmation Type"
 msgstr ""
 
-#: admin/classes/fields/settings.php:106
-#: admin/classes/fields/HashFormFieldHTML.php:28
+#: admin/classes/fields/settings.php:119
+#: admin/classes/fields/HashFormFieldHTML.php:30
 msgid "Content"
 msgstr ""
 
@@ -489,17 +516,17 @@ msgstr ""
 msgid "Copied!"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:467
+#: admin/classes/HashFormBuilder.php:475
 msgid "Copy"
 msgstr ""
 
-#: admin/classes/HashFormUploader.php:159
+#: admin/classes/HashFormUploader.php:199
 msgid ""
 "Could not save uploaded file. The upload was cancelled, or server error "
 "encountered."
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:675
+#: admin/classes/HashFormHelper.php:678
 msgid "Countries"
 msgstr ""
 
@@ -508,1257 +535,1257 @@ msgstr ""
 msgid "Country"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:358
+#: admin/classes/HashFormHelper.php:361
 msgctxt "Country Name"
 msgid "Afghanistan"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:359
+#: admin/classes/HashFormHelper.php:362
 msgctxt "Country Name"
 msgid "Aland Islands"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:360
+#: admin/classes/HashFormHelper.php:363
 msgctxt "Country Name"
 msgid "Albania"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:361
+#: admin/classes/HashFormHelper.php:364
 msgctxt "Country Name"
 msgid "Algeria"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:362
+#: admin/classes/HashFormHelper.php:365
 msgctxt "Country Name"
 msgid "American Samoa"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:363
+#: admin/classes/HashFormHelper.php:366
 msgctxt "Country Name"
 msgid "Andorra"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:364
+#: admin/classes/HashFormHelper.php:367
 msgctxt "Country Name"
 msgid "Angola"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:365
+#: admin/classes/HashFormHelper.php:368
 msgctxt "Country Name"
 msgid "Anguilla"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:366
+#: admin/classes/HashFormHelper.php:369
 msgctxt "Country Name"
 msgid "Antarctica"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:367
+#: admin/classes/HashFormHelper.php:370
 msgctxt "Country Name"
 msgid "Antigua and Barbuda"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:368
+#: admin/classes/HashFormHelper.php:371
 msgctxt "Country Name"
 msgid "Argentina"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:369
+#: admin/classes/HashFormHelper.php:372
 msgctxt "Country Name"
 msgid "Armenia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:370
+#: admin/classes/HashFormHelper.php:373
 msgctxt "Country Name"
 msgid "Aruba"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:371
+#: admin/classes/HashFormHelper.php:374
 msgctxt "Country Name"
 msgid "Australia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:372
+#: admin/classes/HashFormHelper.php:375
 msgctxt "Country Name"
 msgid "Austria"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:373
+#: admin/classes/HashFormHelper.php:376
 msgctxt "Country Name"
 msgid "Azerbaijan"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:374
+#: admin/classes/HashFormHelper.php:377
 msgctxt "Country Name"
 msgid "Bahamas"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:375
+#: admin/classes/HashFormHelper.php:378
 msgctxt "Country Name"
 msgid "Bahrain"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:376
+#: admin/classes/HashFormHelper.php:379
 msgctxt "Country Name"
 msgid "Bangladesh"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:377
+#: admin/classes/HashFormHelper.php:380
 msgctxt "Country Name"
 msgid "Barbados"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:378
+#: admin/classes/HashFormHelper.php:381
 msgctxt "Country Name"
 msgid "Belarus"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:379
+#: admin/classes/HashFormHelper.php:382
 msgctxt "Country Name"
 msgid "Belgium"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:380
+#: admin/classes/HashFormHelper.php:383
 msgctxt "Country Name"
 msgid "Belize"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:381
+#: admin/classes/HashFormHelper.php:384
 msgctxt "Country Name"
 msgid "Benin"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:382
+#: admin/classes/HashFormHelper.php:385
 msgctxt "Country Name"
 msgid "Bermuda"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:383
+#: admin/classes/HashFormHelper.php:386
 msgctxt "Country Name"
 msgid "Bhutan"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:384
+#: admin/classes/HashFormHelper.php:387
 msgctxt "Country Name"
 msgid "Bolivia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:385
+#: admin/classes/HashFormHelper.php:388
 msgctxt "Country Name"
 msgid "Bonaire, Sint Eustatius and Saba"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:386
+#: admin/classes/HashFormHelper.php:389
 msgctxt "Country Name"
 msgid "Bosnia and Herzegovina"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:387
+#: admin/classes/HashFormHelper.php:390
 msgctxt "Country Name"
 msgid "Botswana"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:388
+#: admin/classes/HashFormHelper.php:391
 msgctxt "Country Name"
 msgid "Bouvet Island"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:389
+#: admin/classes/HashFormHelper.php:392
 msgctxt "Country Name"
 msgid "Brazil"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:390
+#: admin/classes/HashFormHelper.php:393
 msgctxt "Country Name"
 msgid "British Indian Ocean Territory"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:391
+#: admin/classes/HashFormHelper.php:394
 msgctxt "Country Name"
 msgid "Brunei"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:392
+#: admin/classes/HashFormHelper.php:395
 msgctxt "Country Name"
 msgid "Bulgaria"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:393
+#: admin/classes/HashFormHelper.php:396
 msgctxt "Country Name"
 msgid "Burkina Faso"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:394
+#: admin/classes/HashFormHelper.php:397
 msgctxt "Country Name"
 msgid "Burundi"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:411
+#: admin/classes/HashFormHelper.php:414
 msgctxt "Country Name"
 msgid "C&ocirc;te d'Ivoire"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:395
+#: admin/classes/HashFormHelper.php:398
 msgctxt "Country Name"
 msgid "Cambodia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:396
+#: admin/classes/HashFormHelper.php:399
 msgctxt "Country Name"
 msgid "Cameroon"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:397
+#: admin/classes/HashFormHelper.php:400
 msgctxt "Country Name"
 msgid "Canada"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:398
+#: admin/classes/HashFormHelper.php:401
 msgctxt "Country Name"
 msgid "Cape Verde"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:399
+#: admin/classes/HashFormHelper.php:402
 msgctxt "Country Name"
 msgid "Cayman Islands"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:400
+#: admin/classes/HashFormHelper.php:403
 msgctxt "Country Name"
 msgid "Central African Republic"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:401
+#: admin/classes/HashFormHelper.php:404
 msgctxt "Country Name"
 msgid "Chad"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:402
+#: admin/classes/HashFormHelper.php:405
 msgctxt "Country Name"
 msgid "Chile"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:403
+#: admin/classes/HashFormHelper.php:406
 msgctxt "Country Name"
 msgid "China"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:404
+#: admin/classes/HashFormHelper.php:407
 msgctxt "Country Name"
 msgid "Christmas Island"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:405
+#: admin/classes/HashFormHelper.php:408
 msgctxt "Country Name"
 msgid "Cocos (Keeling) Islands"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:406
+#: admin/classes/HashFormHelper.php:409
 msgctxt "Country Name"
 msgid "Colombia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:407
+#: admin/classes/HashFormHelper.php:410
 msgctxt "Country Name"
 msgid "Comoros"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:408
+#: admin/classes/HashFormHelper.php:411
 msgctxt "Country Name"
 msgid "Congo"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:409
+#: admin/classes/HashFormHelper.php:412
 msgctxt "Country Name"
 msgid "Cook Islands"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:410
+#: admin/classes/HashFormHelper.php:413
 msgctxt "Country Name"
 msgid "Costa Rica"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:412
+#: admin/classes/HashFormHelper.php:415
 msgctxt "Country Name"
 msgid "Croatia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:413
+#: admin/classes/HashFormHelper.php:416
 msgctxt "Country Name"
 msgid "Cuba"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:414
+#: admin/classes/HashFormHelper.php:417
 msgctxt "Country Name"
 msgid "Curacao"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:415
+#: admin/classes/HashFormHelper.php:418
 msgctxt "Country Name"
 msgid "Cyprus"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:416
+#: admin/classes/HashFormHelper.php:419
 msgctxt "Country Name"
 msgid "Czech Republic"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:417
+#: admin/classes/HashFormHelper.php:420
 msgctxt "Country Name"
 msgid "Denmark"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:418
+#: admin/classes/HashFormHelper.php:421
 msgctxt "Country Name"
 msgid "Djibouti"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:419
+#: admin/classes/HashFormHelper.php:422
 msgctxt "Country Name"
 msgid "Dominica"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:420
+#: admin/classes/HashFormHelper.php:423
 msgctxt "Country Name"
 msgid "Dominican Republic"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:421
+#: admin/classes/HashFormHelper.php:424
 msgctxt "Country Name"
 msgid "East Timor"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:422
+#: admin/classes/HashFormHelper.php:425
 msgctxt "Country Name"
 msgid "Ecuador"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:423
+#: admin/classes/HashFormHelper.php:426
 msgctxt "Country Name"
 msgid "Egypt"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:424
+#: admin/classes/HashFormHelper.php:427
 msgctxt "Country Name"
 msgid "El Salvador"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:425
+#: admin/classes/HashFormHelper.php:428
 msgctxt "Country Name"
 msgid "Equatorial Guinea"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:426
+#: admin/classes/HashFormHelper.php:429
 msgctxt "Country Name"
 msgid "Eritrea"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:427
+#: admin/classes/HashFormHelper.php:430
 msgctxt "Country Name"
 msgid "Estonia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:428
+#: admin/classes/HashFormHelper.php:431
 msgctxt "Country Name"
 msgid "Ethiopia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:429
+#: admin/classes/HashFormHelper.php:432
 msgctxt "Country Name"
 msgid "Falkland Islands (Malvinas)"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:430
+#: admin/classes/HashFormHelper.php:433
 msgctxt "Country Name"
 msgid "Faroe Islands"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:431
+#: admin/classes/HashFormHelper.php:434
 msgctxt "Country Name"
 msgid "Fiji"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:432
+#: admin/classes/HashFormHelper.php:435
 msgctxt "Country Name"
 msgid "Finland"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:433
+#: admin/classes/HashFormHelper.php:436
 msgctxt "Country Name"
 msgid "France"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:434
+#: admin/classes/HashFormHelper.php:437
 msgctxt "Country Name"
 msgid "French Guiana"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:435
+#: admin/classes/HashFormHelper.php:438
 msgctxt "Country Name"
 msgid "French Polynesia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:436
+#: admin/classes/HashFormHelper.php:439
 msgctxt "Country Name"
 msgid "French Southern Territories"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:437
+#: admin/classes/HashFormHelper.php:440
 msgctxt "Country Name"
 msgid "Gabon"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:438
+#: admin/classes/HashFormHelper.php:441
 msgctxt "Country Name"
 msgid "Gambia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:439
+#: admin/classes/HashFormHelper.php:442
 msgctxt "Country Name"
 msgid "Georgia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:440
+#: admin/classes/HashFormHelper.php:443
 msgctxt "Country Name"
 msgid "Germany"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:441
+#: admin/classes/HashFormHelper.php:444
 msgctxt "Country Name"
 msgid "Ghana"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:442
+#: admin/classes/HashFormHelper.php:445
 msgctxt "Country Name"
 msgid "Gibraltar"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:443
+#: admin/classes/HashFormHelper.php:446
 msgctxt "Country Name"
 msgid "Greece"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:444
+#: admin/classes/HashFormHelper.php:447
 msgctxt "Country Name"
 msgid "Greenland"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:445
+#: admin/classes/HashFormHelper.php:448
 msgctxt "Country Name"
 msgid "Grenada"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:446
+#: admin/classes/HashFormHelper.php:449
 msgctxt "Country Name"
 msgid "Guadeloupe"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:447
+#: admin/classes/HashFormHelper.php:450
 msgctxt "Country Name"
 msgid "Guam"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:448
+#: admin/classes/HashFormHelper.php:451
 msgctxt "Country Name"
 msgid "Guatemala"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:449
+#: admin/classes/HashFormHelper.php:452
 msgctxt "Country Name"
 msgid "Guernsey"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:450
+#: admin/classes/HashFormHelper.php:453
 msgctxt "Country Name"
 msgid "Guinea"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:451
+#: admin/classes/HashFormHelper.php:454
 msgctxt "Country Name"
 msgid "Guinea-Bissau"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:452
+#: admin/classes/HashFormHelper.php:455
 msgctxt "Country Name"
 msgid "Guyana"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:453
+#: admin/classes/HashFormHelper.php:456
 msgctxt "Country Name"
 msgid "Haiti"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:454
+#: admin/classes/HashFormHelper.php:457
 msgctxt "Country Name"
 msgid "Heard Island and McDonald Islands"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:455
+#: admin/classes/HashFormHelper.php:458
 msgctxt "Country Name"
 msgid "Holy See"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:456
+#: admin/classes/HashFormHelper.php:459
 msgctxt "Country Name"
 msgid "Honduras"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:457
+#: admin/classes/HashFormHelper.php:460
 msgctxt "Country Name"
 msgid "Hong Kong"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:458
+#: admin/classes/HashFormHelper.php:461
 msgctxt "Country Name"
 msgid "Hungary"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:459
+#: admin/classes/HashFormHelper.php:462
 msgctxt "Country Name"
 msgid "Iceland"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:460
+#: admin/classes/HashFormHelper.php:463
 msgctxt "Country Name"
 msgid "India"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:461
+#: admin/classes/HashFormHelper.php:464
 msgctxt "Country Name"
 msgid "Indonesia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:462
+#: admin/classes/HashFormHelper.php:465
 msgctxt "Country Name"
 msgid "Iran"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:463
+#: admin/classes/HashFormHelper.php:466
 msgctxt "Country Name"
 msgid "Iraq"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:464
+#: admin/classes/HashFormHelper.php:467
 msgctxt "Country Name"
 msgid "Ireland"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:466
+#: admin/classes/HashFormHelper.php:469
 msgctxt "Country Name"
 msgid "Isle of Man"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:465
+#: admin/classes/HashFormHelper.php:468
 msgctxt "Country Name"
 msgid "Israel"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:467
+#: admin/classes/HashFormHelper.php:470
 msgctxt "Country Name"
 msgid "Italy"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:468
+#: admin/classes/HashFormHelper.php:471
 msgctxt "Country Name"
 msgid "Jamaica"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:469
+#: admin/classes/HashFormHelper.php:472
 msgctxt "Country Name"
 msgid "Japan"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:470
+#: admin/classes/HashFormHelper.php:473
 msgctxt "Country Name"
 msgid "Jersey"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:471
+#: admin/classes/HashFormHelper.php:474
 msgctxt "Country Name"
 msgid "Jordan"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:472
+#: admin/classes/HashFormHelper.php:475
 msgctxt "Country Name"
 msgid "Kazakhstan"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:473
+#: admin/classes/HashFormHelper.php:476
 msgctxt "Country Name"
 msgid "Kenya"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:474
+#: admin/classes/HashFormHelper.php:477
 msgctxt "Country Name"
 msgid "Kiribati"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:477
+#: admin/classes/HashFormHelper.php:480
 msgctxt "Country Name"
 msgid "Kosovo"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:478
+#: admin/classes/HashFormHelper.php:481
 msgctxt "Country Name"
 msgid "Kuwait"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:479
+#: admin/classes/HashFormHelper.php:482
 msgctxt "Country Name"
 msgid "Kyrgyzstan"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:480
+#: admin/classes/HashFormHelper.php:483
 msgctxt "Country Name"
 msgid "Laos"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:481
+#: admin/classes/HashFormHelper.php:484
 msgctxt "Country Name"
 msgid "Latvia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:482
+#: admin/classes/HashFormHelper.php:485
 msgctxt "Country Name"
 msgid "Lebanon"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:483
+#: admin/classes/HashFormHelper.php:486
 msgctxt "Country Name"
 msgid "Lesotho"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:484
+#: admin/classes/HashFormHelper.php:487
 msgctxt "Country Name"
 msgid "Liberia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:485
+#: admin/classes/HashFormHelper.php:488
 msgctxt "Country Name"
 msgid "Libya"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:486
+#: admin/classes/HashFormHelper.php:489
 msgctxt "Country Name"
 msgid "Liechtenstein"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:487
+#: admin/classes/HashFormHelper.php:490
 msgctxt "Country Name"
 msgid "Lithuania"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:488
+#: admin/classes/HashFormHelper.php:491
 msgctxt "Country Name"
 msgid "Luxembourg"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:489
+#: admin/classes/HashFormHelper.php:492
 msgctxt "Country Name"
 msgid "Macao"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:490
+#: admin/classes/HashFormHelper.php:493
 msgctxt "Country Name"
 msgid "Macedonia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:491
+#: admin/classes/HashFormHelper.php:494
 msgctxt "Country Name"
 msgid "Madagascar"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:492
+#: admin/classes/HashFormHelper.php:495
 msgctxt "Country Name"
 msgid "Malawi"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:493
+#: admin/classes/HashFormHelper.php:496
 msgctxt "Country Name"
 msgid "Malaysia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:494
+#: admin/classes/HashFormHelper.php:497
 msgctxt "Country Name"
 msgid "Maldives"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:495
+#: admin/classes/HashFormHelper.php:498
 msgctxt "Country Name"
 msgid "Mali"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:496
+#: admin/classes/HashFormHelper.php:499
 msgctxt "Country Name"
 msgid "Malta"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:497
+#: admin/classes/HashFormHelper.php:500
 msgctxt "Country Name"
 msgid "Marshall Islands"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:498
+#: admin/classes/HashFormHelper.php:501
 msgctxt "Country Name"
 msgid "Martinique"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:499
+#: admin/classes/HashFormHelper.php:502
 msgctxt "Country Name"
 msgid "Mauritania"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:500
+#: admin/classes/HashFormHelper.php:503
 msgctxt "Country Name"
 msgid "Mauritius"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:501
+#: admin/classes/HashFormHelper.php:504
 msgctxt "Country Name"
 msgid "Mayotte"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:502
+#: admin/classes/HashFormHelper.php:505
 msgctxt "Country Name"
 msgid "Mexico"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:503
+#: admin/classes/HashFormHelper.php:506
 msgctxt "Country Name"
 msgid "Micronesia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:504
+#: admin/classes/HashFormHelper.php:507
 msgctxt "Country Name"
 msgid "Moldova"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:505
+#: admin/classes/HashFormHelper.php:508
 msgctxt "Country Name"
 msgid "Monaco"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:506
+#: admin/classes/HashFormHelper.php:509
 msgctxt "Country Name"
 msgid "Mongolia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:507
+#: admin/classes/HashFormHelper.php:510
 msgctxt "Country Name"
 msgid "Montenegro"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:508
+#: admin/classes/HashFormHelper.php:511
 msgctxt "Country Name"
 msgid "Montserrat"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:509
+#: admin/classes/HashFormHelper.php:512
 msgctxt "Country Name"
 msgid "Morocco"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:510
+#: admin/classes/HashFormHelper.php:513
 msgctxt "Country Name"
 msgid "Mozambique"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:511
+#: admin/classes/HashFormHelper.php:514
 msgctxt "Country Name"
 msgid "Myanmar"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:512
+#: admin/classes/HashFormHelper.php:515
 msgctxt "Country Name"
 msgid "Namibia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:513
+#: admin/classes/HashFormHelper.php:516
 msgctxt "Country Name"
 msgid "Nauru"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:514
+#: admin/classes/HashFormHelper.php:517
 msgctxt "Country Name"
 msgid "Nepal"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:515
+#: admin/classes/HashFormHelper.php:518
 msgctxt "Country Name"
 msgid "Netherlands"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:516
+#: admin/classes/HashFormHelper.php:519
 msgctxt "Country Name"
 msgid "New Caledonia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:517
+#: admin/classes/HashFormHelper.php:520
 msgctxt "Country Name"
 msgid "New Zealand"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:518
+#: admin/classes/HashFormHelper.php:521
 msgctxt "Country Name"
 msgid "Nicaragua"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:519
+#: admin/classes/HashFormHelper.php:522
 msgctxt "Country Name"
 msgid "Niger"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:520
+#: admin/classes/HashFormHelper.php:523
 msgctxt "Country Name"
 msgid "Nigeria"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:521
+#: admin/classes/HashFormHelper.php:524
 msgctxt "Country Name"
 msgid "Niue"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:522
+#: admin/classes/HashFormHelper.php:525
 msgctxt "Country Name"
 msgid "Norfolk Island"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:475
+#: admin/classes/HashFormHelper.php:478
 msgctxt "Country Name"
 msgid "North Korea"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:523
+#: admin/classes/HashFormHelper.php:526
 msgctxt "Country Name"
 msgid "Northern Mariana Islands"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:524
+#: admin/classes/HashFormHelper.php:527
 msgctxt "Country Name"
 msgid "Norway"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:525
+#: admin/classes/HashFormHelper.php:528
 msgctxt "Country Name"
 msgid "Oman"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:526
+#: admin/classes/HashFormHelper.php:529
 msgctxt "Country Name"
 msgid "Pakistan"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:527
+#: admin/classes/HashFormHelper.php:530
 msgctxt "Country Name"
 msgid "Palau"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:528
+#: admin/classes/HashFormHelper.php:531
 msgctxt "Country Name"
 msgid "Palestine"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:529
+#: admin/classes/HashFormHelper.php:532
 msgctxt "Country Name"
 msgid "Panama"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:530
+#: admin/classes/HashFormHelper.php:533
 msgctxt "Country Name"
 msgid "Papua New Guinea"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:531
+#: admin/classes/HashFormHelper.php:534
 msgctxt "Country Name"
 msgid "Paraguay"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:532
+#: admin/classes/HashFormHelper.php:535
 msgctxt "Country Name"
 msgid "Peru"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:533
+#: admin/classes/HashFormHelper.php:536
 msgctxt "Country Name"
 msgid "Philippines"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:534
+#: admin/classes/HashFormHelper.php:537
 msgctxt "Country Name"
 msgid "Pitcairn"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:535
+#: admin/classes/HashFormHelper.php:538
 msgctxt "Country Name"
 msgid "Poland"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:536
+#: admin/classes/HashFormHelper.php:539
 msgctxt "Country Name"
 msgid "Portugal"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:537
+#: admin/classes/HashFormHelper.php:540
 msgctxt "Country Name"
 msgid "Puerto Rico"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:538
+#: admin/classes/HashFormHelper.php:541
 msgctxt "Country Name"
 msgid "Qatar"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:539
+#: admin/classes/HashFormHelper.php:542
 msgctxt "Country Name"
 msgid "Reunion"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:540
+#: admin/classes/HashFormHelper.php:543
 msgctxt "Country Name"
 msgid "Romania"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:541
+#: admin/classes/HashFormHelper.php:544
 msgctxt "Country Name"
 msgid "Russia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:542
+#: admin/classes/HashFormHelper.php:545
 msgctxt "Country Name"
 msgid "Rwanda"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:543
+#: admin/classes/HashFormHelper.php:546
 msgctxt "Country Name"
 msgid "Saint Barthelemy"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:544
+#: admin/classes/HashFormHelper.php:547
 msgctxt "Country Name"
 msgid "Saint Helena, Ascension and Tristan da Cunha"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:545
+#: admin/classes/HashFormHelper.php:548
 msgctxt "Country Name"
 msgid "Saint Kitts and Nevis"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:546
+#: admin/classes/HashFormHelper.php:549
 msgctxt "Country Name"
 msgid "Saint Lucia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:547
+#: admin/classes/HashFormHelper.php:550
 msgctxt "Country Name"
 msgid "Saint Martin (French part)"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:548
+#: admin/classes/HashFormHelper.php:551
 msgctxt "Country Name"
 msgid "Saint Pierre and Miquelon"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:549
+#: admin/classes/HashFormHelper.php:552
 msgctxt "Country Name"
 msgid "Saint Vincent and the Grenadines"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:550
+#: admin/classes/HashFormHelper.php:553
 msgctxt "Country Name"
 msgid "Samoa"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:551
+#: admin/classes/HashFormHelper.php:554
 msgctxt "Country Name"
 msgid "San Marino"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:552
+#: admin/classes/HashFormHelper.php:555
 msgctxt "Country Name"
 msgid "Sao Tome and Principe"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:553
+#: admin/classes/HashFormHelper.php:556
 msgctxt "Country Name"
 msgid "Saudi Arabia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:554
+#: admin/classes/HashFormHelper.php:557
 msgctxt "Country Name"
 msgid "Senegal"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:555
+#: admin/classes/HashFormHelper.php:558
 msgctxt "Country Name"
 msgid "Serbia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:556
+#: admin/classes/HashFormHelper.php:559
 msgctxt "Country Name"
 msgid "Seychelles"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:557
+#: admin/classes/HashFormHelper.php:560
 msgctxt "Country Name"
 msgid "Sierra Leone"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:558
+#: admin/classes/HashFormHelper.php:561
 msgctxt "Country Name"
 msgid "Singapore"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:559
+#: admin/classes/HashFormHelper.php:562
 msgctxt "Country Name"
 msgid "Sint Maarten (Dutch part)"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:560
+#: admin/classes/HashFormHelper.php:563
 msgctxt "Country Name"
 msgid "Slovakia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:561
+#: admin/classes/HashFormHelper.php:564
 msgctxt "Country Name"
 msgid "Slovenia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:562
+#: admin/classes/HashFormHelper.php:565
 msgctxt "Country Name"
 msgid "Solomon Islands"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:563
+#: admin/classes/HashFormHelper.php:566
 msgctxt "Country Name"
 msgid "Somalia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:564
+#: admin/classes/HashFormHelper.php:567
 msgctxt "Country Name"
 msgid "South Africa"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:565
+#: admin/classes/HashFormHelper.php:568
 msgctxt "Country Name"
 msgid "South Georgia and the South Sandwich Islands"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:476
+#: admin/classes/HashFormHelper.php:479
 msgctxt "Country Name"
 msgid "South Korea"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:566
+#: admin/classes/HashFormHelper.php:569
 msgctxt "Country Name"
 msgid "South Sudan"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:567
+#: admin/classes/HashFormHelper.php:570
 msgctxt "Country Name"
 msgid "Spain"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:568
+#: admin/classes/HashFormHelper.php:571
 msgctxt "Country Name"
 msgid "Sri Lanka"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:569
+#: admin/classes/HashFormHelper.php:572
 msgctxt "Country Name"
 msgid "Sudan"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:570
+#: admin/classes/HashFormHelper.php:573
 msgctxt "Country Name"
 msgid "Suriname"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:571
+#: admin/classes/HashFormHelper.php:574
 msgctxt "Country Name"
 msgid "Svalbard and Jan Mayen"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:572
+#: admin/classes/HashFormHelper.php:575
 msgctxt "Country Name"
 msgid "Swaziland"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:573
+#: admin/classes/HashFormHelper.php:576
 msgctxt "Country Name"
 msgid "Sweden"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:574
+#: admin/classes/HashFormHelper.php:577
 msgctxt "Country Name"
 msgid "Switzerland"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:575
+#: admin/classes/HashFormHelper.php:578
 msgctxt "Country Name"
 msgid "Syria"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:576
+#: admin/classes/HashFormHelper.php:579
 msgctxt "Country Name"
 msgid "Taiwan"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:577
+#: admin/classes/HashFormHelper.php:580
 msgctxt "Country Name"
 msgid "Tajikistan"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:578
+#: admin/classes/HashFormHelper.php:581
 msgctxt "Country Name"
 msgid "Tanzania"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:579
+#: admin/classes/HashFormHelper.php:582
 msgctxt "Country Name"
 msgid "Thailand"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:580
+#: admin/classes/HashFormHelper.php:583
 msgctxt "Country Name"
 msgid "Timor-Leste"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:581
+#: admin/classes/HashFormHelper.php:584
 msgctxt "Country Name"
 msgid "Togo"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:582
+#: admin/classes/HashFormHelper.php:585
 msgctxt "Country Name"
 msgid "Tokelau"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:583
+#: admin/classes/HashFormHelper.php:586
 msgctxt "Country Name"
 msgid "Tonga"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:584
+#: admin/classes/HashFormHelper.php:587
 msgctxt "Country Name"
 msgid "Trinidad and Tobago"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:585
+#: admin/classes/HashFormHelper.php:588
 msgctxt "Country Name"
 msgid "Tunisia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:586
+#: admin/classes/HashFormHelper.php:589
 msgctxt "Country Name"
 msgid "Turkey"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:587
+#: admin/classes/HashFormHelper.php:590
 msgctxt "Country Name"
 msgid "Turkmenistan"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:588
+#: admin/classes/HashFormHelper.php:591
 msgctxt "Country Name"
 msgid "Turks and Caicos Islands"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:589
+#: admin/classes/HashFormHelper.php:592
 msgctxt "Country Name"
 msgid "Tuvalu"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:590
+#: admin/classes/HashFormHelper.php:593
 msgctxt "Country Name"
 msgid "Uganda"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:591
+#: admin/classes/HashFormHelper.php:594
 msgctxt "Country Name"
 msgid "Ukraine"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:592
+#: admin/classes/HashFormHelper.php:595
 msgctxt "Country Name"
 msgid "United Arab Emirates"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:593
+#: admin/classes/HashFormHelper.php:596
 msgctxt "Country Name"
 msgid "United Kingdom"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:594
+#: admin/classes/HashFormHelper.php:597
 msgctxt "Country Name"
 msgid "United States"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:595
+#: admin/classes/HashFormHelper.php:598
 msgctxt "Country Name"
 msgid "United States Minor Outlying Islands"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:596
+#: admin/classes/HashFormHelper.php:599
 msgctxt "Country Name"
 msgid "Uruguay"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:597
+#: admin/classes/HashFormHelper.php:600
 msgctxt "Country Name"
 msgid "Uzbekistan"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:598
+#: admin/classes/HashFormHelper.php:601
 msgctxt "Country Name"
 msgid "Vanuatu"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:599
+#: admin/classes/HashFormHelper.php:602
 msgctxt "Country Name"
 msgid "Vatican City"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:600
+#: admin/classes/HashFormHelper.php:603
 msgctxt "Country Name"
 msgid "Venezuela"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:601
+#: admin/classes/HashFormHelper.php:604
 msgctxt "Country Name"
 msgid "Vietnam"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:602
+#: admin/classes/HashFormHelper.php:605
 msgctxt "Country Name"
 msgid "Virgin Islands, British"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:603
+#: admin/classes/HashFormHelper.php:606
 msgctxt "Country Name"
 msgid "Virgin Islands, U.S."
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:604
+#: admin/classes/HashFormHelper.php:607
 msgctxt "Country Name"
 msgid "Wallis and Futuna"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:605
+#: admin/classes/HashFormHelper.php:608
 msgctxt "Country Name"
 msgid "Western Sahara"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:606
+#: admin/classes/HashFormHelper.php:609
 msgctxt "Country Name"
 msgid "Yemen"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:607
+#: admin/classes/HashFormHelper.php:610
 msgctxt "Country Name"
 msgid "Zambia"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:608
+#: admin/classes/HashFormHelper.php:611
 msgctxt "Country Name"
 msgid "Zimbabwe"
 msgstr ""
@@ -1771,7 +1798,7 @@ msgstr ""
 msgid "Create New Form"
 msgstr ""
 
-#: admin/forms/style/style.php:90
+#: admin/forms/style/style.php:89
 msgid "Create/Edit Style Template"
 msgstr ""
 
@@ -1783,32 +1810,32 @@ msgstr ""
 msgid "Created By"
 msgstr ""
 
-#: admin/classes/fields/settings.php:358
+#: admin/classes/fields/settings.php:371
 msgid "CSS Classes"
 msgstr ""
 
-#: admin/classes/fields/HashFormFieldHTML.php:51
+#: admin/classes/fields/HashFormFieldHTML.php:53
 msgid "Custom HTML - No Preview Available"
 msgstr ""
 
-#: admin/forms/style/style.php:36
+#: admin/classes/HashFormElement.php:72 admin/forms/style/style.php:35
 msgid "Custom Style"
 msgstr ""
 
-#: admin/classes/fields/settings.php:265
+#: admin/classes/fields/settings.php:278
 msgid "Dashed"
 msgstr ""
 
-#: admin/classes/HashFormListing.php:51 admin/classes/HashFormFields.php:182
+#: admin/classes/HashFormListing.php:51 admin/classes/HashFormFields.php:184
 msgid "Date"
 msgstr ""
 
-#: admin/classes/fields/settings.php:222
+#: admin/classes/fields/settings.php:235
 msgid "Date Format"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:283 admin/classes/HashFormStyles.php:293
-#: admin/classes/HashFormStyles.php:408
+#: admin/classes/HashFormStyles.php:311 admin/classes/HashFormStyles.php:321
+#: admin/classes/HashFormStyles.php:436
 msgid "Default"
 msgstr ""
 
@@ -1816,30 +1843,31 @@ msgstr ""
 msgid "Default Demo Form"
 msgstr ""
 
-#: admin/forms/style/style.php:35
+#: admin/forms/style/style.php:34
 msgid "Default Style"
 msgstr ""
 
 #: admin/classes/fields/HashFormFieldName.php:67
-#: admin/classes/fields/settings.php:391
-#: admin/classes/fields/HashFormFieldAddress.php:75
+#: admin/classes/fields/settings.php:404
+#: admin/classes/fields/HashFormFieldAddress.php:74
 msgid "Default Value"
 msgstr ""
 
-#: admin/settings/email-settings.php:25 admin/classes/fields/settings.php:181
+#: admin/settings/email-settings.php:25 admin/classes/fields/settings.php:194
 #: admin/classes/fields/HashFormFieldType.php:174
 #: admin/classes/fields/HashFormFieldType.php:174
 msgid "Delete"
 msgstr ""
 
-#: admin/classes/HashFormListing.php:185 admin/classes/HashFormListing.php:258
-#: admin/classes/HashFormEntryListing.php:172
-#: admin/classes/HashFormEntryListing.php:269
+#: admin/classes/HashFormListing.php:180 admin/classes/HashFormListing.php:253
+#: admin/classes/HashFormEntryListing.php:169
+#: admin/classes/HashFormEntryListing.php:266
 msgid "Delete Permanently"
 msgstr ""
 
-#: admin/styles/main.php:192 admin/classes/fields/HashFormFieldName.php:75
-#: admin/classes/fields/HashFormFieldAddress.php:84
+#: admin/classes/HashFormElement.php:198 admin/styles/main.php:192
+#: admin/classes/fields/HashFormFieldName.php:75
+#: admin/classes/fields/HashFormFieldAddress.php:83
 msgid "Description"
 msgstr ""
 
@@ -1847,32 +1875,36 @@ msgstr ""
 msgid "Design, Embed, Connect: Your Ultimate Form Companion for WordPress"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:642 admin/styles/demo-preview.php:172
+#: admin/classes/HashFormHelper.php:645 admin/styles/demo-preview.php:172
 #: admin/styles/demo-preview.php:198 admin/styles/demo-preview.php:246
 msgid "Disagree"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:952
+#: admin/classes/HashFormBuilder.php:979
 msgid "Dismiss this notice."
 msgstr ""
 
-#: admin/styles/main.php:898
+#: admin/classes/HashFormElement.php:859 admin/styles/main.php:898
 msgid "Divider"
 msgstr ""
 
-#: admin/classes/fields/settings.php:277
+#: admin/classes/fields/settings.php:290
 msgid "Divider Height (px)"
 msgstr ""
 
-#: admin/classes/fields/settings.php:253
+#: admin/classes/fields/settings.php:266
 msgid "Divider Type"
 msgstr ""
 
-#: admin/classes/fields/settings.php:262
+#: admin/classes/HashFormSettings.php:14
+msgid "Documentation"
+msgstr ""
+
+#: admin/classes/fields/settings.php:275
 msgid "Dotted"
 msgstr ""
 
-#: admin/classes/fields/settings.php:259
+#: admin/classes/fields/settings.php:272
 msgid "Double"
 msgstr ""
 
@@ -1880,31 +1912,31 @@ msgstr ""
 msgid "Drop files here to upload"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:150 admin/styles/demo-preview.php:166
+#: admin/classes/HashFormFields.php:152 admin/styles/demo-preview.php:166
 msgid "Dropdown"
 msgstr ""
 
-#: admin/classes/HashFormListing.php:234
+#: admin/classes/HashFormListing.php:229
 msgid "Duplicate"
 msgstr ""
 
-#: admin/classes/HashFormListing.php:238
+#: admin/classes/HashFormListing.php:233
 msgid "Edit"
 msgstr ""
 
-#: admin/forms/build/builder.php:53
+#: admin/forms/build/builder.php:52
 msgid "Edit or add field options (one per line)"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:25
+#: admin/classes/HashFormStyles.php:28
 msgid "Edit Template"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:126 admin/styles/demo-preview.php:39
+#: admin/classes/HashFormFields.php:128 admin/styles/demo-preview.php:39
 msgid "Email"
 msgstr ""
 
-#: admin/classes/HashFormSettings.php:172
+#: admin/classes/HashFormSettings.php:191
 msgid "Email Sent Successfully"
 msgstr ""
 
@@ -1916,12 +1948,12 @@ msgstr ""
 msgid "Email Template"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:508
+#: admin/classes/HashFormBuilder.php:516
 msgid "Embed"
 msgstr ""
 
-#: admin/classes/HashFormListing.php:211
-#: admin/classes/HashFormEntryListing.php:200
+#: admin/classes/HashFormListing.php:206
+#: admin/classes/HashFormEntryListing.php:197
 msgid "Empty Trash"
 msgstr ""
 
@@ -1929,11 +1961,15 @@ msgstr ""
 msgid "Enable Auto Responder"
 msgstr ""
 
-#: admin/classes/fields/settings.php:432
+#: admin/classes/HashFormElement.php:79
+msgid "Enable Custom Style"
+msgstr ""
+
+#: admin/classes/fields/settings.php:445
 msgid "Enter a Regex Format to validate."
 msgstr ""
 
-#: admin/classes/HashFormListing.php:48 admin/classes/HashFormBuilder.php:565
+#: admin/classes/HashFormListing.php:48 admin/classes/HashFormBuilder.php:573
 #: admin/classes/HashFormEntry.php:16 admin/classes/HashFormEntry.php:16
 msgid "Entries"
 msgstr ""
@@ -1946,23 +1982,23 @@ msgstr ""
 msgid "Entry"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:269
+#: admin/classes/HashFormHelper.php:272
 msgid "Entry Submitted: "
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:743
+#: admin/classes/HashFormBuilder.php:770
 msgid "Equals to"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:446
+#: admin/classes/HashFormBuilder.php:454
 msgid "Error ! Refresh the page and try again."
 msgstr ""
 
-#: admin/forms/settings/form-confirmation.php:44
+#: admin/forms/settings/form-confirmation.php:54
 msgid "Error Message"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:487
+#: admin/classes/HashFormBuilder.php:495
 msgid "Error! Form Can not be Copied"
 msgstr ""
 
@@ -1982,19 +2018,19 @@ msgstr ""
 msgid "Export Style"
 msgstr ""
 
-#: admin/classes/fields/settings.php:328 admin/classes/fields/settings.php:583
+#: admin/classes/fields/settings.php:341 admin/classes/fields/settings.php:596
 msgid "Extensions"
 msgstr ""
 
-#: admin/classes/fields/settings.php:147
+#: admin/classes/fields/settings.php:160
 msgid "Extra Large"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:656
+#: admin/classes/HashFormHelper.php:659
 msgid "Extremely Likely"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:652
+#: admin/classes/HashFormHelper.php:655
 msgid "Extremely Unlikely"
 msgstr ""
 
@@ -2002,23 +2038,23 @@ msgstr ""
 msgid "Failed"
 msgstr ""
 
-#: admin/classes/HashFormSettings.php:179
+#: admin/classes/HashFormSettings.php:198
 msgid "Failed to Send Email"
 msgstr ""
 
-#: admin/classes/fields/settings.php:530
+#: admin/classes/fields/settings.php:543
 msgid "Field Alignment"
 msgstr ""
 
-#: admin/classes/fields/settings.php:421
+#: admin/classes/fields/settings.php:434
 msgid "Field Description"
 msgstr ""
 
-#: admin/classes/fields/settings.php:29
+#: admin/classes/fields/settings.php:42
 msgid "Field Label"
 msgstr ""
 
-#: admin/classes/fields/settings.php:489
+#: admin/classes/fields/settings.php:502
 msgid "Field Max Width"
 msgstr ""
 
@@ -2026,23 +2062,23 @@ msgstr ""
 msgid "Field Options"
 msgstr ""
 
-#: admin/styles/main.php:209
+#: admin/classes/HashFormElement.php:242 admin/styles/main.php:209
 msgid "Fields"
 msgstr ""
 
-#: admin/classes/HashFormUploader.php:141
+#: admin/classes/HashFormUploader.php:181
 msgid "File has an invalid extension, it should be one of"
 msgstr ""
 
-#: admin/classes/HashFormUploader.php:124
+#: admin/classes/HashFormUploader.php:164
 msgid "File is empty"
 msgstr ""
 
-#: admin/classes/HashFormUploader.php:128
+#: admin/classes/HashFormUploader.php:168
 msgid "File is too large"
 msgstr ""
 
-#: admin/classes/HashFormEntryListing.php:211
+#: admin/classes/HashFormEntryListing.php:208
 msgid "Filter"
 msgstr ""
 
@@ -2059,23 +2095,23 @@ msgstr ""
 msgid "First Middle Last"
 msgstr ""
 
-#: admin/styles/main.php:220
+#: admin/classes/HashFormElement.php:309 admin/styles/main.php:220
 msgid "Focus"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:405
+#: admin/classes/HashFormStyles.php:433
 msgid "Font Family"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:496
+#: admin/classes/HashFormStyles.php:524
 msgid "Font Size"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:437
+#: admin/classes/HashFormStyles.php:465
 msgid "Font Style"
 msgstr ""
 
-#: admin/classes/HashFormElement.php:35
+#: admin/classes/HashFormElement.php:35 admin/classes/HashFormElement.php:90
 #: admin/classes/HashFormEntryListing.php:50 admin/styles/main.php:21
 msgid "Form"
 msgstr ""
@@ -2084,7 +2120,8 @@ msgstr ""
 msgid "Form CSS Class"
 msgstr ""
 
-#: admin/styles/main.php:865 admin/forms/build/sidebar.php:69
+#: admin/classes/HashFormElement.php:749 admin/styles/main.php:865
+#: admin/forms/build/sidebar.php:69
 msgid "Form Description"
 msgstr ""
 
@@ -2092,46 +2129,46 @@ msgstr ""
 msgid "Form Name"
 msgstr ""
 
-#: admin/forms/style/style.php:32
+#: admin/forms/style/style.php:31
 msgid "Form Style"
 msgstr ""
 
-#: admin/classes/HashFormImportExport.php:243
+#: admin/classes/HashFormImportExport.php:239
 msgid "Form Style Imported Successfully"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:272
+#: admin/classes/HashFormHelper.php:275
 msgid "Form Submitted Successfully"
 msgstr ""
 
-#: admin/classes/HashFormListing.php:47 admin/styles/main.php:848
-#: admin/styles/demo-preview.php:7 admin/forms/build/sidebar.php:10
-#: admin/forms/build/sidebar.php:57
+#: admin/classes/HashFormListing.php:47 admin/classes/HashFormElement.php:705
+#: admin/styles/main.php:848 admin/styles/demo-preview.php:7
+#: admin/forms/build/sidebar.php:10 admin/forms/build/sidebar.php:57
 msgid "Form Title"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:484
+#: admin/classes/HashFormBuilder.php:492
 msgid "Form was Successfully Copied"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:196 admin/classes/HashFormBuilder.php:658
-#: admin/classes/HashFormBuilder.php:674 admin/forms/build/edit.php:16
+#: admin/classes/HashFormBuilder.php:197 admin/classes/HashFormBuilder.php:664
+#: admin/classes/HashFormBuilder.php:681 admin/forms/build/edit.php:16
 msgid "Form was successfully updated."
 msgstr ""
 
-#: admin/classes/fields/settings.php:430
+#: admin/classes/fields/settings.php:443
 msgid "Format"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:41
+#: admin/classes/HashFormBuilder.php:42
 msgid "Forms"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:240
+#: admin/classes/HashFormBuilder.php:241
 msgid "Forms per page"
 msgstr ""
 
-#: admin/classes/fields/settings.php:300
+#: admin/classes/fields/settings.php:313
 msgid "From"
 msgstr ""
 
@@ -2149,20 +2186,20 @@ msgstr ""
 msgid "Full Name"
 msgstr ""
 
-#: admin/classes/fields/settings.php:432
+#: admin/classes/fields/settings.php:445
 msgid "Generate Regex"
 msgstr ""
 
-#: admin/classes/HashFormUploader.php:37
+#: admin/classes/HashFormUploader.php:66
 msgid "Getting content length is not supported."
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:422
+#: admin/classes/HashFormStyles.php:450
 msgid "Google Fonts"
 msgstr ""
 
 #. %1$s is link start tag, %2$s is link end tag.
-#: admin/classes/HashFormBuilder.php:926
+#: admin/classes/HashFormBuilder.php:953
 #, php-format
 msgid ""
 "Great to see that you have been using Hash Form for some time. We hope you "
@@ -2170,51 +2207,51 @@ msgid ""
 "stars rating%2$s and spread your words to the world."
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:745
+#: admin/classes/HashFormBuilder.php:772
 msgid "Greater Than"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:746
+#: admin/classes/HashFormBuilder.php:773
 msgid "Greater Than Or Equals to"
 msgstr ""
 
-#: admin/classes/fields/settings.php:268
+#: admin/classes/fields/settings.php:281
 msgid "Groove"
 msgstr ""
 
-#: admin/classes/fields/settings.php:81
+#: admin/classes/fields/settings.php:94
 msgid "H1"
 msgstr ""
 
-#: admin/classes/fields/settings.php:84
+#: admin/classes/fields/settings.php:97
 msgid "H2"
 msgstr ""
 
-#: admin/classes/fields/settings.php:87
+#: admin/classes/fields/settings.php:100
 msgid "H3"
 msgstr ""
 
-#: admin/classes/fields/settings.php:90
+#: admin/classes/fields/settings.php:103
 msgid "H4"
 msgstr ""
 
-#: admin/classes/fields/settings.php:93
+#: admin/classes/fields/settings.php:106
 msgid "H5"
 msgstr ""
 
-#: admin/classes/fields/settings.php:96
+#: admin/classes/fields/settings.php:109
 msgid "H6"
 msgstr ""
 
-#: admin/styles/main.php:960
+#: admin/classes/HashFormElement.php:1006 admin/styles/main.php:960
 msgid "Handle Color"
 msgstr ""
 
-#: admin/styles/main.php:941
+#: admin/classes/HashFormElement.php:965 admin/styles/main.php:941
 msgid "Handle Size"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:40 admin/classes/HashFormElement.php:16
+#: admin/classes/HashFormBuilder.php:41 admin/classes/HashFormElement.php:16
 msgid "Hash Form"
 msgstr ""
 
@@ -2222,11 +2259,11 @@ msgstr ""
 msgid "Hash Form - Drag & Drop Form Builder"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:85
+#: admin/classes/HashFormStyles.php:97
 msgid "Hash Form Styles"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:781
+#: admin/classes/HashFormBuilder.php:808
 msgid "Hash Froms"
 msgstr ""
 
@@ -2238,32 +2275,33 @@ msgstr ""
 msgid "Header Image"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:202 admin/styles/main.php:882
+#: admin/classes/HashFormFields.php:204 admin/classes/HashFormElement.php:793
+#: admin/styles/main.php:882
 msgid "Heading"
 msgstr ""
 
-#: admin/styles/main.php:934
+#: admin/classes/HashFormElement.php:944 admin/styles/main.php:934
 msgid "Height"
 msgstr ""
 
-#: admin/classes/fields/settings.php:196
+#: admin/classes/fields/settings.php:209
 msgid "Height (px)"
 msgstr ""
 
-#: admin/classes/HashFormSettings.php:152
+#: admin/classes/HashFormSettings.php:171
 msgid "Hello, this is a test email."
 msgstr ""
 
-#: admin/classes/HashFormFields.php:198
+#: admin/classes/HashFormFields.php:200
 #: admin/classes/fields/HashFormFieldHidden.php:27
 msgid "Hidden"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:712 admin/classes/fields/settings.php:46
+#: admin/classes/HashFormBuilder.php:739 admin/classes/fields/settings.php:59
 msgid "Hide"
 msgstr ""
 
-#: admin/classes/fields/settings.php:69
+#: admin/classes/fields/settings.php:82
 msgid "Hide Label"
 msgstr ""
 
@@ -2274,11 +2312,12 @@ msgctxt "Horizontal"
 msgid "H"
 msgstr ""
 
+#: admin/classes/HashFormElement.php:444 admin/classes/HashFormElement.php:579
 #: admin/styles/main.php:421 admin/styles/main.php:626
 msgid "Hover"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:222
+#: admin/classes/HashFormFields.php:224
 msgid "HTML"
 msgstr ""
 
@@ -2286,7 +2325,7 @@ msgstr ""
 msgid "https://hashthemes.com/"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:931
+#: admin/classes/HashFormBuilder.php:958
 msgid "I have already rated"
 msgstr ""
 
@@ -2294,11 +2333,11 @@ msgstr ""
 msgid "ID"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:728
+#: admin/classes/HashFormBuilder.php:755
 msgid "if"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:218
+#: admin/classes/HashFormFields.php:220
 msgid "Image"
 msgstr ""
 
@@ -2306,15 +2345,15 @@ msgstr ""
 msgid "Image Field - No Image"
 msgstr ""
 
-#: admin/classes/fields/settings.php:509
+#: admin/classes/fields/settings.php:522
 msgid "Image Max Width"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:162 admin/styles/demo-preview.php:280
+#: admin/classes/HashFormFields.php:164 admin/styles/demo-preview.php:280
 msgid "Image Selector"
 msgstr ""
 
-#: admin/classes/fields/settings.php:151
+#: admin/classes/fields/settings.php:164
 msgid "Image Size"
 msgstr ""
 
@@ -2328,11 +2367,11 @@ msgstr ""
 msgid "Import/Export"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:687
+#: admin/classes/HashFormHelper.php:690
 msgid "Importance"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:666
+#: admin/classes/HashFormHelper.php:669
 msgid "Important"
 msgstr ""
 
@@ -2342,15 +2381,15 @@ msgid ""
 "delivery. eg. admin@yourwebsite.com"
 msgstr ""
 
-#: admin/classes/fields/settings.php:452
+#: admin/classes/fields/settings.php:465
 msgid "Inline"
 msgstr ""
 
-#: admin/forms/build/builder.php:61
+#: admin/forms/build/builder.php:60
 msgid "Insert Presets"
 msgstr ""
 
-#: admin/classes/HashFormSmtp.php:28
+#: admin/classes/HashFormSmtp.php:33
 msgid "Install WP Mail SMTP Plugin"
 msgstr ""
 
@@ -2362,7 +2401,7 @@ msgstr ""
 msgid "Invalid Extension"
 msgstr ""
 
-#: admin/classes/fields/settings.php:573
+#: admin/classes/fields/settings.php:586
 msgid "Invalid Format"
 msgstr ""
 
@@ -2370,19 +2409,23 @@ msgstr ""
 msgid "IP"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:749
+#: admin/classes/HashFormBuilder.php:776
 msgid "Is Like"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:750
+#: admin/classes/HashFormBuilder.php:777
 msgid "Is Not Like"
 msgstr ""
 
-#: admin/classes/fields/settings.php:52
+#: admin/classes/HashFormElement.php:144
+msgid "Label"
+msgstr ""
+
+#: admin/classes/fields/settings.php:65
 msgid "Label Alignment"
 msgstr ""
 
-#: admin/classes/fields/settings.php:34
+#: admin/classes/fields/settings.php:47
 msgid "Label Position"
 msgstr ""
 
@@ -2390,7 +2433,7 @@ msgstr ""
 msgid "Labels"
 msgstr ""
 
-#: admin/classes/fields/settings.php:146
+#: admin/classes/fields/settings.php:159
 msgid "Large"
 msgstr ""
 
@@ -2403,31 +2446,32 @@ msgstr ""
 msgid "Last First"
 msgstr ""
 
-#: admin/styles/main.php:100 admin/styles/main.php:128
-#: admin/styles/main.php:156 admin/styles/main.php:348
-#: admin/styles/main.php:376 admin/styles/main.php:404
-#: admin/styles/main.php:548 admin/styles/main.php:576
-#: admin/styles/main.php:604 admin/styles/main.php:753
-#: admin/styles/main.php:781 admin/styles/main.php:809
-#: admin/styles/main.php:840 admin/forms/build/sidebar.php:99
-#: admin/classes/fields/settings.php:40 admin/classes/fields/settings.php:55
-#: admin/classes/fields/settings.php:116 admin/classes/fields/settings.php:533
+#: admin/classes/HashFormElement.php:682 admin/styles/main.php:100
+#: admin/styles/main.php:128 admin/styles/main.php:156
+#: admin/styles/main.php:348 admin/styles/main.php:376
+#: admin/styles/main.php:404 admin/styles/main.php:548
+#: admin/styles/main.php:576 admin/styles/main.php:604
+#: admin/styles/main.php:753 admin/styles/main.php:781
+#: admin/styles/main.php:809 admin/styles/main.php:840
+#: admin/forms/build/sidebar.php:99 admin/classes/fields/settings.php:53
+#: admin/classes/fields/settings.php:68 admin/classes/fields/settings.php:129
+#: admin/classes/fields/settings.php:546
 msgid "Left"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:747
+#: admin/classes/HashFormBuilder.php:774
 msgid "Less Than"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:748
+#: admin/classes/HashFormBuilder.php:775
 msgid "Less Than Or Equals to"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:509
+#: admin/classes/HashFormStyles.php:537
 msgid "Letter Spacing"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:655 admin/classes/HashFormHelper.php:695
+#: admin/classes/HashFormHelper.php:658 admin/classes/HashFormHelper.php:698
 msgid "Likely"
 msgstr ""
 
@@ -2441,27 +2485,27 @@ msgstr ""
 msgid "Line 2"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:522
+#: admin/classes/HashFormStyles.php:550
 msgid "Line Height"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:296
+#: admin/classes/HashFormStyles.php:324
 msgid "Line-through"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:286
+#: admin/classes/HashFormStyles.php:314
 msgid "Lowercase"
 msgstr ""
 
-#: admin/classes/fields/settings.php:480
+#: admin/classes/fields/settings.php:493
 msgid "Max Characters"
 msgstr ""
 
-#: admin/classes/fields/settings.php:213
+#: admin/classes/fields/settings.php:226
 msgid "Max Time"
 msgstr ""
 
-#: admin/classes/fields/settings.php:334
+#: admin/classes/fields/settings.php:347
 msgid "Maximum File Size Allowed to Upload (MB)"
 msgstr ""
 
@@ -2473,13 +2517,13 @@ msgstr ""
 msgid "Maximum Rating"
 msgstr ""
 
-#: admin/classes/fields/settings.php:145
+#: admin/classes/fields/settings.php:158
 msgid "Medium"
 msgstr ""
 
 #: admin/forms/settings/auto-responder.php:54
-#: admin/forms/settings/form-confirmation.php:10
-#: admin/forms/settings/form-confirmation.php:19
+#: admin/forms/settings/form-confirmation.php:5
+#: admin/forms/settings/form-confirmation.php:29
 #: admin/forms/settings/email-settings.php:97
 msgid "Message"
 msgstr ""
@@ -2489,7 +2533,7 @@ msgstr ""
 msgid "Middle"
 msgstr ""
 
-#: admin/classes/fields/settings.php:209
+#: admin/classes/fields/settings.php:222
 msgid "Min Time"
 msgstr ""
 
@@ -2497,31 +2541,31 @@ msgstr ""
 msgid "Move Field"
 msgstr ""
 
-#: admin/classes/HashFormListing.php:180
-#: admin/classes/HashFormEntryListing.php:167
+#: admin/classes/HashFormListing.php:175
+#: admin/classes/HashFormEntryListing.php:164
 msgid "Move to Trash"
 msgstr ""
 
-#: admin/classes/fields/settings.php:135
+#: admin/classes/fields/settings.php:148
 msgid "Multiple"
 msgstr ""
 
-#: admin/classes/fields/settings.php:342 admin/classes/fields/settings.php:588
+#: admin/classes/fields/settings.php:355 admin/classes/fields/settings.php:601
 msgid "Multiple Uploads"
 msgstr ""
 
-#: admin/classes/fields/settings.php:348
+#: admin/classes/fields/settings.php:361
 msgid "Multiple Uploads Limit"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:635 admin/classes/HashFormHelper.php:646
-#: admin/classes/HashFormHelper.php:657 admin/classes/HashFormHelper.php:668
+#: admin/classes/HashFormHelper.php:638 admin/classes/HashFormHelper.php:649
+#: admin/classes/HashFormHelper.php:660 admin/classes/HashFormHelper.php:671
 #: admin/styles/demo-preview.php:176 admin/styles/demo-preview.php:222
 #: admin/styles/demo-preview.php:270
 msgid "N/A"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:122 admin/styles/demo-preview.php:15
+#: admin/classes/HashFormFields.php:124 admin/styles/demo-preview.php:15
 msgid "Name"
 msgstr ""
 
@@ -2529,18 +2573,18 @@ msgstr ""
 msgid "Name layout"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:632 admin/classes/HashFormHelper.php:643
-#: admin/classes/HashFormHelper.php:654 admin/classes/HashFormHelper.php:665
+#: admin/classes/HashFormHelper.php:635 admin/classes/HashFormHelper.php:646
+#: admin/classes/HashFormHelper.php:657 admin/classes/HashFormHelper.php:668
 #: admin/styles/demo-preview.php:173 admin/styles/demo-preview.php:204
 #: admin/styles/demo-preview.php:252
 msgid "Neutral"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:263
+#: admin/classes/HashFormHelper.php:266
 msgid "New Entry: "
 msgstr ""
 
-#: admin/classes/HashFormEmail.php:127
+#: admin/classes/HashFormEmail.php:153
 msgid "New Form Submission"
 msgstr ""
 
@@ -2549,7 +2593,7 @@ msgstr ""
 msgid "New Option"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:24
+#: admin/classes/HashFormStyles.php:27
 msgid "New Template"
 msgstr ""
 
@@ -2561,11 +2605,11 @@ msgstr ""
 msgid "No entries found."
 msgstr ""
 
-#: admin/classes/HashFormEntry.php:248
+#: admin/classes/HashFormEntry.php:254
 msgid "No Entries were specified"
 msgstr ""
 
-#: admin/classes/HashFormUploader.php:118
+#: admin/classes/HashFormUploader.php:158
 msgid "No files were uploaded."
 msgstr ""
 
@@ -2573,45 +2617,46 @@ msgstr ""
 msgid "No forms found. Please create a new one."
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:362
+#: admin/classes/HashFormBuilder.php:370
 msgid "No forms were specified"
 msgstr ""
 
-#: admin/classes/HashFormEmail.php:126
+#: admin/classes/HashFormEmail.php:152
 msgid "No Name"
 msgstr ""
 
-#: admin/forms/style/style.php:34
+#: admin/forms/style/style.php:33
 msgid "No Style"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:31
+#: admin/classes/HashFormStyles.php:34
 msgid "No Template found in Trash."
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:30
+#: admin/classes/HashFormStyles.php:33
 msgid "No Template found."
 msgstr ""
 
 #: admin/classes/HashFormListing.php:59
-#: admin/classes/HashFormEntryListing.php:225
+#: admin/classes/HashFormEntryListing.php:222
 msgid "No Title"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:284 admin/classes/HashFormStyles.php:294
+#: admin/classes/HashFormStyles.php:312 admin/classes/HashFormStyles.php:322
 msgid "None"
 msgstr ""
 
-#: admin/styles/main.php:219 admin/styles/main.php:420
-#: admin/styles/main.php:625
+#: admin/classes/HashFormElement.php:267 admin/classes/HashFormElement.php:402
+#: admin/classes/HashFormElement.php:537 admin/styles/main.php:219
+#: admin/styles/main.php:420 admin/styles/main.php:625
 msgid "Normal"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:663
+#: admin/classes/HashFormHelper.php:666
 msgid "Not at all Important"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:744
+#: admin/classes/HashFormBuilder.php:771
 msgid "Not Equals to"
 msgstr ""
 
@@ -2620,15 +2665,15 @@ msgid ""
 "Note: This field will not show in the form. Enter the value to be hidden."
 msgstr ""
 
-#: admin/classes/HashFormValidate.php:17
+#: admin/classes/HashFormValidate.php:79
 msgid "Nounce Error"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:166 admin/styles/demo-preview.php:342
+#: admin/classes/HashFormFields.php:168 admin/styles/demo-preview.php:342
 msgid "Number"
 msgstr ""
 
-#: admin/classes/fields/settings.php:297
+#: admin/classes/fields/settings.php:310
 msgid "Number Range"
 msgstr ""
 
@@ -2637,58 +2682,62 @@ msgid "Oops!"
 msgstr ""
 
 #: admin/styles/demo-preview.php:290
-#: admin/classes/fields/HashFormFieldType.php:538
+#: admin/classes/fields/HashFormFieldType.php:539
 msgid "Option 1"
 msgstr ""
 
 #: admin/styles/demo-preview.php:299
-#: admin/classes/fields/HashFormFieldType.php:541
+#: admin/classes/fields/HashFormFieldType.php:542
 msgid "Option 2"
 msgstr ""
 
 #: admin/styles/demo-preview.php:308
-#: admin/classes/fields/HashFormFieldType.php:544
+#: admin/classes/fields/HashFormFieldType.php:545
 msgid "Option 3"
 msgstr ""
 
-#: admin/classes/fields/settings.php:449
+#: admin/classes/fields/settings.php:462
 msgid "Options Layout"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:297
+#: admin/classes/HashFormStyles.php:325
 msgid "Overline"
 msgstr ""
 
-#: admin/styles/main.php:140 admin/styles/main.php:388
-#: admin/styles/main.php:588 admin/styles/main.php:793
+#: admin/classes/HashFormElement.php:364 admin/classes/HashFormElement.php:499
+#: admin/classes/HashFormElement.php:634 admin/styles/main.php:140
+#: admin/styles/main.php:388 admin/styles/main.php:588
+#: admin/styles/main.php:793
 msgid "Padding"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:206 admin/styles/main.php:890
+#: admin/classes/HashFormFields.php:208 admin/classes/HashFormElement.php:826
+#: admin/styles/main.php:890
 msgid "Paragraph"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:29
+#: admin/classes/HashFormStyles.php:32
 msgid "Parent Template:"
 msgstr ""
 
-#: admin/classes/HashFormSettings.php:94
+#: admin/classes/HashFormSettings.php:113
 msgid "Permission Denied"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:130 admin/styles/demo-preview.php:51
+#: admin/classes/HashFormFields.php:132 admin/styles/demo-preview.php:51
 msgid "Phone"
 msgstr ""
 
 #: admin/classes/fields/HashFormFieldName.php:71
-#: admin/classes/fields/settings.php:402
-#: admin/classes/fields/HashFormFieldAddress.php:79
+#: admin/classes/fields/settings.php:415
+#: admin/classes/fields/HashFormFieldAddress.php:78
 msgid "Placeholder"
 msgstr ""
 
-#: admin/classes/fields/HashFormFieldSpinner.php:59
-#: admin/classes/fields/HashFormFieldRangeSlider.php:48
-#: admin/classes/fields/HashFormFieldNumber.php:56
+#. 1: nearest number, 2: nearest number
+#: admin/classes/fields/HashFormFieldSpinner.php:60
+#: admin/classes/fields/HashFormFieldRangeSlider.php:49
+#: admin/classes/fields/HashFormFieldNumber.php:57
 #, php-format
 msgid "Please enter a valid value. Two nearest valid values are %1$s and %2$s"
 msgstr ""
@@ -2713,21 +2762,35 @@ msgstr ""
 msgid "Please select a valid form"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:18
+#: admin/classes/HashFormImportExport.php:138
+#: admin/classes/HashFormImportExport.php:230
+msgid "Please upload a file to import"
+msgstr ""
+
+#: admin/classes/HashFormImportExport.php:132
+#: admin/classes/HashFormImportExport.php:224
+msgid "Please upload a valid .json file"
+msgstr ""
+
+#: admin/classes/HashFormImportExport.php:145
+msgid "Please upload a valid file to import"
+msgstr ""
+
+#: admin/classes/HashFormStyles.php:21
 msgctxt "post type general name"
 msgid "Style Template"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:19
+#: admin/classes/HashFormStyles.php:22
 msgctxt "post type singular name"
 msgid "Style Template"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:624
+#: admin/classes/HashFormHelper.php:627
 msgid "Prefer Not to Answer"
 msgstr ""
 
-#: admin/classes/HashFormListing.php:242 admin/classes/HashFormBuilder.php:512
+#: admin/classes/HashFormListing.php:237 admin/classes/HashFormBuilder.php:520
 msgid "Preview"
 msgstr ""
 
@@ -2735,41 +2798,41 @@ msgstr ""
 msgid "Previous"
 msgstr ""
 
-#: admin/styles/settings.php:57
+#: admin/styles/settings.php:58
 msgid "Publish"
 msgstr ""
 
-#: admin/classes/fields/settings.php:498 admin/classes/fields/settings.php:518
+#: admin/classes/fields/settings.php:511 admin/classes/fields/settings.php:531
 msgid "px"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:158 admin/styles/demo-preview.php:232
+#: admin/classes/HashFormFields.php:160 admin/styles/demo-preview.php:232
 msgid "Radio Buttons"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:170 admin/styles/main.php:931
-#: admin/styles/demo-preview.php:353
+#: admin/classes/HashFormFields.php:172 admin/classes/HashFormElement.php:934
+#: admin/styles/main.php:931 admin/styles/demo-preview.php:353
 msgid "Range Slider"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:226
+#: admin/classes/HashFormFields.php:228
 msgid "reCAPTCHA"
 msgstr ""
 
-#: admin/settings/captcha-settings.php:39
+#: admin/settings/captcha-settings.php:49
 msgid "reCAPTCHA Language"
 msgstr ""
 
-#: admin/settings/captcha-settings.php:49
+#: admin/settings/captcha-settings.php:59
 msgid "reCAPTCHA Threshold"
 msgstr ""
 
-#: admin/settings/captcha-settings.php:11
+#: admin/settings/captcha-settings.php:21
 msgid "reCAPTCHA Type"
 msgstr ""
 
-#: admin/forms/settings/form-confirmation.php:12
-#: admin/forms/settings/form-confirmation.php:37
+#: admin/forms/settings/form-confirmation.php:7
+#: admin/forms/settings/form-confirmation.php:47
 msgid "Redirect URL"
 msgstr ""
 
@@ -2785,11 +2848,15 @@ msgstr ""
 msgid "Reply To Email"
 msgstr ""
 
-#: admin/classes/fields/settings.php:288 admin/classes/fields/settings.php:564
+#: admin/classes/fields/settings.php:301 admin/classes/fields/settings.php:577
 msgid "Required"
 msgstr ""
 
-#: admin/classes/fields/settings.php:440
+#: admin/classes/HashFormElement.php:175
+msgid "Required Color"
+msgstr ""
+
+#: admin/classes/fields/settings.php:453
 msgid "Required Field Indicator"
 msgstr ""
 
@@ -2797,45 +2864,50 @@ msgstr ""
 msgid "Required Text Color"
 msgstr ""
 
-#: admin/classes/HashFormListing.php:184 admin/classes/HashFormListing.php:254
-#: admin/classes/HashFormEntryListing.php:171
-#: admin/classes/HashFormEntryListing.php:265
+#: admin/classes/HashFormListing.php:179 admin/classes/HashFormListing.php:249
+#: admin/classes/HashFormEntryListing.php:168
+#: admin/classes/HashFormEntryListing.php:262
 msgid "Restore"
 msgstr ""
 
-#: admin/classes/fields/settings.php:271
+#: admin/classes/fields/settings.php:284
 msgid "Ridge"
 msgstr ""
 
-#: admin/styles/main.php:92 admin/styles/main.php:120 admin/styles/main.php:148
+#: admin/classes/HashFormElement.php:690 admin/styles/main.php:92
+#: admin/styles/main.php:120 admin/styles/main.php:148
 #: admin/styles/main.php:340 admin/styles/main.php:368
 #: admin/styles/main.php:396 admin/styles/main.php:540
 #: admin/styles/main.php:568 admin/styles/main.php:596
 #: admin/styles/main.php:745 admin/styles/main.php:773
 #: admin/styles/main.php:801 admin/styles/main.php:842
-#: admin/forms/build/sidebar.php:102 admin/classes/fields/settings.php:43
-#: admin/classes/fields/settings.php:58 admin/classes/fields/settings.php:119
-#: admin/classes/fields/settings.php:536
+#: admin/forms/build/sidebar.php:102 admin/classes/fields/settings.php:56
+#: admin/classes/fields/settings.php:71 admin/classes/fields/settings.php:132
+#: admin/classes/fields/settings.php:549
 msgid "Right"
 msgstr ""
 
-#: admin/styles/main.php:33
+#: admin/classes/HashFormElement.php:121 admin/styles/main.php:33
 msgid "Row Gap"
 msgstr ""
 
-#: admin/classes/fields/settings.php:244
+#: admin/classes/fields/settings.php:257
 msgid "Rows"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:683
+#: admin/classes/HashFormHelper.php:686
 msgid "Satisfaction"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:633
+#: admin/classes/HashFormHelper.php:636
 msgid "Satisfied"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:134
+#: admin/classes/HashFormStyles.php:126
+msgid "Saved successfully!"
+msgstr ""
+
+#: admin/classes/HashFormHelper.php:137
 msgid "Search"
 msgstr ""
 
@@ -2843,20 +2915,21 @@ msgstr ""
 msgid "Search Fields"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:28
+#: admin/classes/HashFormStyles.php:31
 msgid "Search Template"
 msgstr ""
 
-#: admin/classes/HashFormSmtp.php:23
+#. 1: link open, 2:link close
+#: admin/classes/HashFormSmtp.php:26
 #, php-format
-msgid "See Detail Article %1shere%2s"
+msgid "See Detail Article %1$shere%2$s"
 msgstr ""
 
 #: admin/forms/build/sidebar.php:42
 msgid "Select a field to see the options"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:716 admin/classes/HashFormBuilder.php:730
+#: admin/classes/HashFormBuilder.php:743 admin/classes/HashFormBuilder.php:757
 msgid "Select Field"
 msgstr ""
 
@@ -2864,15 +2937,15 @@ msgstr ""
 msgid "Select Form"
 msgstr ""
 
-#: admin/classes/fields/settings.php:78
+#: admin/classes/fields/settings.php:91
 msgid "Select Heading"
 msgstr ""
 
-#: admin/classes/fields/settings.php:172
+#: admin/classes/fields/settings.php:185
 msgid "Select Image"
 msgstr ""
 
-#: admin/classes/fields/settings.php:132
+#: admin/classes/fields/settings.php:145
 msgid "Select Type"
 msgstr ""
 
@@ -2884,25 +2957,25 @@ msgstr ""
 msgid "Send Test Email to"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:210
+#: admin/classes/HashFormFields.php:212
 msgid "Separator"
 msgstr ""
 
-#: admin/classes/HashFormUploader.php:114
+#: admin/classes/HashFormUploader.php:154
 msgid "Server error. Upload directory isn't writable."
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:553 admin/classes/HashFormBuilder.php:781
+#: admin/classes/HashFormBuilder.php:561 admin/classes/HashFormBuilder.php:808
 #: admin/classes/HashFormSettings.php:13 admin/classes/HashFormSettings.php:13
-#: admin/classes/HashFormSettings.php:45
+#: admin/classes/HashFormSettings.php:49
 msgid "Settings"
 msgstr ""
 
-#: admin/classes/HashFormImportExport.php:203
+#: admin/classes/HashFormImportExport.php:201
 msgid "Settings Imported Successfully"
 msgstr ""
 
-#: admin/classes/HashFormSettings.php:101
+#: admin/classes/HashFormSettings.php:120
 msgid "Settings Saved !"
 msgstr ""
 
@@ -2910,12 +2983,12 @@ msgstr ""
 msgid "Shortcode"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:711
+#: admin/classes/HashFormBuilder.php:738
 msgid "Show"
 msgstr ""
 
-#: admin/forms/settings/form-confirmation.php:11
-#: admin/forms/settings/form-confirmation.php:26
+#: admin/forms/settings/form-confirmation.php:6
+#: admin/forms/settings/form-confirmation.php:36
 msgid "Show Page"
 msgstr ""
 
@@ -2927,15 +3000,15 @@ msgstr ""
 msgid "Show the form title"
 msgstr ""
 
-#: admin/classes/fields/settings.php:138
+#: admin/classes/fields/settings.php:151
 msgid "Single"
 msgstr ""
 
-#: admin/styles/main.php:911
+#: admin/classes/HashFormElement.php:891 admin/styles/main.php:911
 msgid "Size"
 msgstr ""
 
-#: admin/classes/fields/settings.php:144
+#: admin/classes/fields/settings.php:157
 msgid "Small"
 msgstr ""
 
@@ -2943,27 +3016,32 @@ msgstr ""
 msgid "SMTP"
 msgstr ""
 
-#: admin/classes/fields/settings.php:256
+#: admin/classes/fields/settings.php:269
 msgid "Solid"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:664
+#: admin/classes/HashFormHelper.php:667
 msgid "Somewhat Important"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:273
+#: admin/classes/HashFormHelper.php:276
 msgid "Sorry, An error Occurred! Your form cannot be submitted."
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:643
+#: admin/classes/HashFormBuilder.php:648
 msgid "Sorry, Nonce did not verify."
 msgstr ""
 
-#: admin/classes/HashFormFields.php:214
+#: admin/classes/HashFormFields.php:216
 msgid "Spacer"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:178 admin/styles/demo-preview.php:406
+#: admin/classes/HashFormElement.php:185 admin/classes/HashFormElement.php:229
+#: admin/classes/HashFormElement.php:736 admin/classes/HashFormElement.php:780
+msgid "Spacing"
+msgstr ""
+
+#: admin/classes/HashFormFields.php:180 admin/styles/demo-preview.php:406
 msgid "Spinner"
 msgstr ""
 
@@ -2973,12 +3051,12 @@ msgstr ""
 msgid "Spread"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:412
+#: admin/classes/HashFormStyles.php:440
 msgid "Standard Fonts"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:174 admin/styles/main.php:908
-#: admin/styles/demo-preview.php:372
+#: admin/classes/HashFormFields.php:176 admin/classes/HashFormElement.php:881
+#: admin/styles/main.php:908 admin/styles/demo-preview.php:372
 msgid "Star"
 msgstr ""
 
@@ -2991,7 +3069,7 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: admin/classes/fields/settings.php:205 admin/classes/fields/settings.php:310
+#: admin/classes/fields/settings.php:218 admin/classes/fields/settings.php:323
 msgid "Step"
 msgstr ""
 
@@ -2999,26 +3077,26 @@ msgstr ""
 msgid "Stretch"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:645 admin/styles/demo-preview.php:175
+#: admin/classes/HashFormHelper.php:648 admin/styles/demo-preview.php:175
 #: admin/styles/demo-preview.php:216 admin/styles/demo-preview.php:264
 msgid "Strongly Agree"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:641 admin/styles/demo-preview.php:171
+#: admin/classes/HashFormHelper.php:644 admin/styles/demo-preview.php:171
 #: admin/styles/demo-preview.php:192 admin/styles/demo-preview.php:240
 msgid "Strongly Disagree"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:559
+#: admin/classes/HashFormBuilder.php:567
 msgid "Style"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:22
+#: admin/classes/HashFormStyles.php:25
 msgctxt "Style Template"
 msgid "Add New"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:27
+#: admin/classes/HashFormStyles.php:30
 msgid "Styles"
 msgstr ""
 
@@ -3027,13 +3105,13 @@ msgstr ""
 msgid "Subject"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:126 admin/classes/HashFormHelper.php:250
+#: admin/classes/HashFormBuilder.php:127 admin/classes/HashFormHelper.php:253
 #: admin/styles/demo-preview.php:421 admin/forms/style/form.php:8
-#: admin/forms/build/builder.php:29
+#: admin/forms/build/builder.php:28
 msgid "Submit"
 msgstr ""
 
-#: admin/styles/main.php:616
+#: admin/classes/HashFormElement.php:512 admin/styles/main.php:616
 msgid "Submit Button"
 msgstr ""
 
@@ -3065,11 +3143,12 @@ msgstr ""
 msgid "Template 3"
 msgstr ""
 
-#: admin/classes/HashFormSettings.php:129
+#: admin/classes/HashFormSettings.php:148
 msgid "Test Email"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:142 admin/styles/demo-preview.php:144
+#: admin/classes/HashFormFields.php:144 admin/styles/demo-preview.php:144
+#: admin/classes/fields/HashFormFieldType.php:325
 msgid "Text"
 msgstr ""
 
@@ -3077,48 +3156,48 @@ msgstr ""
 msgid "Text Align"
 msgstr ""
 
-#: admin/classes/fields/settings.php:113
+#: admin/classes/HashFormElement.php:678 admin/classes/fields/settings.php:126
 msgid "Text Alignment"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:146 admin/styles/demo-preview.php:155
+#: admin/classes/HashFormFields.php:148 admin/styles/demo-preview.php:155
 msgid "Text Area"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:535
+#: admin/classes/HashFormStyles.php:563
 msgid "Text Color"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:477
+#: admin/classes/HashFormStyles.php:505
 msgid "Text Decoration"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:458
+#: admin/classes/HashFormStyles.php:486
 msgid "Text Transform"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:270
+#: admin/classes/HashFormHelper.php:273
 msgid ""
 "Thank you for sending email. We will get back to you as soon as possible."
 msgstr ""
 
-#: admin/classes/fields/settings.php:330
+#: admin/classes/fields/settings.php:343
 msgid ""
 "The allowed extensions are pdf, doc, docx, xls, xlsx, odt, ppt, pptx, pps, "
 "ppsx, jpg, jpeg, png, gif, bmp, mp3, mp4, ogg, wav, mp4, m4v, mov, wmv, avi, "
 "mpg, ogv, 3gp, txt, zip, rar, 7z, csv"
 msgstr ""
 
-#: admin/forms/style/style.php:43
+#: admin/forms/style/style.php:42
 msgid ""
 "The preview seen here will not match with the frontend for \"No Style\"."
 msgstr ""
 
-#: admin/classes/fields/HashFormFieldCaptcha.php:117
+#: admin/classes/fields/HashFormFieldCaptcha.php:120
 msgid "The reCAPTCHA keys are not entered."
 msgstr ""
 
-#: admin/classes/fields/HashFormFieldCaptcha.php:105
+#: admin/classes/fields/HashFormFieldCaptcha.php:108
 msgid "The reCAPTCHA was not entered correctly"
 msgstr ""
 
@@ -3131,31 +3210,32 @@ msgid ""
 "SMTP plugin on your WordPress site."
 msgstr ""
 
-#: admin/classes/fields/HashFormFieldCaptcha.php:85
-#: admin/classes/fields/HashFormFieldCaptcha.php:91
+#: admin/classes/fields/HashFormFieldCaptcha.php:88
+#: admin/classes/fields/HashFormFieldCaptcha.php:94
 msgid "There was a problem verifying your captcha"
 msgstr ""
 
-#: admin/classes/HashFormValidate.php:12
+#: admin/classes/HashFormValidate.php:74
 msgid "There was a problem with your submission. Please try again."
 msgstr ""
 
-#: admin/settings/email-templates/template3.php:133
-#: admin/settings/email-templates/template2.php:129
-#: admin/settings/email-templates/template1.php:133
+#. website name
+#: admin/settings/email-templates/template3.php:134
+#: admin/settings/email-templates/template2.php:130
+#: admin/settings/email-templates/template1.php:134
 #, php-format
 msgid "This email is sent from %s"
 msgstr ""
 
-#: admin/classes/fields/HashFormFieldType.php:447
+#: admin/classes/fields/HashFormFieldType.php:448
 msgid "This field is invalid."
 msgstr ""
 
-#: admin/classes/fields/HashFormFieldCaptcha.php:149
+#: admin/classes/fields/HashFormFieldCaptcha.php:152
 msgid "This field is not set up yet."
 msgstr ""
 
-#: admin/classes/fields/HashFormFieldType.php:446
+#: admin/classes/fields/HashFormFieldType.php:447
 msgid "This field is required."
 msgstr ""
 
@@ -3175,17 +3255,21 @@ msgstr ""
 msgid "This is Paragraph"
 msgstr ""
 
-#: admin/classes/fields/settings.php:542
+#: admin/classes/fields/settings.php:555
 msgid ""
 "This option will only work if the Field Max Width is set and width is "
 "smaller than container."
 msgstr ""
 
-#: admin/classes/HashFormFields.php:186
+#: admin/classes/HashFormUploader.php:176
+msgid "This type of file is not allowed."
+msgstr ""
+
+#: admin/classes/HashFormFields.php:188
 msgid "Time"
 msgstr ""
 
-#: admin/classes/fields/settings.php:305
+#: admin/classes/fields/settings.php:318
 msgid "To"
 msgstr ""
 
@@ -3202,7 +3286,7 @@ msgstr ""
 #: admin/styles/main.php:392 admin/styles/main.php:536
 #: admin/styles/main.php:564 admin/styles/main.php:592
 #: admin/styles/main.php:741 admin/styles/main.php:769
-#: admin/styles/main.php:797 admin/classes/fields/settings.php:37
+#: admin/styles/main.php:797 admin/classes/fields/settings.php:50
 msgid "Top"
 msgstr ""
 
@@ -3210,17 +3294,23 @@ msgstr ""
 msgid "Top Spacing"
 msgstr ""
 
-#: admin/classes/HashFormListing.php:262 admin/classes/HashFormListing.php:276
-#: admin/classes/HashFormEntryListing.php:273
-#: admin/classes/HashFormEntryListing.php:282
+#: admin/classes/HashFormListing.php:257 admin/classes/HashFormListing.php:271
+#: admin/classes/HashFormEntryListing.php:270
+#: admin/classes/HashFormEntryListing.php:279
 msgid "Trash"
 msgstr ""
 
-#: admin/settings/captcha-settings.php:7 admin/classes/fields/settings.php:21
+#. 1: link open, 2: link close
+#: admin/settings/captcha-settings.php:15 admin/classes/fields/settings.php:32
 #, php-format
 msgid "Tutorial to %1$sGenerate Site and Secret Keys%2$s"
 msgstr ""
 
+#: admin/classes/HashFormElement.php:155 admin/classes/HashFormElement.php:209
+#: admin/classes/HashFormElement.php:253 admin/classes/HashFormElement.php:388
+#: admin/classes/HashFormElement.php:523 admin/classes/HashFormElement.php:658
+#: admin/classes/HashFormElement.php:716 admin/classes/HashFormElement.php:760
+#: admin/classes/HashFormElement.php:804 admin/classes/HashFormElement.php:837
 #: admin/styles/main.php:172 admin/styles/main.php:195
 #: admin/styles/main.php:213 admin/styles/main.php:619
 #: admin/styles/main.php:825 admin/styles/main.php:851
@@ -3229,57 +3319,60 @@ msgstr ""
 msgid "Typography"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:617
+#: admin/classes/HashFormHelper.php:620
 msgid "Under 18"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:295
+#: admin/classes/HashFormStyles.php:323
 msgid "Underline"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:653
+#: admin/classes/HashFormHelper.php:656
 msgid "Unlikely"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:631
+#: admin/classes/HashFormHelper.php:634
 msgid "Unsatisfied"
 msgstr ""
 
-#: admin/classes/fields/HashFormFieldType.php:551
+#: admin/classes/fields/HashFormFieldType.php:552
 msgid "Untitled"
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:504 admin/classes/HashFormSettings.php:82
-#: admin/styles/settings.php:60
+#: admin/classes/HashFormBuilder.php:512 admin/classes/HashFormSettings.php:101
+#: admin/styles/settings.php:63
 msgid "Update"
 msgstr ""
 
-#: admin/forms/build/builder.php:80
+#: admin/forms/build/builder.php:79
 msgid "Update Options"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:190 admin/styles/demo-preview.php:320
+#: admin/classes/HashFormFields.php:192 admin/styles/demo-preview.php:320
 msgid "Upload"
 msgstr ""
 
-#: admin/styles/main.php:416
+#: admin/classes/HashFormElement.php:377 admin/styles/main.php:416
 msgid "Upload Button"
 msgstr ""
 
 #: admin/styles/demo-preview.php:330
 #: admin/classes/fields/HashFormFieldUpload.php:16
+#: admin/classes/fields/HashFormFieldUpload.php:38
+#: admin/classes/fields/HashFormFieldUpload.php:46
+#: admin/classes/fields/HashFormFieldUpload.php:49
 msgid "Upload File"
 msgstr ""
 
-#: admin/settings/email-settings.php:31 admin/classes/fields/settings.php:186
+#: admin/settings/email-settings.php:31 admin/classes/fields/settings.php:199
 msgid "Upload image"
 msgstr ""
 
-#: admin/classes/fields/settings.php:323
+#: admin/classes/fields/settings.php:336
 msgid "Upload Label"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:285
+#: admin/classes/HashFormStyles.php:313
 msgid "Uppercase"
 msgstr ""
 
@@ -3298,7 +3391,7 @@ msgstr ""
 msgid "Use the shortcode below to add to your pages"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:194
+#: admin/classes/HashFormFields.php:196
 #: admin/classes/fields/HashFormFieldUserID.php:33
 msgid "User ID"
 msgstr ""
@@ -3307,23 +3400,23 @@ msgstr ""
 msgid "User ID fields will not show in your form."
 msgstr ""
 
-#: admin/settings/captcha-settings.php:24
+#: admin/settings/captcha-settings.php:34
 msgid "v2 Secret Key"
 msgstr ""
 
-#: admin/settings/captcha-settings.php:19
+#: admin/settings/captcha-settings.php:29
 msgid "v2 Site Key"
 msgstr ""
 
-#: admin/settings/captcha-settings.php:14
+#: admin/settings/captcha-settings.php:24
 msgid "v3"
 msgstr ""
 
-#: admin/settings/captcha-settings.php:34
+#: admin/settings/captcha-settings.php:44
 msgid "v3 Secret Key"
 msgstr ""
 
-#: admin/settings/captcha-settings.php:29
+#: admin/settings/captcha-settings.php:39
 msgid "v3 Site Key"
 msgstr ""
 
@@ -3331,8 +3424,12 @@ msgstr ""
 msgid "Validation"
 msgstr ""
 
-#: admin/classes/fields/settings.php:557
+#: admin/classes/fields/settings.php:570
 msgid "Validation Messages"
+msgstr ""
+
+#: admin/classes/HashFormElement.php:647
+msgid "Validation Text"
 msgstr ""
 
 #: admin/styles/demo-preview.php:57
@@ -3346,27 +3443,27 @@ msgctxt "Vertical"
 msgid "V"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:667
+#: admin/classes/HashFormHelper.php:670
 msgid "Very Important"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:634
+#: admin/classes/HashFormHelper.php:637
 msgid "Very Satisfied"
 msgstr ""
 
-#: admin/classes/HashFormHelper.php:630
+#: admin/classes/HashFormHelper.php:633
 msgid "Very Unsatisfied"
 msgstr ""
 
-#: admin/classes/HashFormEntryListing.php:253
+#: admin/classes/HashFormEntryListing.php:250
 msgid "View"
 msgstr ""
 
-#: admin/classes/HashFormStyles.php:26
+#: admin/classes/HashFormStyles.php:29
 msgid "View Template"
 msgstr ""
 
-#: admin/classes/HashFormFields.php:134 admin/styles/demo-preview.php:63
+#: admin/classes/HashFormFields.php:136 admin/styles/demo-preview.php:63
 msgid "Website/URL"
 msgstr ""
 
@@ -3381,7 +3478,7 @@ msgid ""
 "trigger spam filters and send error messages to its users."
 msgstr ""
 
-#: admin/classes/HashFormBuilder.php:930
+#: admin/classes/HashFormBuilder.php:957
 msgid "Yes, of course"
 msgstr ""
 
@@ -3405,7 +3502,8 @@ msgid ""
 "different website."
 msgstr ""
 
-#: admin/forms/style/form.php:33
+#. 1: link open, 2: link close
+#: admin/forms/style/form.php:35
 #, php-format
 msgid "You did not add any fields to your form. %1$sGo back%2$s and add some."
 msgstr ""

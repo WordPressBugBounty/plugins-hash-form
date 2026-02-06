@@ -30,7 +30,7 @@ class HashFormFieldParagraph extends HashFormFieldType {
         ?>
         <div class="hf-paragraph-field" id="hf-field-<?php echo absint($field['id']); ?>">
             <?php
-            echo esc_html(apply_filters('hf_translate_string', $field['content'], 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Content'));
+            echo esc_html(apply_filters('hashform_translate_string', $field['content'], 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Content'));
             ?>
         </div>
         <?php

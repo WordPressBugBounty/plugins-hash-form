@@ -150,8 +150,8 @@ class HashFormEmail {
                 $attachments = isset($attachments) ? $attachments : array();
                 $from_ar = isset($form_settings['from_ar']) ? trim($form_settings['from_ar']) : '';
                 $from_ar_name = isset($form_settings['from_ar_name']) && ($form_settings['from_ar_name'] != '') ? esc_html($form_settings['from_ar_name']) : esc_html__('No Name', 'hash-form');
-                $email_subject = isset($form_settings['email_subject_ar']) && ($form_settings['email_subject_ar'] != '') ? esc_html(apply_filters('hf_translate_string', $form_settings['email_subject_ar'], 'Hash Form', $form_title . ' - ' . 'Email Auto Responder Subject')) : esc_html__('New Form Submission', 'hash-form');
-                $email_message = wpautop(isset($form_settings['email_message_ar']) ? esc_html(apply_filters('hf_translate_string', $form_settings['email_message_ar'], 'Hash Form', $form_title . ' - ' . 'Email Auto Responder Message')) : '');
+                $email_subject = isset($form_settings['email_subject_ar']) && ($form_settings['email_subject_ar'] != '') ? esc_html(apply_filters('hashform_translate_string', $form_settings['email_subject_ar'], 'Hash Form', $form_title . ' - ' . 'Email Auto Responder Subject')) : esc_html__('New Form Submission', 'hash-form');
+                $email_message = wpautop(isset($form_settings['email_message_ar']) ? esc_html(apply_filters('hashform_translate_string', $form_settings['email_message_ar'], 'Hash Form', $form_title . ' - ' . 'Email Auto Responder Message')) : '');
                 $settings = HashFormSettings::get_settings();
                 $header_image = $settings['header_image'];
 
@@ -191,7 +191,7 @@ class HashFormEmail {
 
             return wp_send_json(array(
                 'status' => 'success',
-                'message' => esc_html(apply_filters('hf_translate_string', $form_settings['confirmation_message'], 'Hash Form', $form_title . ' - ' . 'Confirmation Message'))
+                'message' => esc_html(apply_filters('hashform_translate_string', $form_settings['confirmation_message'], 'Hash Form', $form_title . ' - ' . 'Confirmation Message'))
             ));
         } else {
             return false;
@@ -230,7 +230,7 @@ class HashFormEmail {
             $style = 'background: #FFFFFF;';
         }
         ?>
-        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;padding: 25px; <?php echo $border_style . $style; ?>">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;padding: 25px; <?php echo esc_attr($border_style . $style); ?>">
             <tbody>
                 <tr>
                     <th style="font-family: sans-serif; font-size: 14px; vertical-align: top;text-align:left; line-height: 18px;" valign="top"><?php echo esc_html($title); ?></th>

@@ -22,9 +22,13 @@ class HashFormHelper {
     }
 
     /* Sanitizes value and returns param value */
-
     public static function get_var($param, $sanitize = 'sanitize_text_field', $default = '') {
         $value = (($_GET && isset($_GET[$param])) ? wp_unslash($_GET[$param]) : $default);
+        return self::sanitize_value($sanitize, $value);
+    }
+
+    public static function get_request($param, $sanitize = 'sanitize_text_field', $default = '') {
+        $value = (($_REQUEST && isset($_REQUEST[$param])) ? wp_unslash($_REQUEST[$param]) : $default);
         return self::sanitize_value($sanitize, $value);
     }
 
@@ -57,7 +61,7 @@ class HashFormHelper {
         $count--;
         $key = '';
         for ($x = 1; $x <= $limit; $x++) {
-            $rand_var = rand(0, $count);
+            $rand_var = wp_rand(0, $count);
             $key .= substr($values, $rand_var, 1);
         }
 
@@ -74,8 +78,7 @@ class HashFormHelper {
     public static function check_table_keys($table_name, $column_name) {
         global $wpdb;
         $tbl_name = $wpdb->prefix . $table_name;
-        $query = $wpdb->prepare("SELECT {$column_name} FROM {$tbl_name} WHERE id!=%d", 0);
-        $results = $wpdb->get_results($query, ARRAY_A);
+        $results = $wpdb->get_results($wpdb->prepare("SELECT {$column_name} FROM {$tbl_name} WHERE id!=%d", 0), ARRAY_A);
         return array_column($results, $column_name);
     }
 
@@ -150,8 +153,8 @@ class HashFormHelper {
     public static function convert_date_format($date) {
         $timestamp = strtotime($date);
 
-        $new_date = date('Y/m/d', $timestamp);
-        $new_time = date('g:i a', $timestamp);
+        $new_date = gmdate('Y/m/d', $timestamp);
+        $new_time = gmdate('g:i a', $timestamp);
 
         return $new_date . ' ' . esc_html__('at', 'hash-form') . ' ' . $new_time;
     }

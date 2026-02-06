@@ -11,7 +11,7 @@ class HashFormSettings {
 
     public function menu() {
         add_submenu_page('hashform', 'Hash Form | ' . esc_html__('Settings', 'hash-form'), esc_html__('Settings', 'hash-form'), 'manage_options', 'hashform-settings', array($this, 'route'));
-        add_submenu_page('hashform', esc_html__('Documentation', 'ultimate-woocommerce-cart'), esc_html__('Documentation', 'ultimate-woocommerce-cart'), 'manage_options', esc_url_raw('https://hashthemes.com/documentation/hash-form-drag-and-drop-form-builder-documentation/'));
+        add_submenu_page('hashform', esc_html__('Documentation', 'hash-form'), esc_html__('Documentation', 'hash-form'), 'manage_options', esc_url_raw('https://hashthemes.com/documentation/hash-form-drag-and-drop-form-builder-documentation/'));
     }
 
     public function route() {

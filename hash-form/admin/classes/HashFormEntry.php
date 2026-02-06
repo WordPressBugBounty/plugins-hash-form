@@ -151,7 +151,9 @@ class HashFormEntry {
             $count++;
         }
 
+        /* translators: 1: form count singular & plural */
         $available_status['untrash']['message'] = sprintf(_n('%1$s form restored from the Trash.', '%1$s forms restored from the Trash.', $count, 'hash-form'), $count);
+        /* translators: 1: form count singular & plural */
         $available_status['trash']['message'] = sprintf(_n('%1$s form moved to the Trash. %2$sUndo%3$s', '%1$s forms moved to the Trash. %2$sUndo%3$s', $count, 'hash-form'), $count, '<a href="' . esc_url(wp_nonce_url('?page=hashform-entries&hashform_action=untrash&id=' . $id, 'untrash_entry_' . $id)) . '">', '</a>');
         $message = $available_status[$status]['message'];
 
@@ -160,14 +162,20 @@ class HashFormEntry {
 
     public static function set_status($id, $status) {
         $statuses = array('published', 'trash');
-        if (!in_array($status, $statuses))
+        if (!in_array($status, $statuses)) {
             return false;
+        }
 
         global $wpdb;
 
+        $id = is_array($id) ? $id : array($id);
+        $placeholders = implode(',', array_map(function($v) {
+            return '%d';
+        }, $id));
+        $prepare_args = array_merge([$status], $id);
+
         if (is_array($id)) {
-            $query = $wpdb->prepare("UPDATE {$wpdb->prefix}hashform_entries SET status=%s WHERE id IN (" . implode(',', array_fill(0, count($id), '%d')) . ")", $status, ...$id);
-            $query_results = $wpdb->query($query);
+            $query_results = $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}hashform_entries SET status=%s WHERE id IN ({$placeholders})", $prepare_args));
         } else {
             $query_results = $wpdb->update($wpdb->prefix . 'hashform_entries', array('status' => $status), array('id' => $id));
         }
@@ -177,14 +185,14 @@ class HashFormEntry {
 
     public static function delete_all() {
         $count = self::delete();
+        /* translators: 1: form count singular & plural */
         $message = sprintf(_n('%1$s form permanently deleted.', '%1$s forms permanently deleted.', $count, 'hash-form'), $count);
         self::display_entry_list($message);
     }
 
     public static function delete() {
         global $wpdb;
-        $query = $wpdb->prepare("SELECT id FROM {$wpdb->prefix}hashform_entries WHERE status=%s", 'trash');
-        $trash_entries = $wpdb->get_results($query);
+        $trash_entries = $wpdb->get_results($wpdb->prepare("SELECT id FROM {$wpdb->prefix}hashform_entries WHERE status=%s", 'trash'));
         if (!$trash_entries) {
             return 0;
         }
@@ -203,6 +211,7 @@ class HashFormEntry {
         if (self::destroy_entry($id)) {
             $count++;
         }
+        /* translators: 1: form count singular & plural */
         $message = sprintf(_n('%1$s Entry Permanently Deleted', '%1$s Entries Permanently Deleted', $count, 'hash-form'), $count);
         self::display_entry_list($message);
     }
@@ -214,11 +223,8 @@ class HashFormEntry {
             return false;
         }
 
-        $query = $wpdb->prepare('DELETE FROM ' . $wpdb->prefix . 'hashform_entry_meta WHERE item_id=%d', $id);
-        $wpdb->query($query);
-
-        $query = $wpdb->prepare('DELETE FROM ' . $wpdb->prefix . 'hashform_entries WHERE id=%d', $id);
-        $result = $wpdb->query($query);
+        $wpdb->query($wpdb->prepare('DELETE FROM ' . $wpdb->prefix . 'hashform_entry_meta WHERE item_id=%d', $id));
+        $result = $wpdb->query($wpdb->prepare('DELETE FROM ' . $wpdb->prefix . 'hashform_entries WHERE id=%d', $id));
         return $result;
     }
 
@@ -274,6 +280,7 @@ class HashFormEntry {
         if (!$count) {
             return '';
         }
+        /* translators: 1: form count singular & plural */
         return sprintf(_n('%1$s form moved to the Trash. %2$sUndo%3$s', '%1$s forms moved to the Trash. %2$sUndo%3$s', $count, 'hash-form'), $count, '<a href="' . esc_url(wp_nonce_url('?page=hashform-entries&action=bulk_untrash&status=published&entry_id=' . implode(',', $ids), 'bulk-toplevel_page_hashform')) . '">', '</a>');
     }
 
@@ -282,6 +289,7 @@ class HashFormEntry {
         if (!$count) {
             return '';
         }
+        /* translators: 1: form count singular & plural */
         return sprintf(_n('%1$s form restored from the Trash.', '%1$s forms restored from the Trash.', $count, 'hash-form'), $count);
     }
 
@@ -293,20 +301,17 @@ class HashFormEntry {
                 $count++;
             }
         }
+        /* translators: 1: form count singular & plural */
         $message = sprintf(_n('%1$s form permanently deleted.', '%1$s forms permanently deleted.', $count, 'hash-form'), $count);
         return $message;
     }
 
     public static function get_entry_vars($id) {
         global $wpdb;
-        $query = "SELECT e.*, f.name AS form_name, f.form_key AS form_key
+        $entry = $wpdb->get_row($wpdb->prepare("SELECT e.*, f.name AS form_name, f.form_key AS form_key
         FROM {$wpdb->prefix}hashform_entries AS e
         LEFT OUTER JOIN {$wpdb->prefix}hashform_forms AS f ON e.form_id = f.id
-        WHERE e.id = %d";
-
-        $query = $wpdb->prepare($query, $id); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-        $entry = $wpdb->get_row($query); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-
+        WHERE e.id = %d", $id));
         $entry = self::get_meta($entry);
         return $entry;
     }
@@ -317,16 +322,7 @@ class HashFormEntry {
         }
 
         global $wpdb;
-        $query = "SELECT m.*, f.type AS field_type, f.field_key, f.name ";
-        $query .= "FROM {$wpdb->prefix}hashform_entry_meta AS m ";
-        $query .= "LEFT JOIN {$wpdb->prefix}hashform_fields AS f ON m.field_id = f.id ";
-        $query .= "WHERE m.item_id = %d AND m.field_id != %d ";
-        $query .= "ORDER BY m.id ASC";
-
-        $query = $wpdb->prepare($query, $entry->id, 0);
-
-        $metas = $wpdb->get_results($query);
-
+        $metas = $wpdb->get_results($wpdb->prepare("SELECT m.*, f.type AS field_type, f.field_key, f.name FROM {$wpdb->prefix}hashform_entry_meta AS m LEFT JOIN {$wpdb->prefix}hashform_fields AS f ON m.field_id = f.id WHERE m.item_id = %d AND m.field_id != %d ORDER BY m.id ASC", $entry->id, 0));
         $entry->metas = array();
 
         foreach ($metas as $meta_val) {
@@ -381,7 +377,7 @@ class HashFormEntry {
                 $wpdb->update($wpdb->prefix . 'hashform_entries', array('delivery_status' => false), array('id' => $entry_id));
                 return wp_send_json(array(
                     'status' => 'failed',
-                    'message' => esc_html(apply_filters('hf_translate_string', $form_settings['error_message'], 'Hash Form', $form->name . ' - ' . 'Error Message'))
+                    'message' => esc_html(apply_filters('hashform_translate_string', $form_settings['error_message'], 'Hash Form', $form->name . ' - ' . 'Error Message'))
                 ));
             }
         }
@@ -448,8 +444,7 @@ class HashFormEntry {
 
     public static function get_count() {
         global $wpdb;
-        $query = $wpdb->prepare("SELECT status FROM {$wpdb->prefix}hashform_entries WHERE id!=%d", 0);
-        $results = $wpdb->get_results($query);
+        $results = $wpdb->get_results($wpdb->prepare("SELECT status FROM {$wpdb->prefix}hashform_entries WHERE id!=%d", 0));
         $statuses = array('published', 'trash');
         $counts = array_fill_keys($statuses, 0);
         foreach ($results as $row) {
@@ -464,22 +459,19 @@ class HashFormEntry {
 
     public static function get_entry_count($form_id) {
         global $wpdb;
-        $query = $wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}hashform_entries e LEFT OUTER JOIN {$wpdb->prefix}hashform_forms f ON e.form_id=f.id WHERE e.form_id=%d AND e.status='published'", $form_id);
-        $count = $wpdb->get_var($query);
+        $count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}hashform_entries e LEFT OUTER JOIN {$wpdb->prefix}hashform_forms f ON e.form_id=f.id WHERE e.form_id=%d AND e.status='published'", $form_id));
         return $count;
     }
 
     public static function get_prev_entry($entry_id) {
         global $wpdb;
-        $query = $wpdb->prepare("select id from {$wpdb->prefix}hashform_entries WHERE id < %d ORDER BY id DESC LIMIT 1", $entry_id);
-        $results = $wpdb->get_results($query);
+        $results = $wpdb->get_results($wpdb->prepare("select id from {$wpdb->prefix}hashform_entries WHERE id < %d ORDER BY id DESC LIMIT 1", $entry_id));
         return $results;
     }
 
     public static function get_next_entry($entry_id) {
         global $wpdb;
-        $query = $wpdb->prepare("select id from {$wpdb->prefix}hashform_entries WHERE id > %d ORDER BY id ASC LIMIT 1", $entry_id);
-        $results = $wpdb->get_results($query);
+        $results = $wpdb->get_results($wpdb->prepare("select id from {$wpdb->prefix}hashform_entries WHERE id > %d ORDER BY id ASC LIMIT 1", $entry_id));
         return $results;
     }
 
