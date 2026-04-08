@@ -92,7 +92,7 @@ $next_url = $next_entry_id ? admin_url('admin.php?page=hashform-entries&hashform
                     }
                     echo '<tr>';
                     echo '<th>' . esc_html($title) . '</th>';
-                    echo '<td>' . wp_kses_post($entry_value) . '</td>';
+                    echo '<td>' . wpautop(wp_kses_post($entry_value)) . '</td>';
                     echo '</tr>';
                 }
 

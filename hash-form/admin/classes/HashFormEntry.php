@@ -414,7 +414,7 @@ class HashFormEntry {
                     if (is_array($meta_value)) {
                         $meta_value = serialize($meta_value);
                     } else {
-                        $meta_value = sanitize_text_field(trim($meta_value));
+                        $meta_value = sanitize_textarea_field($meta_value);
                     }
 
                     $meta_values = array(

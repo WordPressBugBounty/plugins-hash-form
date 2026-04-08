@@ -1837,7 +1837,11 @@ form.hf-success .hf-copied {
     text-align: right;
 }
 
-#hf-form-entry-details td p {
+#hf-form-entry-details td p{
+    margin: 0 0 20px;
+}
+
+#hf-form-entry-details td p:last-child {
     margin: 0;
 }
 
