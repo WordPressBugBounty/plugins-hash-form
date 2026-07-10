@@ -321,7 +321,7 @@ var hashFormAdmin = hashFormAdmin || {};
 
             if (parentField.attr('data-type') == 'range_slider') {
                 setTimeout(function () {
-                    var newSlider = parentField.find('.hashform-range-input-selector');
+                    var newSlider = parentField.find('.hf-range-input-selector');
                     var sliderValue = newSlider.val();
                     var sliderMinValue = parseFloat(newSlider.attr('min'));
                     var sliderMaxValue = parseFloat(newSlider.attr('max'));
@@ -330,7 +330,7 @@ var hashFormAdmin = hashFormAdmin || {};
                     sliderValue = sliderValue > sliderMaxValue ? sliderMaxValue : sliderValue;
                     var remainder = sliderValue % sliderStepValue;
                     sliderValue = sliderValue - remainder;
-                    newSlider.prev('.hashform-range-slider').slider({
+                    newSlider.prev('.hf-range-slider').slider({
                         value: sliderValue,
                         min: sliderMinValue,
                         max: sliderMaxValue,

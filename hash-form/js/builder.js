@@ -1011,13 +1011,13 @@ var hashFormBuilder = hashFormBuilder || {};
 
         maybeFixRangeSlider: function () {
             setTimeout(() => {
-                $(document).find('.hashform-range-input-selector').each(function () {
+                $(document).find('.hf-range-input-selector').each(function () {
                     var newSlider = $(this);
                     var sliderValue = newSlider.val();
                     var sliderMinValue = parseFloat(newSlider.attr('min'));
                     var sliderMaxValue = parseFloat(newSlider.attr('max'));
                     var sliderStepValue = parseFloat(newSlider.attr('step'));
-                    newSlider.prev('.hashform-range-slider').slider({
+                    newSlider.prev('.hf-range-slider').slider({
                         value: sliderValue,
                         min: sliderMinValue,
                         max: sliderMaxValue,

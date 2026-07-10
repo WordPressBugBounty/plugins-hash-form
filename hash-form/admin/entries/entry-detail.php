@@ -20,6 +20,8 @@ $next_url = $next_entry_id ? admin_url('admin.php?page=hashform-entries&hashform
                 <span class="hf-sub-label">
                     <?php echo '(' . esc_html__('ID', 'hash-form') . ' ' . absint($entry->id) . ')'; ?>
                 </span>
+                 - 
+                <span class="hf-form-entry-date"><?php echo HashFormEntry::get_entry_date($entry->id) ?></span>
             </h3>
             <div class="hf-form-entry-navigation">
                 <a class="hf-form-entry-prev<?php echo $prev_url == '#' ? ' hf-disabled' : ''; ?>" href="<?php echo esc_url($prev_url); ?>">

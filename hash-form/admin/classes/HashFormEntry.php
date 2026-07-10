@@ -475,6 +475,12 @@ class HashFormEntry {
         return $results;
     }
 
+    public static function get_entry_date($entry_id) {
+        global $wpdb;
+        $results = $wpdb->get_var($wpdb->prepare("SELECT created_at FROM {$wpdb->prefix}hashform_entries WHERE id = %d", $entry_id));
+        return HashFormHelper::convert_date_format($results);
+    }
+
 }
 
 new HashFormEntry();

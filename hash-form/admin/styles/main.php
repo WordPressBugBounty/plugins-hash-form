@@ -23,17 +23,17 @@ $id = get_the_ID();
 <div class="hf-form-settings">
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Column Gap', 'hash-form'); ?></label>
-        <div class="hf-setting-fields hashform-range-slider-wrap">
-            <div class="hashform-range-slider"></div>
-            <input data-unit="px" id="hf-form-column-gap" class="hashform-range-input-selector" type="number" name="hashform_styles[form][column_gap]" value="<?php echo is_numeric($hashform_styles['form']['column_gap']) ? intval($hashform_styles['form']['column_gap']) : ''; ?>" min="0" max="100" step="1"> px
+        <div class="hf-setting-fields hf-range-slider-wrap">
+            <div class="hf-range-slider"></div>
+            <input data-unit="px" id="hf-form-column-gap" class="hf-range-input-selector" type="number" name="hashform_styles[form][column_gap]" value="<?php echo is_numeric($hashform_styles['form']['column_gap']) ? intval($hashform_styles['form']['column_gap']) : ''; ?>" min="0" max="100" step="1"><span class="hf-range-input-unit">px</span>
         </div>
     </div>
 
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Row Gap', 'hash-form'); ?></label>
-        <div class="hf-setting-fields hashform-range-slider-wrap">
-            <div class="hashform-range-slider"></div>
-            <input data-unit="px" id="hf-form-row-gap" class="hashform-range-input-selector" type="number" name="hashform_styles[form][row_gap]" value="<?php echo is_numeric($hashform_styles['form']['row_gap']) ? intval($hashform_styles['form']['row_gap']) : ''; ?>" min="0" max="100" step="1"> px
+        <div class="hf-setting-fields hf-range-slider-wrap">
+            <div class="hf-range-slider"></div>
+            <input data-unit="px" id="hf-form-row-gap" class="hf-range-input-selector" type="number" name="hashform_styles[form][row_gap]" value="<?php echo is_numeric($hashform_styles['form']['row_gap']) ? intval($hashform_styles['form']['row_gap']) : ''; ?>" min="0" max="100" step="1"><span class="hf-range-input-unit">px</span>
         </div>
     </div>
 
@@ -175,9 +175,9 @@ $id = get_the_ID();
 
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Bottom Spacing', 'hash-form'); ?></label>
-        <div class="hf-setting-fields hashform-range-slider-wrap">
-            <div class="hashform-range-slider"></div>
-            <input data-unit="px" id="hf-label-spacing" class="hashform-range-input-selector" type="number" name="hashform_styles[label][spacing]" value="<?php echo is_numeric($hashform_styles['label']['spacing']) ? intval($hashform_styles['label']['spacing']) : ''; ?>" min="0" max="100" step="1"> px
+        <div class="hf-setting-fields hf-range-slider-wrap">
+            <div class="hf-range-slider"></div>
+            <input data-unit="px" id="hf-label-spacing" class="hf-range-input-selector" type="number" name="hashform_styles[label][spacing]" value="<?php echo is_numeric($hashform_styles['label']['spacing']) ? intval($hashform_styles['label']['spacing']) : ''; ?>" min="0" max="100" step="1"><span class="hf-range-input-unit">px</span>
         </div>
     </div>
     <div class="hf-settings-row">
@@ -198,9 +198,9 @@ $id = get_the_ID();
 
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Top Spacing', 'hash-form'); ?></label>
-        <div class="hf-setting-fields hashform-range-slider-wrap">
-            <div class="hashform-range-slider"></div>
-            <input data-unit="px" id="hf-desc-spacing" class="hashform-range-input-selector" type="number" name="hashform_styles[desc][spacing]" value="<?php echo is_numeric($hashform_styles['desc']['spacing']) ? intval($hashform_styles['desc']['spacing']) : ''; ?>" min="0" max="100" step="1"> px
+        <div class="hf-setting-fields hf-range-slider-wrap">
+            <div class="hf-range-slider"></div>
+            <input data-unit="px" id="hf-desc-spacing" class="hf-range-input-selector" type="number" name="hashform_styles[desc][spacing]" value="<?php echo is_numeric($hashform_styles['desc']['spacing']) ? intval($hashform_styles['desc']['spacing']) : ''; ?>" min="0" max="100" step="1"><span class="hf-range-input-unit">px</span>
         </div>
     </div>
 </div>
@@ -828,9 +828,9 @@ $id = get_the_ID();
 
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Top Spacing', 'hash-form'); ?></label>
-        <div class="hf-setting-fields hashform-range-slider-wrap">
-            <div class="hashform-range-slider"></div>
-            <input data-unit="px" id="hf-validation-spacing" class="hashform-range-input-selector" type="number" name="hashform_styles[validation][spacing]" value="<?php echo is_numeric($hashform_styles['validation']['spacing']) ? intval($hashform_styles['validation']['spacing']) : ''; ?>" min="0" max="100" step="1"> px
+        <div class="hf-setting-fields hf-range-slider-wrap">
+            <div class="hf-range-slider"></div>
+            <input data-unit="px" id="hf-validation-spacing" class="hf-range-input-selector" type="number" name="hashform_styles[validation][spacing]" value="<?php echo is_numeric($hashform_styles['validation']['spacing']) ? intval($hashform_styles['validation']['spacing']) : ''; ?>" min="0" max="100" step="1"><span class="hf-range-input-unit">px</span>
         </div>
     </div>
 
@@ -854,9 +854,9 @@ $id = get_the_ID();
 
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Bottom Spacing', 'hash-form'); ?></label>
-        <div class="hf-setting-fields hashform-range-slider-wrap">
-            <div class="hashform-range-slider"></div>
-            <input data-unit="px" id="hf-form-title-spacing" class="hashform-range-input-selector" type="number" name="hashform_styles[form_title][spacing]" value="<?php echo is_numeric($hashform_styles['form_title']['spacing']) ? intval($hashform_styles['form_title']['spacing']) : ''; ?>" min="0" max="100" step="1"> px
+        <div class="hf-setting-fields hf-range-slider-wrap">
+            <div class="hf-range-slider"></div>
+            <input data-unit="px" id="hf-form-title-spacing" class="hf-range-input-selector" type="number" name="hashform_styles[form_title][spacing]" value="<?php echo is_numeric($hashform_styles['form_title']['spacing']) ? intval($hashform_styles['form_title']['spacing']) : ''; ?>" min="0" max="100" step="1"><span class="hf-range-input-unit">px</span>
         </div>
     </div>
 </div>
@@ -871,9 +871,9 @@ $id = get_the_ID();
 
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Bottom Spacing', 'hash-form'); ?></label>
-        <div class="hf-setting-fields hashform-range-slider-wrap">
-            <div class="hashform-range-slider"></div>
-            <input data-unit="px" id="hf-form-desc-spacing" class="hashform-range-input-selector" type="number" name="hashform_styles[form_desc][spacing]" value="<?php echo is_numeric($hashform_styles['form_desc']['spacing']) ? intval($hashform_styles['form_desc']['spacing']) : ''; ?>" min="0" max="100" step="1"> px
+        <div class="hf-setting-fields hf-range-slider-wrap">
+            <div class="hf-range-slider"></div>
+            <input data-unit="px" id="hf-form-desc-spacing" class="hf-range-input-selector" type="number" name="hashform_styles[form_desc][spacing]" value="<?php echo is_numeric($hashform_styles['form_desc']['spacing']) ? intval($hashform_styles['form_desc']['spacing']) : ''; ?>" min="0" max="100" step="1"><span class="hf-range-input-unit">px</span>
         </div>
     </div>
 </div>
@@ -909,9 +909,9 @@ $id = get_the_ID();
 <div class="hf-form-settings">
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Size', 'hash-form'); ?></label>
-        <div class="hf-setting-fields hashform-range-slider-wrap">
-            <div class="hashform-range-slider"></div>
-            <input data-unit="px" id="hf-star-size" class="hashform-range-input-selector" type="number" name="hashform_styles[star][size]" value="<?php echo is_numeric($hashform_styles['star']['size']) ? intval($hashform_styles['star']['size']) : ''; ?>" min="0" max="100" step="1"> px
+        <div class="hf-setting-fields hf-range-slider-wrap">
+            <div class="hf-range-slider"></div>
+            <input data-unit="px" id="hf-star-size" class="hf-range-input-selector" type="number" name="hashform_styles[star][size]" value="<?php echo is_numeric($hashform_styles['star']['size']) ? intval($hashform_styles['star']['size']) : ''; ?>" min="0" max="100" step="1"><span class="hf-range-input-unit">px</span>
         </div>
     </div>
     <div class="hf-settings-row">
@@ -932,16 +932,16 @@ $id = get_the_ID();
 <div class="hf-form-settings">
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Height', 'hash-form'); ?></label>
-        <div class="hf-setting-fields hashform-range-slider-wrap">
-            <div class="hashform-range-slider"></div>
-            <input data-unit="px" id="hf-range-height" class="hashform-range-input-selector" type="number" name="hashform_styles[range][height]" value="<?php echo is_numeric($hashform_styles['range']['height']) ? intval($hashform_styles['range']['height']) : ''; ?>" min="0" max="100" step="1"> px
+        <div class="hf-setting-fields hf-range-slider-wrap">
+            <div class="hf-range-slider"></div>
+            <input data-unit="px" id="hf-range-height" class="hf-range-input-selector" type="number" name="hashform_styles[range][height]" value="<?php echo is_numeric($hashform_styles['range']['height']) ? intval($hashform_styles['range']['height']) : ''; ?>" min="0" max="100" step="1"><span class="hf-range-input-unit">px</span>
         </div>
     </div>
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Handle Size', 'hash-form'); ?></label>
-        <div class="hf-setting-fields hashform-range-slider-wrap">
-            <div class="hashform-range-slider"></div>
-            <input data-unit="px" id="hf-range-handle-size" class="hashform-range-input-selector" type="number" name="hashform_styles[range][handle_size]" value="<?php echo is_numeric($hashform_styles['range']['handle_size']) ? intval($hashform_styles['range']['handle_size']) : ''; ?>" min="0" max="100" step="1"> px
+        <div class="hf-setting-fields hf-range-slider-wrap">
+            <div class="hf-range-slider"></div>
+            <input data-unit="px" id="hf-range-handle-size" class="hf-range-input-selector" type="number" name="hashform_styles[range][handle_size]" value="<?php echo is_numeric($hashform_styles['range']['handle_size']) ? intval($hashform_styles['range']['handle_size']) : ''; ?>" min="0" max="100" step="1"><span class="hf-range-input-unit">px</span>
         </div>
     </div>
     <div class="hf-settings-row">

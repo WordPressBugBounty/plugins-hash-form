@@ -523,9 +523,9 @@ class HashFormStyles {
                     <li class="hf-typography-font-size-field">
                         <label><?php esc_html_e('Font Size', 'hash-form'); ?></label>
 
-                        <div class="hf-typography-input-field hashform-range-slider-wrap">
-                            <div class="hashform-range-slider"></div>
-                            <input data-unit="px" id="<?php echo esc_attr('hf-' . $label_id . '-typo-font-size'); ?>" class="hashform-range-input-selector" type="number" min="0" max="100" step="1" value="<?php echo esc_attr($settings[$label]['typo']['font_size']); ?>" name="<?php echo esc_attr($name . '[' . $label . '][typo][font_size]'); ?>" /> px
+                        <div class="hf-typography-input-field hf-range-slider-wrap">
+                            <div class="hf-range-slider"></div>
+                            <input data-unit="px" id="<?php echo esc_attr('hf-' . $label_id . '-typo-font-size'); ?>" class="hf-range-input-selector" type="number" min="0" max="100" step="1" value="<?php echo esc_attr($settings[$label]['typo']['font_size']); ?>" name="<?php echo esc_attr($name . '[' . $label . '][typo][font_size]'); ?>" /><span class="hf-range-input-unit">px</span>
                         </div>
                     </li>
                     <?php
@@ -536,9 +536,9 @@ class HashFormStyles {
                     <li class="hf-typography-letter-spacing-field">
                         <label><?php esc_html_e('Letter Spacing', 'hash-form'); ?></label>
 
-                        <div class="hf-typography-input-field hashform-range-slider-wrap">
-                            <div class="hashform-range-slider"></div>
-                            <input data-unit="px" id="<?php echo esc_attr('hf-' . $label_id . '-typo-letter-spacing'); ?>" class="hashform-range-input-selector" type="number" min="-5" max="5" step="0.1" value="<?php echo esc_attr($settings[$label]['typo']['letter_spacing']); ?>" name="<?php echo esc_attr($name . '[' . $label . '][typo][letter_spacing]'); ?>" /> px
+                        <div class="hf-typography-input-field hf-range-slider-wrap">
+                            <div class="hf-range-slider"></div>
+                            <input data-unit="px" id="<?php echo esc_attr('hf-' . $label_id . '-typo-letter-spacing'); ?>" class="hf-range-input-selector" type="number" min="-5" max="5" step="0.1" value="<?php echo esc_attr($settings[$label]['typo']['letter_spacing']); ?>" name="<?php echo esc_attr($name . '[' . $label . '][typo][letter_spacing]'); ?>" /><span class="hf-range-input-unit">px</span>
                         </div>
                     </li>
                     <?php
@@ -549,9 +549,9 @@ class HashFormStyles {
                     <li class="hf-typography-line-height-field">
                         <label><?php esc_html_e('Line Height', 'hash-form'); ?></label>
 
-                        <div class="hf-typography-input-field hashform-range-slider-wrap">
-                            <div class="hashform-range-slider"></div>
-                            <input id="<?php echo esc_attr('hf-' . $label_id . '-typo-line-height'); ?>" class="hashform-range-input-selector" type="number" min="0.5" max="5" step="0.1" value="<?php echo esc_attr($settings[$label]['typo']['line_height']); ?>" name="<?php echo esc_attr($name . '[' . $label . '][typo][line_height]'); ?>" />
+                        <div class="hf-typography-input-field hf-range-slider-wrap">
+                            <div class="hf-range-slider"></div>
+                            <input id="<?php echo esc_attr('hf-' . $label_id . '-typo-line-height'); ?>" class="hf-range-input-selector" type="number" min="0.5" max="5" step="0.1" value="<?php echo esc_attr($settings[$label]['typo']['line_height']); ?>" name="<?php echo esc_attr($name . '[' . $label . '][typo][line_height]'); ?>" />
                         </div>
                     </li>
                     <?php

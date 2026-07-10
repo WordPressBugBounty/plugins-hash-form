@@ -69,10 +69,10 @@ class HashFormFieldRangeSlider extends HashFormFieldType {
     protected function input_html() {
         $field = $this->get_field();
         ?>
-        <div class="hashform-range-slider-container">
-            <div class="hashform-range-slider-wrap">
-                <div class="hashform-range-slider"></div>
-                <input class="hashform-range-input-selector" type="number" <?php $this->field_attrs(); ?>>
+        <div class="hf-range-slider-container">
+            <div class="hf-range-slider-wrap">
+                <div class="hf-range-slider"></div>
+                <input class="hf-range-input-selector" type="number" <?php $this->field_attrs(); ?>>
             </div>
         </div>
         <?php

@@ -1140,13 +1140,13 @@
 }
 
 /* Range Slider */
-.hf-form-field.hashform-field-type-range_slider .hashform-range-slider-wrap {
+.hf-form-field.hashform-field-type-range_slider .hf-range-slider-wrap {
     width: 100%;
     display: flex;
     align-items: center;
 }
 
-.hf-form-field.hashform-field-type-range_slider .hashform-range-slider-wrap .hashform-range-slider {
+.hf-form-field.hashform-field-type-range_slider .hf-range-slider-wrap .hf-range-slider {
     position: relative;
     flex-grow: 1;
     height: 4px;
@@ -1158,12 +1158,12 @@
     transition: background 0.5s;
 }
 
-.hf-form-custom-style .hf-form-field.hashform-field-type-range_slider .hashform-range-slider-wrap .hashform-range-slider {
+.hf-form-custom-style .hf-form-field.hashform-field-type-range_slider .hf-range-slider-wrap .hf-range-slider {
     height: var(--hf-range-height, 4px);
     background: var(--hf-range-color, rgba(0, 0, 0, 0.15));
 }
 
-.hf-form-field.hashform-field-type-range_slider .hashform-range-slider-wrap .hashform-range-slider .ui-slider-range {
+.hf-form-field.hashform-field-type-range_slider .hf-range-slider-wrap .hf-range-slider .ui-slider-range {
     display: inline-block;
     position: absolute;
     top: 0;
@@ -1172,11 +1172,11 @@
     border-radius: 5px;
 }
 
-.hf-form-custom-style .hf-form-field.hashform-field-type-range_slider .hashform-range-slider-wrap .hashform-range-slider .ui-slider-range {
+.hf-form-custom-style .hf-form-field.hashform-field-type-range_slider .hf-range-slider-wrap .hf-range-slider .ui-slider-range {
     background: var(--hf-range-color-active, #13a1dc);
 }
 
-.hf-form-field.hashform-field-type-range_slider .hashform-range-slider-wrap .hashform-range-slider .ui-slider-handle {
+.hf-form-field.hashform-field-type-range_slider .hf-range-slider-wrap .hf-range-slider .ui-slider-handle {
     height: 16px;
     width: 16px;
     background: #fff;
@@ -1192,20 +1192,20 @@
     z-index: 9;
 }
 
-.hf-form-custom-style .hf-form-field.hashform-field-type-range_slider .hashform-range-slider-wrap .hashform-range-slider .ui-slider-handle {
+.hf-form-custom-style .hf-form-field.hashform-field-type-range_slider .hf-range-slider-wrap .hf-range-slider .ui-slider-handle {
     height: var(--hf-range-handle-size, 16px);
     width: var(--hf-range-handle-size, 16px);
     background: var(--hf-range-handle-color, #fff);
     margin: 0 0 0 calc(var(--hf-range-handle-size, 8px)/2 * -1);
 }
 
-.hf-form-field.hashform-field-type-range_slider .hashform-range-slider-wrap .hashform-range-slider + .hashform-range-input-selector {
+.hf-form-field.hashform-field-type-range_slider .hf-range-slider-wrap .hf-range-slider + .hf-range-input-selector {
     margin-left: 10px;
     width: 80px;
     text-align: center;
 }
 
-.hf-form-field.hashform-field-type-range_slider .hf-typography-line-height-field .hashform-range-slider + .hashform-range-input-selector {
+.hf-form-field.hashform-field-type-range_slider .hf-typography-line-height-field .hf-range-slider + .hf-range-input-selector {
     margin-right: 20px
 }
 

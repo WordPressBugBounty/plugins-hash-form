@@ -934,7 +934,7 @@ body:has(#hf-wrap){
 }
 
 /* Range Slider FrondEnd */
-.hf-editor-field-type-range_slider .hashform-range-slider-container {
+.hf-editor-field-type-range_slider .hf-range-slider-container {
     width: 100%;
 }
 
@@ -1587,6 +1587,7 @@ h4.hf-field-heading {
     font-size: 16px;
     padding: 10px 55px 10px 10px;
     text-align: center;
+    height: 60px;
 }
 
 .hf-shortcode-footer,
@@ -1666,6 +1667,11 @@ h4.hf-field-heading {
     opacity: 0;
     visibility: hidden;
     transition: all 0.6s ease;
+}
+
+form.hf-success,
+form.hf-error {
+    margin: 0;
 }
 
 form.hf-success .hf-copied {
@@ -1880,6 +1886,11 @@ form.hf-success .hf-copied {
 
 .hf-empty-row {
     display: none;
+}
+
+.hf-form-entry-date {
+    text-transform: none;
+    font-size: 14px;
 }
 
 .hf-form-entry-navigation {
@@ -2174,13 +2185,13 @@ form.hf-success .hf-copied {
     cursor: pointer;
     background: #FF0000;
     color: #FFF;
-    height: 30px;
-    width: 30px;
+    height: 40px;
+    width: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 30px;
-    border-radius: 4px;
+    flex: 0 0 40px;
+    border-radius: 2px;
     font-size: 18px;
 }
 

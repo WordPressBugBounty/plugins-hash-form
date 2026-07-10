@@ -59,9 +59,9 @@ $captcha_lang = array('en' => 'English', 'af' => 'Afrikaans', 'am' => 'Amharic',
         <label class="hf-setting-label"><?php esc_html_e('reCAPTCHA Threshold', 'hash-form'); ?></label>
         <p class="hf-description"><?php esc_html_e('A score of 0 is likely to be a bot and a score of 1 is likely not a bot. Setting a lower threshold will allow more bots, but it will also stop fewer real users.', 'hash-form'); ?></p>
         <div class="hf-grid-container">
-            <div class="hf-setting-fields hashform-range-slider-wrap hf-grid-3">
-                <div class="hashform-range-slider"></div>
-                <input id="hf-re-threshold" class="hashform-range-input-selector" type="number" name="hashform_settings[re_threshold]" value="<?php echo esc_attr($settings['re_threshold']); ?>" min="0" max="1" step="0.1">
+            <div class="hf-setting-fields hf-range-slider-wrap hf-grid-3">
+                <div class="hf-range-slider"></div>
+                <input id="hf-re-threshold" class="hf-range-input-selector" type="number" name="hashform_settings[re_threshold]" value="<?php echo esc_attr($settings['re_threshold']); ?>" min="0" max="1" step="0.1">
             </div>
         </div>
     </div>

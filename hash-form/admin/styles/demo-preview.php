@@ -354,13 +354,13 @@ defined('ABSPATH') || die();
                         <span class="hf-field-required" aria-hidden="true"></span>
                     </label>
                     <div class="hf-field-content">
-                        <div class="hashform-range-slider-container">
-                            <div class="hashform-range-slider-wrap">
-                                <div class="hashform-range-slider ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content">
+                        <div class="hf-range-slider-container">
+                            <div class="hf-range-slider-wrap">
+                                <div class="hf-range-slider ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content">
                                     <div class="ui-slider-range ui-corner-all ui-widget-header ui-slider-range-min" style="width: 0%;"></div>
                                     <span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default" style="left: 0%;"></span>
                                 </div>
-                                <input id="hf-field-haguj" class="hashform-range-input-selector" type="number" min="1" max="10" step="1" name="item_meta[436]" value="1">
+                                <input id="hf-field-haguj" class="hf-range-input-selector" type="number" min="1" max="10" step="1" name="item_meta[436]" value="1">
                             </div>
                         </div>
                     </div>

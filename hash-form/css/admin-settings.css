@@ -451,18 +451,17 @@
 
 /*Choosen Select*/
 .hf-typography-fields .chosen-container-single .chosen-single {
-    min-height: 30px;
+    min-height: 40px;
     font-size: 14px;
-    line-height: 2;
+    line-height: 40px;
     color: #2c3338;
-    border-color: #8c8f94;
+    border-color: #949492;
     box-shadow: none;
-    border-radius: 3px;
     background: #fff url(data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%206l5%205%205-5%202%201-7%207-7-7%202-1z%22%20fill%3D%22%23555%22%2F%3E%3C%2Fsvg%3E) no-repeat right 5px top 55%;
     background-size: 16px 16px;
     cursor: pointer;
-    vertical-align: middle;
     padding: 0 0 0 10px;
+    border-radius: 2px;
 }
 
 .hf-typography-fields .chosen-container-single .chosen-single div {
@@ -480,13 +479,14 @@
 }
 
 /* Range Slider */
-.hf-settings-row .hashform-range-slider-wrap {
+.hf-settings-row .hf-range-slider-wrap {
     width: 100%;
     display: flex;
     align-items: center;
+    position: relative;
 }
 
-.hf-settings-row .hashform-range-slider-wrap .hashform-range-slider {
+.hf-settings-row .hf-range-slider-wrap .hf-range-slider {
     position: relative;
     flex-grow: 1;
     height: 4px;
@@ -498,11 +498,11 @@
     transition: background 0.5s;
 }
 
-.hf-settings-row .hashform-range-slider-wrap .hashform-range-slider:hover {
+.hf-settings-row .hf-range-slider-wrap .hf-range-slider:hover {
     background: rgba(0, 0, 0, 0.2);
 }
 
-.hf-settings-row .hashform-range-slider-wrap .hashform-range-slider .ui-slider-range {
+.hf-settings-row .hf-range-slider-wrap .hf-range-slider .ui-slider-range {
     display: inline-block;
     position: absolute;
     top: 0;
@@ -510,7 +510,7 @@
     background: #13a1dc;
 }
 
-.hf-settings-row .hashform-range-slider-wrap .hashform-range-slider .ui-slider-handle {
+.hf-settings-row .hf-range-slider-wrap .hf-range-slider .ui-slider-handle {
     height: 16px;
     width: 16px;
     background: #fff;
@@ -525,26 +525,31 @@
     cursor: pointer;
 }
 
-.hf-settings-row .hashform-range-slider-wrap .hashform-range-slider + .hashform-range-input-selector {
+.hf-settings-row .hf-range-slider-wrap .hf-range-slider + .hf-range-input-selector {
     margin-left: 10px;
-    margin-right: 5px;
     width: 50px;
-    height: 28px;
     text-align: center;
-    border-radius: 4px;
-    padding: 3px;
-    font-size: 12px;
+    padding-right: 0;
+    font-size: 14px;
     font-weight: 600;
     color: #555;
 }
 
-.hf-editor-field-content .hashform-range-slider-wrap {
+.hf-settings-row .hf-range-slider-wrap .hf-range-input-unit{
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 5px;
+}
+
+.hf-editor-field-content .hf-range-slider-wrap {
     width: 100%;
     display: flex;
     align-items: center;
 }
 
-.hf-editor-field-content .hashform-range-slider-wrap .hashform-range-slider {
+.hf-editor-field-content .hf-range-slider-wrap .hf-range-slider {
     position: relative;
     flex-grow: 1;
     height: 4px;
@@ -556,11 +561,11 @@
     transition: background 0.5s;
 }
 
-.hf-editor-field-content .hashform-range-slider-wrap .hashform-range-slider:hover {
+.hf-editor-field-content .hf-range-slider-wrap .hf-range-slider:hover {
     background: rgba(0, 0, 0, 0.2);
 }
 
-.hf-editor-field-content .hashform-range-slider-wrap .hashform-range-slider .ui-slider-range {
+.hf-editor-field-content .hf-range-slider-wrap .hf-range-slider .ui-slider-range {
     display: inline-block;
     position: absolute;
     top: 0;
@@ -568,7 +573,7 @@
     background: #13a1dc;
 }
 
-.hf-editor-field-content .hashform-range-slider-wrap .hashform-range-slider .ui-slider-handle {
+.hf-editor-field-content .hf-range-slider-wrap .hf-range-slider .ui-slider-handle {
     height: 16px;
     width: 16px;
     background: #fff;
@@ -583,7 +588,7 @@
     cursor: pointer;
 }
 
-.hf-editor-field-content .hashform-range-slider-wrap .hashform-range-slider + .hashform-range-input-selector {
+.hf-editor-field-content .hf-range-slider-wrap .hf-range-slider + .hf-range-input-selector {
     margin-left: 10px;
     margin-right: 5px;
     width: 50px;
@@ -625,7 +630,11 @@ ul.hf-shadow-fields {
 
 .hf-shadow-settings-field .hf-color-input-field {
     position: relative;
-    top: -13px;
+    top: -18px;
+}
+
+.hf-setting-fields .hf-shadow-settings-field .wp-picker-open + .wp-picker-input-wrap {
+    margin-top: 30px;
 }
 
 
@@ -656,11 +665,8 @@ ul.hf-shadow-fields {
 .hf-unit-fields .hf-link-button {
     cursor: pointer;
     outline: none;
-    border-radius: 4px;
+    border-radius: 2px;
     border: 1px solid #8c8f94;
-    color: #2c3338;
-    min-height: 28px;
-    width: 45px;
     background-color: #a4afb7;
     color: #fff;
 }
@@ -672,8 +678,8 @@ ul.hf-shadow-fields {
 
 .hf-unit-fields .hf-link-button span {
     font-size: 16px;
-    height: 28px;
-    width: 45px;
+    height: 38px;
+    width: 40px;
     align-items: center;
     justify-content: center;
 }

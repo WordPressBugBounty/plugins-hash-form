@@ -79,13 +79,13 @@
     })();
 
     // Range JS
-    $('.hashform-range-input-selector').each(function () {
+    $('.hf-range-input-selector').each(function () {
         var newSlider = $(this);
         var sliderValue = newSlider.val();
         var sliderMinValue = parseFloat(newSlider.attr('min'));
         var sliderMaxValue = parseFloat(newSlider.attr('max'));
         var sliderStepValue = parseFloat(newSlider.attr('step'));
-        newSlider.prev('.hashform-range-slider').slider({
+        newSlider.prev('.hf-range-slider').slider({
             value: sliderValue,
             min: sliderMinValue,
             max: sliderMaxValue,
@@ -98,7 +98,7 @@
     });
 
     // Update slider if the input field loses focus as it's most likely changed
-    $('.hashform-range-input-selector').blur(function () {
+    $('.hf-range-input-selector').blur(function () {
         var resetValue = isNaN($(this).val()) ? '' : $(this).val();
 
         if (resetValue) {
@@ -115,7 +115,7 @@
             }
         }
         $(this).val(resetValue);
-        $(this).prev('.hashform-range-slider').slider('value', resetValue);
+        $(this).prev('.hf-range-slider').slider('value', resetValue);
     });
 
     // Show/ Hide Single Page Options
