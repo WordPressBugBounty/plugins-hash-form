@@ -7,6 +7,7 @@ class HashFormFieldUrl extends HashFormFieldType {
 
     protected function field_settings_for_type() {
         return array(
+            'advanced_validation' => true,
             'clear_on_focus' => true,
             'invalid' => true,
         );

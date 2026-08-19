@@ -19,21 +19,101 @@ defined('ABSPATH') || die();
                     'tosearch' => 'hf-field-box',
                 ));
                 ?>
-                <ul class="hf-fields-list">
-                    <?php
-                    $registered_fields = HashFormFields::field_selection();
-                    foreach ($registered_fields as $field_key => $field_type) {
+
+                <div class="hf-layout-section">
+                    <h4 class="hf-layout-heading"><?php esc_html_e('Columns', 'hash-form'); ?></h4>
+                    <p class="hf-layout-help"><?php esc_html_e('Add a row, then drag fields into its columns.', 'hash-form'); ?></p>
+                    <ul class="hf-columns-list">
+                        <?php
+                        // Only divisors of the 12 column grid, so every column
+                        // comes out an equal width.
+                        foreach (array(2, 3, 4, 6) as $columns) {
+                            ?>
+                            <li class="hf-column-box">
+                                <a href="#" class="hf-add-columns" data-columns="<?php echo absint($columns); ?>"
+                                   title="<?php
+                                   /* translators: 1: number of columns */
+                                   echo esc_attr(sprintf(_n('%s Column', '%s Columns', $columns, 'hash-form'), $columns));
+                                   ?>">
+                                       <span class="hf-column-preview" aria-hidden="true">
+                                           <?php for ($i = 0; $i < $columns; $i++) { ?>
+                                            <span></span>
+                                        <?php } ?>
+                                    </span>
+                                </a>
+                            </li>
+                            <?php
+                        }
                         ?>
-                        <li class="hf-field-box hashform_<?php echo esc_attr($field_key); ?>" id="<?php echo esc_attr($field_key); ?>">
-                            <a href="#" class="hf-add-field" title="<?php echo esc_html($field_type['name']); ?>">
-                                <i class="<?php echo esc_attr($field_type['icon']); ?>"></i>
-                                <span><?php echo esc_html($field_type['name']); ?></span>
-                            </a>
-                        </li>
+                    </ul>
+                </div>
+
+                <div class="hf-layout-section hf-fields-section">
+                    <h4 class="hf-layout-heading"><?php esc_html_e('Fields', 'hash-form'); ?></h4>
+                    <p class="hf-layout-help hf-drag-hint" id="hf-drag-hint">
+                        <?php esc_html_e('Drag a field into your form to add it.', 'hash-form'); ?>
+                    </p>
+
+                    <?php
+                    /*
+                     * Grouped rather than one flat list: there are around fifty
+                     * field types, and finding one in a single run of tiles
+                     * meant scrolling past everything else.
+                     *
+                     * grouped_field_selection() applies the palette filter, so
+                     * a type whose module is switched off is already gone.
+                     */
+                    $field_groups = HashFormFields::grouped_field_selection();
+                    $first_group = true;
+
+                    foreach ($field_groups as $group_key => $group) {
+                        // The first group starts open, the rest closed, so the
+                        // panel opens on the fields most forms begin with.
+                        $open = $first_group;
+                        $first_group = false;
+                        ?>
+                        <div class="hf-field-group<?php echo $open ? ' hf-open' : ''; ?>" data-group="<?php echo esc_attr($group_key); ?>">
+                            <button type="button" class="hf-field-group-toggle" aria-expanded="<?php echo $open ? 'true' : 'false'; ?>">
+                                <span class="hf-field-group-name"><?php echo esc_html($group['name']); ?></span>
+                                <span class="hf-field-group-count"><?php echo esc_html(number_format_i18n(count($group['fields']))); ?></span>
+                                <span class="hf-field-group-chevron" aria-hidden="true"></span>
+                            </button>
+
+                            <ul class="hf-fields-list">
+                                <?php
+                                foreach ($group['fields'] as $field_key => $field_type) {
+                                    ?>
+                                    <li class="hf-field-box hashform_<?php echo esc_attr($field_key); ?>" id="<?php echo esc_attr($field_key); ?>" data-field-name="<?php echo esc_attr(strtolower($field_type['name'])); ?>">
+                                        <a class="hf-drag-field" title="<?php
+                                        /* translators: 1: field name */
+                                        echo esc_attr(sprintf(__('Drag %s into your form', 'hash-form'), $field_type['name']));
+                                        ?>">
+                                            <?php
+                                            $field_icon = HashFormFieldIcons::render($field_key);
+
+                                            if ($field_icon) {
+                                                echo wp_kses($field_icon, HashFormFieldIcons::allowed_svg());
+                                            } else {
+                                                // Anything that has not registered an svg keeps its icon font glyph.
+                                                ?>
+                                                <i class="<?php echo esc_attr($field_type['icon']); ?>"></i>
+                                                <?php
+                                            }
+                                            ?>
+                                            <span><?php echo esc_html($field_type['name']); ?></span>
+                                        </a>
+                                    </li>
+                                    <?php
+                                }
+                                ?>
+                            </ul>
+                        </div>
                         <?php
                     }
                     ?>
-                </ul>
+
+                    <p class="hf-fields-empty" hidden><?php esc_html_e('No fields match your search.', 'hash-form'); ?></p>
+                </div>
             </div>
 
             <div id="hf-options-panel" class="ht-fields-panel">

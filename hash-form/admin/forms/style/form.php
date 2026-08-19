@@ -80,7 +80,7 @@ if (!$hashform_styles) {
         </div>
     </div>
     <?php
-    $form_style = apply_filters('hashform_enable_style', '__return_true');
+    $form_style = apply_filters('hashform_enable_style', true);
     if ($form_style) {
         echo '<style class="hf-style-content">';
         echo '#hf-container-' . absint($form->id) . '{';

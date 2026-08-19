@@ -17,11 +17,36 @@ class HashFormEmail {
         return $this->form->settings;
     }
 
+    /**
+     * Set while replaying a deferred send, so the filter that held the email
+     * back does not hold it back a second time.
+     */
+    public static $sending_deferred = false;
+
     public function send_email() {
         $attachments = array();
         $form_settings = $this->get_form_settings();
         $entry = HashFormEntry::get_entry_vars($this->entry_id);
         $metas = $entry->metas;
+
+        /**
+         * Lets an add-on postpone the notification and auto responder, which
+         * is what the payment gateways do so an abandoned checkout does not
+         * send an order confirmation.
+         *
+         * Returning false must still let the submission finish normally.
+         */
+        if (!self::$sending_deferred && !apply_filters('hashform_send_entry_emails', true, $this->form, $this->entry_id, $metas)) {
+            do_action('hashform_after_email', array(
+                'form' => $this->form,
+                'entry_id' => $this->entry_id,
+                'form_settings' => $form_settings,
+                'metas' => $metas,
+                'location' => $this->location
+            ));
+
+            return true;
+        }
 
         $email_to = isset($form_settings['email_to']) ? explode(',', $form_settings['email_to']) : '';
         $email_from = isset($form_settings['email_from']) ? $form_settings['email_from'] : '';
@@ -33,6 +58,10 @@ class HashFormEmail {
 
         $settings = HashFormSettings::get_settings();
         $email_template = $settings['email_template'] ? sanitize_text_field($settings['email_template']) : 'template1';
+        // The value feeds both a callable name and an include path.
+        if (!in_array($email_template, array('template1', 'template2', 'template3'), true)) {
+            $email_template = 'template1';
+        }
         $header_image = sanitize_text_field($settings['header_image']);
         $form_title = $this->form->name;
         $file_img_placeholder = HASHFORM_URL . 'img/attachment.png';
@@ -46,36 +75,27 @@ class HashFormEmail {
             $count++;
             $reply_to_email = str_replace('#field_id_' . absint($item), $value['value'], $reply_to_email);
             $email_subject = str_replace('#field_id_' . absint($item), $value['value'], $email_subject);
-            $reply_to_ar = str_replace(absint($item), $value['value'], $reply_to_ar);
+            $reply_to_ar = str_replace('#field_id_' . absint($item), $value['value'], $reply_to_ar);
             $entry_value = HashFormHelper::unserialize_or_decode($value['value']);
             $entry_type = HashFormHelper::unserialize_or_decode($value['type']);
             if (is_array($entry_value)) {
                 if ($entry_type == 'name') {
                     $entry_value = implode(' ', array_filter($entry_value));
                 } elseif ($entry_type == 'repeater_field') {
-                    $entry_val = '<table><thead><tr>';
-                    foreach (array_keys($entry_value) as $key) {
-                        $entry_val .= '<th>' . $key . '</th>';
-                    }
-                    $entry_val .= '</tr></thead><tbody>';
-                    $out = array();
-                    foreach ($entry_value as $rowkey => $row) {
-                        foreach ($row as $colkey => $col) {
-                            $out[$colkey][$rowkey] = $col;
-                        }
-                    }
-                    foreach ($out as $key => $val) {
-                        foreach ($val as $eval) {
-                            $entry_val .= '<td>' . $eval . '</td>';
-                        }
-                        $entry_val .= '</tr>';
-                    }
-                    $entry_val .= '</tbody></table>';
-                    $entry_value = $entry_val;
+                    $entry_value = HashFormHelper::render_repeater_table($entry_value);
                 } else {
                     $entry_value = implode(',<br>', array_filter($entry_value));
                 }
             }
+            // No profile link here: a recipient may have no access to wp-admin.
+            if ($entry_type == 'user_id') {
+                $entry_value = HashFormFieldUserID::format_value(
+                    $entry_value,
+                    HashFormFieldUserID::capture_from_options(isset($value['options']) ? $value['options'] : array()),
+                    false
+                );
+            }
+
             if ($entry_type == 'upload' && trim($entry_value)) {
                 $files_arr = explode(',', $entry_value);
                 $upload_value = '';
@@ -98,6 +118,9 @@ class HashFormEmail {
                 }
                 $entry_value = $upload_value;
             }
+            /** This filter is documented in admin/entries/entry-detail.php */
+            $entry_value = apply_filters('hashform_entry_display_value', $entry_value, $entry_type, $value, 'email');
+
             $frm_table .= call_user_func('HashFormEmail::' . $email_template, $value['name'], $entry_value, $count);
 
             foreach ($replace_keys as $key) {
@@ -119,6 +142,13 @@ class HashFormEmail {
                 }
             }
         }
+
+        // Submitted values were substituted in above; strip line breaks so they
+        // cannot smuggle extra mail headers.
+        $reply_to_email = str_replace(array("\r", "\n"), '', $reply_to_email);
+        $email_subject = str_replace(array("\r", "\n"), ' ', $email_subject);
+        // Becomes the recipient of the auto responder further down.
+        $reply_to_ar = str_replace(array("\r", "\n"), '', $reply_to_ar);
 
         $email_message = empty($form_settings['email_message']) ? '' : wpautop($form_settings['email_message']);
 
@@ -174,6 +204,15 @@ class HashFormEmail {
                 $redirect_url = $form_settings['redirect_url_page'];
             }
 
+            // A replay (resend from the admin, or a deferred payment email)
+            // must not run the post submission actions again: those dispatch
+            // payments and third party integrations, so repeating them would
+            // charge the customer a second time. There is also no ajax caller
+            // waiting for a json response.
+            if (self::$sending_deferred) {
+                return true;
+            }
+
             do_action('hashform_after_email', array(
                 'form' => $this->form,
                 'entry_id' => $this->entry_id,
@@ -207,7 +246,7 @@ class HashFormEmail {
                     <th style="font-family: sans-serif; font-size: 14px; vertical-align: top;text-align:left; line-height: 18px;" valign="top"><?php echo esc_html($title); ?></th>
                 </tr>
                 <tr>
-                    <td style="font-family: sans-serif; font-size: 14px; vertical-align: top; padding: 10px 0 0 0; line-height: 18px;" valign="top"><?php echo esc_html($entry_value); ?></td>
+                    <td style="font-family: sans-serif; font-size: 14px; vertical-align: top; padding: 10px 0 0 0; line-height: 18px;" valign="top"><?php echo wp_kses_post($entry_value); ?></td>
                 </tr>
             </tbody>
         </table>
@@ -236,7 +275,7 @@ class HashFormEmail {
                     <th style="font-family: sans-serif; font-size: 14px; vertical-align: top;text-align:left; line-height: 18px;" valign="top"><?php echo esc_html($title); ?></th>
                 </tr>
                 <tr>
-                    <td style="font-family: sans-serif; font-size: 14px; vertical-align: top; padding: 10px 0 0 0; line-height: 18px;" valign="top"><?php echo esc_html($entry_value); ?></td>
+                    <td style="font-family: sans-serif; font-size: 14px; vertical-align: top; padding: 10px 0 0 0; line-height: 18px;" valign="top"><?php echo wp_kses_post($entry_value); ?></td>
                 </tr>
             </tbody>
         </table>
@@ -254,7 +293,7 @@ class HashFormEmail {
                     <th style="font-family: sans-serif; font-size: 14px; vertical-align: top;text-align:left; line-height: 18px;background: #000;color: #FFF;text-transform: uppercase;padding: 10px 20px;" valign="top"><?php echo esc_html($title); ?></th>
                 </tr>
                 <tr>
-                    <td style="font-family: sans-serif; font-size: 14px; vertical-align: top; padding: 10px 0 0 0; line-height: 18px;padding: 20px !important;" valign="top"><?php echo esc_html($entry_value); ?></td>
+                    <td style="font-family: sans-serif; font-size: 14px; vertical-align: top; padding: 10px 0 0 0; line-height: 18px;padding: 20px !important;" valign="top"><?php echo wp_kses_post($entry_value); ?></td>
                 </tr>
             </tbody>
         </table>
@@ -263,69 +302,5 @@ class HashFormEmail {
         return $form_html;
     }
 
-    public static function get_entry_rows($email_template, $entry_id) {
-        $settings = HashFormSettings::get_settings();
-        $entry = HashFormEntry::get_entry_vars($entry_id);
-        $entry_rows = '';
-        $file_img_placeholder = HASHFORM_URL . 'img/attachment.png';
-        $count = 0;
-        foreach ($entry->metas as $id => $value) {
-            $count++;
-            $title = $value['name'];
-            $entry_value = HashFormHelper::unserialize_or_decode($value['value']);
-            $entry_type = $value['type'];
-            if (is_array($entry_value)) {
-                if ($entry_type == 'name') {
-                    $entry_value = implode(' ', array_filter($entry_value));
-                } elseif ($entry_type == 'repeater_field') {
-                    $entry_val = '<table><thead><tr>';
-                    foreach (array_keys($entry_value) as $key) {
-                        $entry_val .= '<th>' . $key . '</th>';
-                    }
-                    $entry_val .= '</tr></thead><tbody>';
-                    $out = array();
-                    foreach ($entry_value as $rowkey => $row) {
-                        foreach ($row as $colkey => $col) {
-                            $out[$colkey][$rowkey] = $col;
-                        }
-                    }
-                    foreach ($out as $key => $val) {
-                        foreach ($val as $eval) {
-                            $entry_val .= '<td>' . $eval . '</td>';
-                        }
-                        $entry_val .= '</tr>';
-                    }
-                    $entry_val .= '</tbody></table>';
-                    $entry_value = $entry_val;
-                } else {
-                    $entry_value = implode(',<br>', array_filter($entry_value));
-                }
-            }
-
-            if ($entry_type == 'upload' && $entry_value) {
-                $files_arr = explode(',', $entry_value);
-                $upload_value = '';
-                foreach ($files_arr as $file) {
-                    $file_info = pathinfo($file);
-                    $file_name = $file_info['basename'];
-                    $file_extension = $file_info['extension'];
-
-                    $upload_value .= '<div style="margin-bottom: 10px;padding-bottom: 10px;border-bottom: 1px solid #EEE;">';
-                    $upload_value .= '<div><a href="' . esc_url($file) . '" target="_blank">';
-                    if (in_array($file_extension, array('jpg', 'jpeg', 'png', 'gif', 'bmp'))) {
-                        $upload_value .= '<img style="width:150px" src="' . esc_url($file) . '">';
-                    } else {
-                        $upload_value .= '<img style="width: 40px;border: 1px solid #666;border-radius: 6px;padding: 4px;" src="' . esc_url($file_img_placeholder) . '">';
-                    }
-                    $upload_value .= '</a></div>';
-                    $upload_value .= '<label><a href="' . esc_url($file) . '" target="_blank">';
-                    $upload_value .= esc_html($file_name) . '</a></label>';
-                    $upload_value .= '</div>';
-                }
-                $entry_value = $upload_value;
-            }
-        }
-        return $entry_rows;
-    }
 
 }

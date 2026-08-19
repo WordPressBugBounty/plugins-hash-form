@@ -1,0 +1,1234 @@
+/**
+ * Form builder.
+ *
+ * Loaded after admin-style.css so these rules win, letting the builder move to
+ * the token system without unpicking 2,600 lines of legacy CSS in one go. The
+ * remaining screens follow the same pattern as they are reworked.
+ */
+
+/* ---------- Shell ---------- */
+
+/* The workspace sits a shade darker than the panels on it, which is what lets
+   the header, sidebar and canvas read as separate surfaces without needing a
+   border between every pair. */
+.hf-content {
+    --hf-workspace: #eef1f6;
+    background: var(--hf-workspace);
+}
+
+.hf-content .hf-body {
+    align-items: stretch;
+    background: var(--hf-workspace);
+    display: flex;
+    gap: var(--hf-space-3);
+    height: 100%;
+    overflow: hidden;
+    padding: var(--hf-space-3);
+}
+
+.hf-content .hf-fields-sidebar {
+    background: var(--hf-surface);
+    border: 1px solid var(--hf-border);
+    border-radius: var(--hf-radius-lg);
+    box-shadow: var(--hf-shadow-md);
+    flex: 0 0 360px;
+    overflow: hidden auto;
+    scrollbar-width: thin;
+    width: 360px;
+}
+
+.hf-content .hf-fields-sidebar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.hf-content .hf-fields-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.hf-content .hf-fields-sidebar::-webkit-scrollbar-thumb {
+    background: var(--hf-border-strong);
+    border-radius: var(--hf-radius-pill);
+}
+
+.hf-content #hf-form-panel {
+    background: transparent;
+    flex-grow: 1;
+    overflow: hidden auto;
+    padding: 0;
+    scrollbar-width: thin;
+}
+
+.hf-content #hf-form-panel::-webkit-scrollbar {
+    width: 10px;
+}
+
+.hf-content #hf-form-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.hf-content #hf-form-panel::-webkit-scrollbar-thumb {
+    background: var(--hf-border-strong);
+    border-radius: var(--hf-radius-pill);
+}
+
+/* ---------- Sidebar tabs ---------- */
+
+/* A segmented control rather than underlined tabs: it reads as one component,
+   matches the language of the header, and makes the active panel obvious
+   without a second border under an already bordered sidebar. */
+.hf-content .hf-fields-tabs {
+    background: var(--hf-surface);
+    border-bottom: 1px solid var(--hf-border);
+    border-radius: var(--hf-radius-lg) var(--hf-radius-lg) 0 0;
+    border-top: 0;
+    display: flex;
+    gap: 0;
+    margin: 0;
+    padding: var(--hf-space-3);
+    position: sticky;
+    top: 0;
+    z-index: 9;
+}
+
+.hf-content .hf-fields-tabs::before {
+    background: rgba(16, 24, 40, .05);
+    border-radius: var(--hf-radius-sm);
+    content: "";
+    inset: var(--hf-space-3);
+    position: absolute;
+}
+
+.hf-content .hf-fields-tabs li {
+    flex: 1 1 0;
+    font-size: var(--hf-font-base);
+    margin: 0;
+    position: relative;
+    text-align: center;
+    z-index: 1;
+}
+
+.hf-content .hf-fields-tabs li a {
+    border: 0;
+    border-radius: 3px;
+    box-shadow: none;
+    color: var(--hf-text-muted);
+    display: block;
+    font-size: var(--hf-font-sm);
+    font-weight: 500;
+    margin: 2px;
+    outline: 0;
+    padding: var(--hf-space-2) var(--hf-space-1);
+    position: relative;
+    text-decoration: none;
+    text-transform: none;
+    transition: background-color var(--hf-transition), color var(--hf-transition), box-shadow var(--hf-transition);
+    /* Three tabs in a 300px rail: keep them on one line. */
+    white-space: nowrap;
+}
+
+.hf-content .hf-fields-tabs li a:hover {
+    color: var(--hf-text);
+}
+
+.hf-content .hf-fields-tabs li.hf-active-tab a {
+    background: var(--hf-surface);
+    border: 0;
+    box-shadow: var(--hf-shadow-sm);
+    color: var(--hf-text);
+    font-weight: 600;
+}
+
+/* ---------- Sidebar sections ---------- */
+
+.hf-content .ht-fields-panel {
+    padding: var(--hf-space-4);
+}
+
+.hf-content .hf-layout-section {
+    margin-bottom: var(--hf-space-5);
+}
+
+.hf-content .hf-layout-heading {
+    color: var(--hf-text-faint);
+    font-size: var(--hf-font-xs);
+    font-weight: 600;
+    letter-spacing: .06em;
+    margin: 0 0 var(--hf-space-2);
+    text-transform: uppercase;
+}
+
+.hf-content .hf-layout-help {
+    color: var(--hf-text-muted);
+    font-size: var(--hf-font-sm);
+    line-height: 1.5;
+    margin: 0 0 var(--hf-space-3);
+}
+
+.hf-content .hf-search-fields {
+    margin-bottom: var(--hf-space-4);
+    position: relative;
+}
+
+.hf-content .hf-search-fields .mdi-magnify {
+    color: var(--hf-text-faint);
+    left: var(--hf-space-3);
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.hf-content .hf-search-fields input[type="search"] {
+    background: var(--hf-surface-sunken);
+    border-radius: var(--hf-radius-pill);
+    padding-left: var(--hf-space-6);
+}
+
+.hf-content .hf-search-fields input[type="search"]:focus {
+    background: var(--hf-surface);
+}
+
+/* ---------- Panel controls ---------- */
+
+/* WordPress gives selects a line-height of their own, which our min-height
+   does not override — so a select came out 43px against a 34px input sitting
+   right beside it. Matching the line-height puts them on the same height. */
+.hf-content .hf-form-row select,
+.hf-content .hf-settings-row select,
+.hf-content .hf-fields-settings select {
+    line-height: 1.5;
+    min-height: 34px;
+}
+
+/* Rows in these panels are grid children, so the grid's own gap already
+   separates them; the inherited margin was adding a second gap on top and
+   leaving about 31px between every field. */
+.hf-content .hf-grid-container > .hf-form-row {
+    margin-bottom: 0;
+}
+
+/* ---------- Settings tab ---------- */
+
+/* Every field in these sections is marked hf-grid-3 — half of the six column
+   grid — and each sits alone on its row, so in a 900px card each input had an
+   equal patch of nothing beside it. The card narrows to a readable measure and
+   the fields fill it. */
+.hf-content .hf-form-wrap:has(#hf-settings-form) {
+    max-width: 760px;
+}
+
+.hf-content #hf-settings-form .hf-grid-3 {
+    grid-column: span 6;
+}
+
+/* Adding another recipient is a secondary action; it was styled as the
+   screen's primary button. */
+.hf-content #hf-settings-form .hf-add-email {
+    background: var(--hf-surface);
+    border: 1px solid var(--hf-border-strong);
+    border-radius: var(--hf-radius-sm);
+    color: var(--hf-text);
+    font-size: var(--hf-font-base);
+    font-weight: 500;
+    min-height: 34px;
+    padding: 0 var(--hf-space-4);
+    text-shadow: none;
+}
+
+.hf-content #hf-settings-form .hf-add-email:hover,
+.hf-content #hf-settings-form .hf-add-email:focus {
+    background: var(--hf-surface-sunken);
+    border-color: var(--hf-text-faint);
+    color: var(--hf-text);
+}
+
+.hf-content .hf-email-row {
+    background: var(--hf-surface-sunken);
+    border: 1px solid var(--hf-border);
+    border-radius: var(--hf-radius-sm);
+    gap: var(--hf-space-2);
+    padding: var(--hf-space-2);
+}
+
+/* A saturated red circle for every row read as an error state. Quiet until
+   you reach for it, destructive when you do. */
+.hf-content .hf-delete-email-row {
+    background: none;
+    border-radius: var(--hf-radius-sm);
+    color: var(--hf-text-faint);
+    flex: 0 0 auto;
+    font-size: 16px;
+    height: 28px;
+    transition: background-color var(--hf-transition), color var(--hf-transition);
+    width: 28px;
+}
+
+.hf-content .hf-delete-email-row:hover {
+    background: #fdf2f2;
+    color: var(--hf-danger);
+}
+
+/* Was inline style="color:red" on a description paragraph. */
+.hf-content .hf-settings-note {
+    background: #fcf5e6;
+    border-left: 3px solid var(--hf-warning);
+    border-radius: var(--hf-radius-sm);
+    color: #6b4c0f;
+    font-size: var(--hf-font-sm);
+    line-height: 1.5;
+    margin: var(--hf-space-2) 0 0;
+    padding: var(--hf-space-2) var(--hf-space-3);
+}
+
+/* The tag picker sat right-aligned above one field and left-aligned below
+   another; it now always follows its label on the same line. */
+.hf-content #hf-settings-form .hf-label-with-attr {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--hf-space-2);
+    justify-content: flex-start;
+}
+
+.hf-content #hf-settings-form .hf-label-with-attr .hf-attr-field {
+    margin-left: auto;
+}
+
+/* ---------- Style tab: mode cards ---------- */
+
+/* The select these replace is still in the markup, hidden: it carries the
+   value on save and the data-condition rules key off it. */
+.hf-content .hf-style-mode-value {
+    display: none;
+}
+
+.hf-content .hf-style-modes {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/* Carries .hf-layout-heading for its type; a legend needs the padding reset
+   on top of that. */
+.hf-content .hf-style-modes-legend {
+    padding: 0;
+}
+
+.hf-content .hf-style-mode {
+    align-items: flex-start;
+    background: var(--hf-surface);
+    border: 1px solid var(--hf-border);
+    border-radius: var(--hf-radius);
+    cursor: pointer;
+    display: flex;
+    gap: var(--hf-space-2);
+    margin: 0 0 var(--hf-space-2);
+    padding: var(--hf-space-3);
+    transition: border-color var(--hf-transition), background-color var(--hf-transition), box-shadow var(--hf-transition);
+}
+
+.hf-content .hf-style-mode:hover {
+    border-color: var(--hf-border-strong);
+}
+
+.hf-content .hf-style-mode.hf-selected {
+    background: var(--hf-accent-soft);
+    border-color: var(--hf-accent);
+    box-shadow: var(--hf-shadow-sm);
+}
+
+.hf-content .hf-style-mode:focus-within {
+    outline: 2px solid var(--hf-accent);
+    outline-offset: 1px;
+}
+
+.hf-content .hf-style-mode-input {
+    /* Native radios draw themselves in the admin colour scheme, which is the
+       one thing on this screen that still was not the brand accent. */
+    accent-color: var(--hf-accent);
+    flex: 0 0 auto;
+    margin: 2px 0 0;
+}
+
+.hf-content .hf-style-mode-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.hf-content .hf-style-mode-name {
+    color: var(--hf-text);
+    font-size: var(--hf-font-base);
+    font-weight: 600;
+}
+
+.hf-content .hf-style-mode-desc {
+    color: var(--hf-text-muted);
+    font-size: var(--hf-font-sm);
+    line-height: 1.45;
+}
+
+/* ---------- Style tab: template prompt ---------- */
+
+.hf-content .hf-style-template-cta {
+    background: var(--hf-surface-sunken);
+    border: 1px dashed var(--hf-border-strong);
+    border-radius: var(--hf-radius);
+    padding: var(--hf-space-4);
+}
+
+.hf-content .hf-style-template-cta-text {
+    color: var(--hf-text-muted);
+    font-size: var(--hf-font-sm);
+    line-height: 1.5;
+    margin: 0 0 var(--hf-space-3);
+}
+
+/* A secondary action, styled like the rest of the sidebar rather than left as
+   a bare wp-admin button in the admin colour scheme. */
+.hf-content .hf-style-template-cta .button {
+    background: var(--hf-surface);
+    border: 1px solid var(--hf-border-strong);
+    border-radius: var(--hf-radius-sm);
+    box-shadow: none;
+    color: var(--hf-text);
+    font-size: var(--hf-font-base);
+    font-weight: 500;
+    line-height: 1;
+    margin: 0;
+    min-height: 34px;
+    padding: 0 var(--hf-space-3);
+    text-shadow: none;
+}
+
+.hf-content .hf-style-template-cta .button:hover,
+.hf-content .hf-style-template-cta .button:focus {
+    background: var(--hf-surface-sunken);
+    border-color: var(--hf-text-faint);
+    color: var(--hf-text);
+}
+
+/* The label above the template select, under its own section heading. */
+.hf-content .hf-style-template-label {
+    color: var(--hf-text);
+    display: block;
+    font-size: var(--hf-font-base);
+    font-weight: 500;
+    margin: 0 0 var(--hf-space-2);
+}
+
+/* ---------- Style tab: preview canvas ---------- */
+
+/* The same canvas header the builder carries, so the two tabs read as one
+   surface. The builder pulls it out over the wrap's 24px padding with
+   negative margins; this panel is deliberately full bleed so the preview
+   reports a true width, so here the header just sits at the top of the card
+   and keeps its own padding. */
+.hf-content .hf-style-form-panel .hf-canvas-header {
+    margin: 0;
+}
+
+.hf-content .hf-style-form-panel .hf-form-preview {
+    min-height: 200px;
+}
+
+/* The style editor's demo form is markup in the page rather than the Style
+   tab's width-accurate iframe, so it can have room to breathe without
+   misrepresenting anything. */
+.hf-content .hf-style-form-panel .hf-template-preview {
+    padding: var(--hf-space-5, 24px);
+}
+
+/* ---------- Payment field preview ---------- */
+
+/* Every enabled gateway is a radio, and with twenty of them switched on the
+   field ran the height of the canvas and pushed the rest of the form out of
+   view. Only the builder preview is columned — the live form is untouched. */
+.hf-content .hf-editor-field-elements .hf-payment-container {
+    display: grid;
+    gap: var(--hf-space-1) var(--hf-space-4);
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+
+.hf-content .hf-editor-field-elements .hf-payment-option {
+    min-width: 0;
+}
+
+.hf-content .hf-editor-field-elements .hf-payment-option-label {
+    align-items: center;
+    display: flex;
+    gap: var(--hf-space-2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The "no gateway enabled" note, which points at the Modules screen. */
+.hf-content .hf-editor-field-elements .hf-payment-desc {
+    color: var(--hf-text-muted);
+    font-size: var(--hf-font-sm);
+    margin: 0;
+}
+
+/* ---------- Builder header ---------- */
+
+/* Two rows: identity and actions on top, navigation beneath. The old header
+   put a form name, four tabs and four buttons on one line, all uppercase, so
+   nothing had priority and a long form name had nowhere to go.
+   admin-style.css still carries the single-row rules, so these reset the
+   parts that would otherwise fight it. */
+/* The chrome floats above a tinted page as rounded panels, so depth does the
+   separating rather than a grid of hairlines.
+   Not sticky: the builder shell gives the sidebar and the canvas their own
+   scroll, and a sticky header here overlapped the sidebar's own sticky tab
+   bar. */
+.hf-content .hf-header-nav {
+    align-items: stretch;
+    background: var(--hf-surface);
+    border: 1px solid var(--hf-border);
+    border-radius: var(--hf-radius-lg);
+    box-shadow: 0 10px 24px -10px rgba(16, 24, 40, .28);
+    display: block;
+    flex: 0 0 auto;
+    justify-content: normal;
+    margin: var(--hf-space-3) var(--hf-space-3) 0;
+}
+
+.hf-content .hf-header-bottom {
+    border-top: 1px solid var(--hf-border);
+}
+
+.hf-content .hf-header-top {
+    align-items: center;
+    display: flex;
+    gap: var(--hf-space-3);
+    padding: var(--hf-space-4) var(--hf-space-5);
+}
+
+.hf-content .hf-header-back {
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: var(--hf-radius-sm);
+    color: var(--hf-text-muted);
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: 20px;
+    height: 32px;
+    justify-content: center;
+    text-decoration: none;
+    transition: background-color var(--hf-transition), color var(--hf-transition);
+    width: 32px;
+}
+
+.hf-content .hf-header-back:hover {
+    background: var(--hf-surface-sunken);
+    border-color: var(--hf-border);
+    color: var(--hf-text);
+}
+
+.hf-content .hf-header-identity {
+    align-items: center;
+    display: flex;
+    flex: 1 1 auto;
+    gap: var(--hf-space-3);
+    min-width: 0;
+}
+
+/* A mark for the form, so the title has something to sit against and the
+   header has an anchor of its own. */
+.hf-content .hf-header-mark {
+    align-items: center;
+    background: var(--hf-accent-soft);
+    border: 1px solid var(--hf-accent);
+    border-radius: 9px;
+    color: var(--hf-accent-text, #a3591b);
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: 19px;
+    height: 36px;
+    justify-content: center;
+    width: 36px;
+}
+
+/* Sentence case at a readable size, and free to take the width it needs —
+   the old rule fixed it to 360px, centred and uppercase. */
+.hf-content .hf-header-nav .hf-header-title {
+    color: var(--hf-text);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -.02em;
+    margin: 0;
+    overflow: hidden;
+    padding: 0;
+    text-align: left;
+    text-overflow: ellipsis;
+    text-transform: none;
+    white-space: nowrap;
+    width: auto;
+}
+
+.hf-content .hf-header-status {
+    align-items: center;
+    background: var(--hf-surface-sunken);
+    border: 1px solid var(--hf-border);
+    border-radius: var(--hf-radius-pill);
+    color: var(--hf-text-muted);
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: var(--hf-font-xs);
+    font-weight: 600;
+    gap: var(--hf-space-1);
+    padding: 2px var(--hf-space-2);
+}
+
+.hf-content .hf-header-status::before {
+    background: var(--hf-text-faint);
+    border-radius: 50%;
+    content: "";
+    height: 6px;
+    width: 6px;
+}
+
+.hf-content .hf-header-status.hf-is-published::before {
+    background: var(--hf-success);
+}
+
+.hf-content .hf-header-actions {
+    align-items: center;
+    display: flex;
+    flex: 0 0 auto;
+    gap: var(--hf-space-2);
+}
+
+/* Three actions, three weights: primary, outline, quiet. */
+.hf-content .hf-header-nav .hashform-ajax-udpate-button {
+    background: var(--hf-accent);
+    border: 1px solid var(--hf-accent);
+    border-radius: var(--hf-radius-sm);
+    box-shadow: none;
+    color: var(--hf-text-inverse);
+    font-size: var(--hf-font-base);
+    font-weight: 600;
+    gap: var(--hf-space-2);
+    margin: 0;
+    min-height: 34px;
+    padding: 0 var(--hf-space-4);
+    text-transform: none;
+    transition: background-color var(--hf-transition);
+}
+
+.hf-content .hf-header-nav .hashform-ajax-udpate-button:hover {
+    background: var(--hf-accent-hover);
+    border-color: var(--hf-accent-hover);
+}
+
+.hf-content .hf-header-nav .hf-embed-button {
+    font-size: var(--hf-font-base);
+    font-weight: 500;
+    gap: var(--hf-space-2);
+    min-height: 34px;
+    padding: 0 var(--hf-space-3);
+    text-transform: none;
+}
+
+.hf-content .hf-header-nav .hf-preview-button {
+    align-items: center;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: var(--hf-radius-sm);
+    color: var(--hf-text-muted);
+    display: inline-flex;
+    font-size: var(--hf-font-base);
+    font-weight: 500;
+    gap: var(--hf-space-2);
+    min-height: 34px;
+    padding: 0 var(--hf-space-3);
+    text-decoration: none;
+    text-transform: none;
+    transition: background-color var(--hf-transition), color var(--hf-transition);
+}
+
+.hf-content .hf-header-nav .hf-preview-button:hover {
+    background: var(--hf-surface-sunken);
+    color: var(--hf-text);
+}
+
+.hf-content .hf-header-nav .hf-preview-button span,
+.hf-content .hf-header-nav .hf-embed-button span,
+.hf-content .hf-header-nav .hashform-ajax-udpate-button span {
+    font-size: 16px;
+    height: auto;
+    width: auto;
+}
+
+/* ---------- Builder tabs ---------- */
+
+/* Centred and raised into a segmented control: the four sections are the main
+   way around the builder, so they get the middle of the header rather than
+   trailing off to one side, and the active one is a card rather than a line. */
+.hf-content .hf-header-bottom {
+    background: var(--hf-surface-sunken);
+    border-radius: 0 0 var(--hf-radius-lg) var(--hf-radius-lg);
+    display: flex;
+    justify-content: center;
+    padding: var(--hf-space-3) var(--hf-space-5);
+}
+
+.hf-content .hf-header-nav .hf-main-nav {
+    background: rgba(16, 24, 40, .06);
+    border-radius: var(--hf-radius);
+    display: inline-flex;
+    flex-grow: 0;
+    gap: 0;
+    justify-content: center;
+    margin: 0;
+    padding: 3px;
+}
+
+.hf-content .hf-main-nav li {
+    margin: 0;
+    padding: 0;
+    text-transform: none;
+}
+
+.hf-content .hf-main-nav li a {
+    border: 0;
+    border-radius: 6px;
+    color: var(--hf-text-muted);
+    display: block;
+    font-size: var(--hf-font-base);
+    font-weight: 500;
+    line-height: 1.4;
+    margin: 0;
+    padding: var(--hf-space-2) var(--hf-space-5);
+    transition: background-color var(--hf-transition), color var(--hf-transition), box-shadow var(--hf-transition);
+}
+
+.hf-content .hf-main-nav li a:hover {
+    color: var(--hf-text);
+}
+
+.hf-content .hf-main-nav li a.hf-active-nav {
+    background: var(--hf-surface);
+    box-shadow: var(--hf-shadow-sm);
+    color: var(--hf-accent-text, #a3591b);
+    font-weight: 600;
+}
+/* ---------- Canvas header ---------- */
+
+.hf-content .hf-canvas-header {
+    align-items: baseline;
+    border-bottom: 1px solid var(--hf-border);
+    display: flex;
+    gap: var(--hf-space-3);
+    justify-content: space-between;
+    margin: calc(var(--hf-space-5) * -1) calc(var(--hf-space-5) * -1) var(--hf-space-5);
+    padding: var(--hf-space-4) var(--hf-space-5);
+}
+
+.hf-content .hf-canvas-title {
+    color: var(--hf-text);
+    font-size: var(--hf-font-md);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hf-content .hf-canvas-count {
+    color: var(--hf-text-faint);
+    flex: 0 0 auto;
+    font-size: var(--hf-font-sm);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Header actions ---------- */
+
+/* Was a hardcoded #10a0ff that matched nothing else on the screen and fought
+   the black primary beside it. Embed is the secondary action, so it reads as
+   one. */
+.hf-content .hf-header-nav .hf-embed-button,
+.hf-header-nav .hf-embed-button {
+    background: var(--hf-surface, #fff);
+    border: 1px solid var(--hf-border-strong, #d3d8e0);
+    border-radius: var(--hf-radius-sm, 4px);
+    box-shadow: none;
+    color: var(--hf-text, #1e2327);
+    transition: background-color var(--hf-transition, .15s ease), border-color var(--hf-transition, .15s ease);
+}
+
+.hf-content .hf-header-nav .hf-embed-button:hover,
+.hf-header-nav .hf-embed-button:hover {
+    background: var(--hf-surface-sunken, #fafbfc);
+    border-color: var(--hf-text-faint, #8c9196);
+    color: var(--hf-text, #1e2327);
+}
+
+/* ---------- Field group colours ---------- */
+
+/* The palette was fifty identical white tiles with grey hairlines, which made
+   the groups structural but invisible and the whole panel characterless. Each
+   group carries a hue, used on its heading marker and on the icon tile of
+   every field in it, so the sidebar reads at a glance and has some life. The
+   hue only ever tints an icon or a marker — labels and surfaces stay neutral,
+   which keeps it from turning into a paintbox. */
+.hf-content .hf-field-group {
+    --hf-group: #475569;
+    --hf-group-tint: #f1f5f9;
+}
+
+.hf-content .hf-field-group[data-group="basic"] {
+    --hf-group: #2563eb;
+    --hf-group-tint: #eff4ff;
+}
+
+.hf-content .hf-field-group[data-group="choice"] {
+    --hf-group: #7c3aed;
+    --hf-group-tint: #f5f1ff;
+}
+
+.hf-content .hf-field-group[data-group="advanced"] {
+    --hf-group: #c2610c;
+    --hf-group-tint: #fdf3e7;
+}
+
+.hf-content .hf-field-group[data-group="layout"] {
+    --hf-group: #475569;
+    --hf-group-tint: #f1f5f9;
+}
+
+.hf-content .hf-field-group[data-group="spam"] {
+    --hf-group: #047857;
+    --hf-group-tint: #e9f7f1;
+}
+
+.hf-content .hf-field-group[data-group="payment"] {
+    --hf-group: #0e7490;
+    --hf-group-tint: #e7f5f9;
+}
+
+/* A marker before the heading, so the colour is introduced with the name. */
+.hf-content .hf-field-group-name::before {
+    background: var(--hf-group);
+    border-radius: 2px;
+    content: "";
+    display: inline-block;
+    height: 10px;
+    margin-right: var(--hf-space-2);
+    vertical-align: -1px;
+    width: 3px;
+}
+
+/* ---------- Field groups ---------- */
+
+/* Around fifty field types is too many for one run of tiles, so they sit in
+   collapsible groups. The first opens by default; the rest stay shut until
+   asked for, which keeps the whole palette roughly one screen tall. */
+.hf-content .hf-field-group {
+    border-bottom: 1px solid var(--hf-border);
+}
+
+.hf-content .hf-field-group:last-of-type {
+    border-bottom: 0;
+}
+
+.hf-content .hf-field-group-toggle {
+    align-items: center;
+    background: none;
+    border: 0;
+    color: var(--hf-text-faint);
+    cursor: pointer;
+    display: flex;
+    font-size: var(--hf-font-xs);
+    font-weight: 600;
+    gap: var(--hf-space-2);
+    letter-spacing: .06em;
+    padding: var(--hf-space-3) var(--hf-space-1);
+    text-transform: uppercase;
+    transition: color var(--hf-transition);
+    width: 100%;
+}
+
+.hf-content .hf-field-group-toggle:hover {
+    color: var(--hf-text);
+}
+
+.hf-content .hf-field-group-toggle:focus-visible {
+    outline: 2px solid var(--hf-accent);
+    outline-offset: -2px;
+}
+
+.hf-content .hf-field-group.hf-open .hf-field-group-toggle {
+    color: var(--hf-text);
+}
+
+.hf-content .hf-field-group-name {
+    flex: 1 1 auto;
+    text-align: left;
+}
+
+.hf-content .hf-field-group-count {
+    background: var(--hf-surface-sunken);
+    border: 1px solid var(--hf-border);
+    border-radius: var(--hf-radius-pill);
+    color: var(--hf-text-muted);
+    font-size: var(--hf-font-xs);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+    padding: 0 var(--hf-space-2);
+}
+
+/* A chevron drawn from a border, so it needs no icon font. */
+.hf-content .hf-field-group-chevron {
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    flex: 0 0 auto;
+    height: 6px;
+    margin-right: var(--hf-space-1);
+    transform: rotate(-45deg);
+    transition: transform var(--hf-transition-slow);
+    width: 6px;
+}
+
+.hf-content .hf-field-group.hf-open .hf-field-group-chevron {
+    transform: rotate(45deg);
+}
+
+.hf-content .hf-field-group > .hf-fields-list {
+    display: none;
+    padding-bottom: var(--hf-space-3);
+}
+
+.hf-content .hf-field-group.hf-open > .hf-fields-list {
+    display: grid;
+}
+
+/* While a search is running the groups get out of the way: every match shows,
+   whatever group it came from. */
+.hf-content .hf-fields-section.hf-searching .hf-field-group > .hf-fields-list {
+    display: grid;
+}
+
+.hf-content .hf-fields-section.hf-searching .hf-field-group-chevron {
+    visibility: hidden;
+}
+
+.hf-content .hf-field-group[hidden] {
+    display: none;
+}
+
+.hf-content .hf-fields-empty {
+    color: var(--hf-text-muted);
+    font-size: var(--hf-font-sm);
+    margin: 0;
+    padding: var(--hf-space-5) 0;
+    text-align: center;
+}
+
+.hf-content .hf-fields-empty[hidden] {
+    display: none;
+}
+
+/* ---------- Field list ---------- */
+
+/* Three to a row: the palette runs to about fifty types, and at two per row a
+   group like Choice pushed everything after it off screen. */
+.hf-content .hf-fields-list {
+    display: grid;
+    gap: 6px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+}
+
+.hf-content .hf-fields-list .hf-field-box {
+    margin: 0;
+}
+
+.hf-content .hf-fields-list .hf-drag-field {
+    align-items: center;
+    background: var(--hf-surface);
+    border: 1px solid var(--hf-border);
+    border-radius: 10px;
+    box-shadow: none;
+    color: var(--hf-text);
+    cursor: grab;
+    display: flex;
+    flex-direction: column;
+    font-size: var(--hf-font-sm);
+    font-weight: 500;
+    gap: 6px;
+    justify-content: center;
+    line-height: 1.3;
+    min-height: 68px;
+    padding: var(--hf-space-2) var(--hf-space-1);
+    text-align: center;
+    text-decoration: none;
+    transition: border-color var(--hf-transition), background-color var(--hf-transition), box-shadow var(--hf-transition);
+    width: 100%;
+}
+
+/* The icon carries the group's colour on a tinted tile. Previously every icon
+   was the same thin grey glyph floating on white, which is most of why the
+   panel felt flat. */
+.hf-content .hf-fields-list .hf-drag-field svg,
+.hf-content .hf-fields-list .hf-drag-field i {
+    align-items: center;
+    background: var(--hf-group-tint, var(--hf-surface-sunken));
+    border-radius: var(--hf-radius-sm);
+    color: var(--hf-group, var(--hf-text-muted));
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 26px;
+    justify-content: center;
+    padding: 5px;
+    transition: background-color var(--hf-transition), color var(--hf-transition);
+    width: 26px;
+}
+
+.hf-content .hf-fields-list .hf-drag-field:hover {
+    border-color: var(--hf-group, var(--hf-accent));
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 4px 10px -6px var(--hf-group, var(--hf-accent));
+    transform: translateY(-1px);
+}
+
+.hf-content .hf-fields-list .hf-drag-field:hover svg,
+.hf-content .hf-fields-list .hf-drag-field:hover i {
+    background: var(--hf-group, var(--hf-accent));
+    color: #fff;
+}
+
+.hf-content .hf-fields-list .hf-drag-field:active {
+    cursor: grabbing;
+    transform: none;
+}
+
+/* Wrapping rather than truncating: at this width "Advanced Select" would
+   otherwise be clipped to an ellipsis on every tile. */
+.hf-content .hf-fields-list .hf-drag-field span {
+    font-size: 11px;
+    line-height: 1.25;
+    overflow: hidden;
+    white-space: normal;
+}
+
+/* ---------- Column presets ---------- */
+
+.hf-content .hf-columns-list {
+    display: grid;
+    gap: var(--hf-space-2);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+}
+
+.hf-content .hf-columns-list .hf-column-box {
+    margin: 0;
+}
+
+.hf-content .hf-columns-list .hf-add-columns {
+    align-items: center;
+    background: var(--hf-surface);
+    border: 1px solid var(--hf-border);
+    border-radius: var(--hf-radius);
+    display: flex;
+    justify-content: center;
+    padding: var(--hf-space-3) var(--hf-space-2);
+    transition: border-color var(--hf-transition), background-color var(--hf-transition);
+}
+
+.hf-content .hf-columns-list .hf-add-columns:hover {
+    background: var(--hf-accent-soft);
+    border-color: var(--hf-accent);
+}
+
+.hf-content .hf-column-preview {
+    display: flex;
+    gap: 3px;
+    width: 100%;
+}
+
+.hf-content .hf-column-preview span {
+    background: var(--hf-border-strong);
+    border-radius: 2px;
+    flex: 1 1 0;
+    height: 18px;
+}
+
+.hf-content .hf-add-columns:hover .hf-column-preview span {
+    background: var(--hf-accent);
+}
+
+/* ---------- Field settings panel ---------- */
+
+.hf-content .hf-fields-settings {
+    background: var(--hf-surface);
+}
+
+.hf-content .hf-field-panel-header {
+    align-items: center;
+    background: var(--hf-surface);
+    border-bottom: 1px solid var(--hf-border);
+    display: flex;
+    justify-content: space-between;
+    margin: calc(var(--hf-space-4) * -1) calc(var(--hf-space-4) * -1) var(--hf-space-4);
+    padding: var(--hf-space-3) var(--hf-space-4);
+    position: sticky;
+    top: 0;
+    z-index: 8;
+}
+
+.hf-content .hf-field-panel-header h3 {
+    color: var(--hf-text);
+    font-size: var(--hf-font-md);
+    font-weight: 600;
+    margin: 0;
+}
+
+.hf-content .hf-field-panel-id {
+    color: var(--hf-text-faint);
+    font-size: var(--hf-font-sm);
+}
+
+.hf-content .hf-form-row {
+    margin-bottom: var(--hf-space-4);
+}
+
+.hf-content .hf-form-row > label {
+    color: var(--hf-text);
+    display: block;
+    font-size: var(--hf-font-base);
+    font-weight: 500;
+    margin-bottom: var(--hf-space-1);
+}
+
+.hf-content .hf-field-desc {
+    color: var(--hf-text-muted);
+    display: block;
+    font-size: var(--hf-font-sm);
+    font-weight: 400;
+    line-height: 1.5;
+    margin-top: var(--hf-space-1);
+}
+
+/* Ready-made regexes for the Format box, offered as small quiet chips so they
+   read as shortcuts rather than as the setting itself. */
+.hf-content .hf-format-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--hf-space-2);
+    margin: var(--hf-space-2) 0 0;
+}
+
+.hf-content .hf-format-preset {
+    background: var(--hf-surface-sunken);
+    border: 1px solid var(--hf-border-strong);
+    border-radius: var(--hf-radius-pill);
+    color: var(--hf-text-muted);
+    cursor: pointer;
+    font-size: var(--hf-font-sm);
+    line-height: 1.4;
+    padding: 3px var(--hf-space-3);
+    transition: background-color var(--hf-transition), border-color var(--hf-transition), color var(--hf-transition);
+}
+
+.hf-content .hf-format-preset:hover {
+    background: var(--hf-surface);
+    border-color: var(--hf-accent);
+    color: var(--hf-accent-text, #a3591b);
+}
+
+.hf-content .hf-format-preset:focus-visible {
+    outline: 2px solid var(--hf-accent);
+    outline-offset: 1px;
+}
+
+.hf-content .hf-format-preset.hf-format-clear:hover {
+    border-color: var(--hf-danger);
+    color: var(--hf-danger);
+}
+
+.hf-content .hf-validation-header,
+.hf-content .hf-fields-settings h4 {
+    border-top: 1px solid var(--hf-border);
+    color: var(--hf-text-faint);
+    font-size: var(--hf-font-xs);
+    font-weight: 600;
+    letter-spacing: .06em;
+    margin: var(--hf-space-5) 0 var(--hf-space-3);
+    padding-top: var(--hf-space-4);
+    text-transform: uppercase;
+    margin: 0;
+}
+
+/* Sub-field controls — the First/Last parts of a name, the pieces of an
+   address — are laid out on the same six column grid the form settings use.
+   Three of them side by side in a 300px sidebar left ~90px each, with the
+   captions wrapping onto two lines, so in this panel they take a row apiece. */
+.hf-content .hf-fields-settings .hf-grid-container > .hf-form-row.hf-grid-2 {
+    grid-column: span 6;
+}
+
+.hf-content .hf-fields-settings .hf-sub-field-label {
+    color: var(--hf-text);
+    font-size: var(--hf-font-base);
+    font-weight: 600;
+    margin: var(--hf-space-3) 0 var(--hf-space-2);
+}
+
+.hf-content .hf-fields-settings .hf-sub-field-label:empty {
+    display: none;
+}
+
+.hf-content .hf-no-field-placeholder {
+    align-items: center;
+    color: var(--hf-text-muted);
+    display: flex;
+    flex-direction: column;
+    font-size: var(--hf-font-base);
+    justify-content: center;
+    min-height: 220px;
+    padding: var(--hf-space-5);
+    text-align: center;
+}
+
+/* ---------- Canvas ---------- */
+
+/* Same elevation as the sidebar and header, so the three read as panels of
+   one workspace rather than a card sitting inside a padded box. */
+.hf-content .hf-form-wrap {
+    background: var(--hf-surface);
+    border: 1px solid var(--hf-border);
+    border-radius: var(--hf-radius-lg);
+    box-shadow: var(--hf-shadow-md);
+    margin: 0 auto;
+    max-width: 900px;
+    padding: var(--hf-space-5);
+}
+
+/* The drop target reads as an invitation rather than an error state. */
+.hf-content .hf-drag-hint,
+.hf-content .hf-empty-canvas {
+    background: var(--hf-surface-sunken);
+    border: 1px dashed var(--hf-border-strong);
+    border-radius: var(--hf-radius);
+    color: var(--hf-text-muted);
+    font-size: var(--hf-font-base);
+    padding: var(--hf-space-4);
+    text-align: center;
+}
+
+@media only screen and (max-width: 1200px) {
+    .hf-content .hf-fields-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /* Not narrower than 330: the WordPress colour picker on the style
+       template editor is a fixed 257px widget, and with the panel padding
+       around it anything under this clips it against the sidebar's
+       overflow. */
+    .hf-content .hf-fields-sidebar {
+        flex-basis: 330px;
+        width: 330px;
+    }
+}

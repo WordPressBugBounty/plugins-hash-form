@@ -3,6 +3,8 @@ defined('ABSPATH') || die();
 
 class HashFormBuilder {
 
+    use HashFormListActions;
+
     public function __construct() {
 
         $this->includes();
@@ -43,70 +45,130 @@ class HashFormBuilder {
         add_action("load-$hashform_listing_page", array($this, 'listing_page_screen_options'));
     }
 
-    public function route() {
-        /* Gets hashform_action value else action value */
-        $action = htmlspecialchars_decode(HashFormHelper::get_var('hashform_action', 'sanitize_text_field', HashFormHelper::get_var('action')));
-
-        if (HashFormHelper::get_var('delete_all')) {
-            $action = 'delete_all';
-        }
-
-        switch ($action) {
-            case 'edit':
-            case 'trash':
-            case 'destroy':
-            case 'untrash':
-            case 'delete_all':
-            case 'duplicate':
-            case 'settings':
-            case 'style':
-                return self::$action();
-
-            default:
-
-                if (strpos($action, 'bulk_') === 0) {
-                    self::bulk_actions();
-                    return;
-                }
-
-                self::display_forms_list();
-                return;
-        }
+    protected static function list_config() {
+        return array(
+            'page' => 'hashform',
+            'table' => 'hashform_forms',
+            'id_key' => 'form_id',
+            'nonce_item' => 'form',
+            'bulk_nonce' => 'bulk-forms',
+            'actions' => array('edit', 'trash', 'destroy', 'untrash', 'delete_all', 'duplicate', 'settings', 'style'),
+        );
     }
 
-    public static function display_message($message, $class) {
-        if ('' !== trim($message)) {
-            echo '<div id="message" class="' . esc_attr($class) . ' notice is-dismissible">';
-            echo '<p>' . wp_kses_post($message) . '</p>';
-            echo '</div>';
-        }
+    protected static function destroy_item($id) {
+        return self::destroy_form($id);
+    }
+
+    protected static function render_list($message = '', $class = 'updated') {
+        self::display_forms_list($message, $class);
+    }
+
+    protected static function message_trashed($count, $undo_open, $undo_close) {
+        /* translators: 1: form count singular & plural, 2: link open, 3: link close */
+        return sprintf(_n('%1$s form moved to the Trash. %2$sUndo%3$s', '%1$s forms moved to the Trash. %2$sUndo%3$s', $count, 'hash-form'), $count, $undo_open, $undo_close);
+    }
+
+    protected static function message_untrashed($count) {
+        /* translators: 1: form count singular & plural */
+        return sprintf(_n('%1$s form restored from the Trash.', '%1$s forms restored from the Trash.', $count, 'hash-form'), $count);
+    }
+
+    protected static function message_destroyed($count) {
+        /* translators: 1: form count singular & plural */
+        return sprintf(_n('%1$s Form Permanently Deleted', '%1$s Forms Permanently Deleted', $count, 'hash-form'), $count);
+    }
+
+    protected static function message_deleted($count) {
+        /* translators: 1: form count singular & plural */
+        return sprintf(_n('%1$s form permanently deleted.', '%1$s forms permanently deleted.', $count, 'hash-form'), $count);
+    }
+
+    protected static function message_none_specified() {
+        return esc_html__('No forms were specified', 'hash-form');
     }
 
     public static function display_forms_list($message = '', $class = 'updated') {
         ?>
-        <div class="hf-content">
+        <div class="hf-content hf-list-screen">
+
+            <?php // Outside .wrap so the bar spans the screen; the inner box keeps its contents lined up with the table. ?>
+            <div class="hf-list-header">
+                <div class="hf-list-header-inner">
+                    <h2 class="hf-list-title"><?php esc_html_e('Forms', 'hash-form'); ?></h2>
+
+                    <div class="hf-add-new-form">
+                        <a href="#" class="button hf-trigger-modal"><?php esc_html_e('Add New', 'hash-form'); ?></a>
+                    </div>
+                </div>
+            </div>
+
             <div class="hf-form-list-wrap wrap">
                 <h1></h1>
-                <div class="hf-add-new-form">
-                    <a href="#" class="button hf-trigger-modal"><?php esc_html_e('Add New', 'hash-form'); ?></a>
-                </div>
 
                 <?php
                 self::display_message($message, $class);
+
                 $form_table = new HashFormListing();
                 $form_status = HashFormHelper::get_var('status', 'sanitize_title', 'published');
-                $form_table->views();
+
+                // Prepared up front so the screen can tell an empty list from
+                // a search that found nothing before deciding what to print.
+                $form_table->prepare_items();
+                $is_searching = '' !== (string) HashFormHelper::get_var('s');
+
+                self::display_list_stats();
                 ?>
                 <form id="posts-filter" method="get">
                     <input type="hidden" name="page" value="<?php echo esc_attr(HashFormHelper::get_var('page', 'sanitize_title')); ?>" />
                     <input type="hidden" name="status" value="<?php echo esc_attr($form_status); ?>" />
-                    <?php
-                    $form_table->prepare_items();
-                    $form_table->search_box('Search', 'search');
-                    $form_table->display();
-                    ?>
+
+                    <div class="hf-list-toolbar">
+                        <?php
+                        $form_table->views();
+
+                        // A search box over nothing is just noise on a first run.
+                        if ($form_table->has_items() || $is_searching) {
+                            $form_table->search_box(esc_html__('Search', 'hash-form'), 'search');
+                        }
+                        ?>
+                    </div>
+
+                    <?php $form_table->display(); ?>
                 </form>
             </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Totals across the top of the Forms screen. Suppressed on a brand new
+     * install, where three zeroes above an empty state say nothing.
+     */
+    private static function display_list_stats() {
+        $stats = HashFormListing::get_stats();
+
+        if (!$stats['forms'] && !$stats['trash']) {
+            return;
+        }
+        ?>
+        <div class="hf-list-stats">
+            <div class="hf-stat">
+                <span class="hf-stat-value"><?php echo esc_html(number_format_i18n($stats['forms'])); ?></span>
+                <span class="hf-stat-label"><?php echo esc_html(_n('Form', 'Forms', $stats['forms'], 'hash-form')); ?></span>
+            </div>
+
+            <a class="hf-stat" href="<?php echo esc_url(admin_url('admin.php?page=hashform-entries')); ?>">
+                <span class="hf-stat-value"><?php echo esc_html(number_format_i18n($stats['entries'])); ?></span>
+                <span class="hf-stat-label"><?php echo esc_html(_n('Entry', 'Entries', $stats['entries'], 'hash-form')); ?></span>
+            </a>
+
+            <?php if ($stats['trash']) { ?>
+                <a class="hf-stat" href="<?php echo esc_url(admin_url('admin.php?page=hashform&status=trash')); ?>">
+                    <span class="hf-stat-value"><?php echo esc_html(number_format_i18n($stats['trash'])); ?></span>
+                    <span class="hf-stat-label"><?php esc_html_e('In Trash', 'hash-form'); ?></span>
+                </a>
+            <?php } ?>
         </div>
         <?php
     }
@@ -118,7 +180,15 @@ class HashFormBuilder {
 
         check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
 
-        $name = HashFormHelper::get_post('name');
+        $name = trim(HashFormHelper::get_post('name'));
+
+        // The dialog checks this too, but a form with no name is only ever
+        // reachable as "No Title" in the list, so do not create one.
+        if ('' === $name) {
+            echo wp_json_encode(array('error' => esc_html__('Please give the form a name.', 'hash-form')));
+            wp_die();
+        }
+
         $new_values = array(
             'name' => esc_html($name),
             'description' => '',
@@ -197,7 +267,15 @@ class HashFormBuilder {
         $message = '<span class="mdi mdi-check-circle"></span>' . esc_html__('Form was successfully updated.', 'hash-form');
 
         if (defined('DOING_AJAX')) {
-            wp_die(wp_kses($message, array('a' => array(), 'span' => array())));
+            /*
+             * The span is allowed a class: without one, kses stripped it and
+             * the tick that goes with the message never reached the page —
+             * only the empty element it should have been drawn in.
+             */
+            wp_die(wp_kses($message, array(
+                'a' => array('href' => array(), 'target' => array()),
+                'span' => array('class' => array()),
+            )));
         }
     }
 
@@ -207,8 +285,8 @@ class HashFormBuilder {
         $options = HashFormHelper::sanitize_array($options, HashFormHelper::get_form_options_sanitize_rules());
 
         $query_results = $wpdb->update($wpdb->prefix . 'hashform_forms', array(
-            'name' => esc_html($args['title']),
-            'description' => esc_html($args['description']),
+            'name' => esc_html(isset($args['title']) ? $args['title'] : ''),
+            'description' => esc_html(isset($args['description']) ? $args['description'] : ''),
             'options' => maybe_serialize($options)
         ), array('id' => $id));
         return $query_results;
@@ -248,181 +326,7 @@ class HashFormBuilder {
     }
 
     public function set_screen_option($status, $option, $value) {
-        if ('forms_per_page' == $option)
-            return $value;
-    }
-
-    public static function trash() {
-        self::change_form_status('trash');
-    }
-
-    public static function untrash() {
-        self::change_form_status('untrash');
-    }
-
-    public static function change_form_status($status) {
-        $available_status = array(
-            'untrash' => array('new_status' => 'published'),
-            'trash' => array('new_status' => 'trash'),
-        );
-
-        if (!isset($available_status[$status])) {
-            return;
-        }
-
-        $id = HashFormHelper::get_var('id', 'absint');
-        check_admin_referer($status . '_form_' . $id);
-
-        $count = 0;
-        if (self::set_status($id, $available_status[$status]['new_status'])) {
-            $count++;
-        }
-        /* translators: 1: form count singular & plural */
-        $available_status['untrash']['message'] = sprintf(_n('%1$s form restored from the Trash.', '%1$s forms restored from the Trash.', $count, 'hash-form'), $count);
-        /* translators: 1: form count singular & plural, 2: link open, 3: link close */
-        $available_status['trash']['message'] = sprintf(_n('%1$s form moved to the Trash. %2$sUndo%3$s', '%1$s forms moved to the Trash. %2$sUndo%3$s', $count, 'hash-form'), $count, '<a href="' . esc_url(wp_nonce_url('?page=hashform&hashform_action=untrash&id=' . absint($id), 'untrash_form_' . absint($id))) . '">', '</a>');
-        $message = $available_status[$status]['message'];
-
-        self::display_forms_list($message);
-    }
-
-    public static function set_status($id, $status) {
-        $statuses = array('published', 'trash');
-        if (!in_array($status, $statuses)) {
-            return false;
-        }
-
-        global $wpdb;
-
-        $id = is_array($id) ? $id : array($id);
-        $placeholders = implode(',', array_map(function($v) {
-            return '%d';
-        }, $id));
-        $prepare_args = array_merge([$status], $id);
-
-        if (is_array($id)) {
-            $query_results = $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}hashform_forms SET status=%s WHERE id IN ({$placeholders})", $prepare_args));
-        } else {
-            $query_results = $wpdb->update($wpdb->prefix . 'hashform_forms', array('status' => $status), array('id' => $id));
-        }
-
-        return $query_results;
-    }
-
-    public static function delete_all() {
-        $count = self::delete();
-        /* translators: 1: form count singular & plural */
-        $message = sprintf(_n('%1$s form permanently deleted.', '%1$s forms permanently deleted.', $count, 'hash-form'), $count);
-        self::display_forms_list($message);
-    }
-
-    public static function delete() {
-        global $wpdb;
-        $count = 0;
-        $trash_forms = $wpdb->get_results($wpdb->prepare("SELECT id FROM {$wpdb->prefix}hashform_forms WHERE status=%s", 'trash'));
-        if (!$trash_forms) {
-            return 0;
-        }
-
-        foreach ($trash_forms as $form) {
-            self::destroy_form($form->id);
-            $count++;
-        }
-        return $count;
-    }
-
-    public static function destroy() {
-        $id = HashFormHelper::get_var('id', 'absint');
-        check_admin_referer('destroy_form_' . $id);
-        $count = 0;
-        if (self::destroy_form($id)) {
-            $count++;
-        }
-        /* translators: 1: form count singular & plural */
-        $message = sprintf(_n('%1$s Form Permanently Deleted', '%1$s Forms Permanently Deleted', $count, 'hash-form'), $count);
-        self::display_forms_list($message);
-    }
-
-    public static function bulk_actions() {
-        $message = self::process_bulk_actions();
-        self::display_forms_list($message);
-    }
-
-    public static function process_bulk_actions() {
-        if (!$_REQUEST) {
-            return;
-        }
-
-        $bulkaction = HashFormHelper::get_var('action', 'sanitize_text_field');
-
-
-        if ($bulkaction == -1) {
-            $bulkaction = HashFormHelper::get_var('action2', 'sanitize_title');
-        }
-
-        if (!empty($bulkaction) && strpos($bulkaction, 'bulk_') === 0) {
-            $bulkaction = str_replace('bulk_', '', $bulkaction);
-        }
-
-        $ids = HashFormHelper::get_var('form_id', 'sanitize_text_field');
-
-        if (empty($ids)) {
-            $error = esc_html__('No forms were specified', 'hash-form');
-            return $error;
-        }
-
-        if (!is_array($ids)) {
-            $ids = explode(',', $ids);
-        }
-
-        switch ($bulkaction) {
-            case 'delete':
-                $message = self::bulk_destroy($ids);
-                break;
-            case 'trash':
-                $message = self::bulk_trash($ids);
-                break;
-            case 'untrash':
-                $message = self::bulk_untrash($ids);
-        }
-
-        if (isset($message) && !empty($message)) {
-            return $message;
-        }
-    }
-
-    public static function bulk_trash($ids) {
-        $count = self::set_status($ids, 'trash');
-        if (!$count) {
-            return '';
-        }
-
-        /* translators: 1: form count singular & plural */
-        return sprintf(_n('%1$s form moved to the Trash. %2$sUndo%3$s', '%1$s forms moved to the Trash. %2$sUndo%3$s', $count, 'hash-form'), $count, '<a href="' . esc_url(wp_nonce_url('?page=hashform&action=bulk_untrash&status=published&form_id=' . implode(',', $ids), 'bulk-toplevel_page_hashform')) . '">', '</a>');
-    }
-
-    public static function bulk_untrash($ids) {
-        $count = self::set_status($ids, 'published');
-        if (!$count) {
-            return '';
-        }
-
-        /* translators: 1: form count singular & plural */
-        return sprintf(_n('%1$s form restored from the Trash.', '%1$s forms restored from the Trash.', $count, 'hash-form'), $count);
-    }
-
-    public static function bulk_destroy($ids) {
-        $count = 0;
-        foreach ($ids as $id) {
-            $form = self::destroy_form($id);
-            if ($form) {
-                $count++;
-            }
-        }
-
-        /* translators: 1: form count singular & plural */
-        $message = sprintf(_n('%1$s form permanently deleted.', '%1$s forms permanently deleted.', $count, 'hash-form'), $count);
-        return $message;
+        return ('forms_per_page' === $option) ? $value : $status;
     }
 
     public static function destroy_form($id) {
@@ -449,12 +353,12 @@ class HashFormBuilder {
         global $wpdb;
         $message = '';
         $nonce = HashFormHelper::get_var('_wpnonce');
+        $id = HashFormHelper::get_var('id', 'absint');
 
-        if (!wp_verify_nonce($nonce)) {
+        if (!wp_verify_nonce($nonce, 'duplicate_form_' . $id)) {
             wp_die(esc_html__('Error ! Refresh the page and try again.', 'hash-form'));
         }
 
-        $id = HashFormHelper::get_var('id', 'absint');
         $values = self::get_form_vars($id);
 
         if (!$values) {
@@ -483,6 +387,7 @@ class HashFormBuilder {
 
         $query_results = $wpdb->insert($wpdb->prefix . 'hashform_forms', $new_values);
 
+        $form_id = 0;
         if ($query_results) {
             $form_id = $wpdb->insert_id;
             HashFormFields::duplicate_fields($id, $form_id);
@@ -504,26 +409,50 @@ class HashFormBuilder {
         $form = $atts['form'];
         $form_title = $form->name;
         ?>
+        <?php
+        /*
+         * Two rows: what is being edited and what can be done to it on top,
+         * where you are underneath. A single row had the form name, four tabs
+         * and four actions competing for the same line, which left no room for
+         * a long form title and no hierarchy between them.
+         */
+        $status = isset($form->status) ? $form->status : 'published';
+        $is_published = ('published' === $status);
+        ?>
         <div id="hf-header" class="<?php echo esc_attr($class); ?>">
-            <h4><span class="hfi hfi-form"></span><?php echo esc_html($form_title); ?></h4>
-            <?php self::get_form_nav($form); ?>
+            <div class="hf-header-top">
+                <a class="hf-header-back" href="<?php echo esc_url(admin_url('admin.php?page=hashform')); ?>" aria-label="<?php esc_attr_e('Back to forms', 'hash-form'); ?>">
+                    <span class="mdi mdi-arrow-left"></span>
+                </a>
 
-            <button class="hashform-ajax-udpate-button" type="button" id="hf-update-button">
-                <span class="mdi mdi-check-circle-outline"></span><?php esc_html_e('Update', 'hash-form'); ?>
-            </button>
+                <div class="hf-header-identity">
+                    <span class="hf-header-mark" aria-hidden="true">
+                        <span class="mdi mdi-file-document-outline"></span>
+                    </span>
 
-            <button class="hf-embed-button" type="button">
-                <span class="mdi mdi-code-brackets"></span><?php esc_html_e('Embed', 'hash-form'); ?>
-            </button>
+                    <h1 class="hf-header-title"><?php echo esc_html($form_title); ?></h1>
+                    <span class="hf-header-status<?php echo $is_published ? ' hf-is-published' : ''; ?>">
+                        <?php echo $is_published ? esc_html__('Published', 'hash-form') : esc_html__('Draft', 'hash-form'); ?>
+                    </span>
+                </div>
 
-            <div class="hf-preview-button">
-                <a href="<?php echo esc_url(admin_url('admin-ajax.php?action=hashform_preview&form=' . absint($form->id))); ?>" target="_blank"><span class="mdi mdi-eye-outline"></span><?php esc_html_e('Preview', 'hash-form'); ?></a>
+                <div class="hf-header-actions">
+                    <a class="hf-preview-button" href="<?php echo esc_url(admin_url('admin-ajax.php?action=hashform_preview&form=' . absint($form->id))); ?>" target="_blank">
+                        <span class="mdi mdi-eye-outline"></span><?php esc_html_e('Preview', 'hash-form'); ?>
+                    </a>
+
+                    <button class="hf-embed-button" type="button">
+                        <span class="mdi mdi-code-brackets"></span><?php esc_html_e('Embed', 'hash-form'); ?>
+                    </button>
+
+                    <button class="hashform-ajax-udpate-button" type="button" id="hf-update-button">
+                        <span class="mdi mdi-check-circle-outline"></span><?php esc_html_e('Save', 'hash-form'); ?>
+                    </button>
+                </div>
             </div>
 
-            <div class="hashform-close">
-                <a href="<?php echo esc_url(admin_url('admin.php?page=hashform')); ?>" aria-label="<?php esc_attr_e('Close', 'hash-form'); ?>">
-                    <span class="mdi mdi-window-close"></span>
-                </a>
+            <div class="hf-header-bottom">
+                <?php self::get_form_nav($form); ?>
             </div>
         </div>
         <?php
@@ -611,17 +540,17 @@ class HashFormBuilder {
 
     public static function get_form_title($id) {
         global $wpdb;
-        $results = $wpdb->get_row($wpdb->prepare("SELECT name FROM {$wpdb->prefix}hashform_forms WHERE id=%d", $id));
 
-        if (!$results) {
-            return;
+        // Rendering calls this once or twice per field; cache per request.
+        static $titles = array();
+        if (array_key_exists($id, $titles)) {
+            return $titles[$id];
         }
 
-        foreach ($results as $key => $value) {
-            $results->$key = maybe_unserialize($value);
-        }
+        $name = $wpdb->get_var($wpdb->prepare("SELECT name FROM {$wpdb->prefix}hashform_forms WHERE id=%d", $id));
+        $titles[$id] = (null === $name) ? null : maybe_unserialize($name);
 
-        return isset($results->name) ? $results->name : '';
+        return $titles[$id];
     }
 
     public function init_overlay_html() {
@@ -649,7 +578,8 @@ class HashFormBuilder {
         }
 
         $email_to_array = array();
-        foreach ($vars['email_to'] as $row) {
+        $email_to_rows = isset($vars['email_to']) ? (array) $vars['email_to'] : array();
+        foreach ($email_to_rows as $row) {
             $email_to_val = trim($row);
             if ($email_to_val) {
                 $email_to_array[] = $email_to_val;
@@ -657,6 +587,7 @@ class HashFormBuilder {
         }
 
         $vars['email_to'] = implode(',', $email_to_array);
+        $vars = self::drop_incomplete_conditions($vars);
         $id = isset($vars['id']) ? absint($vars['id']) : HashFormHelper::get_var('id', 'absint');
         unset($vars['id'], $vars['hashform_process_form_nonce'], $vars['_wp_http_referer']);
 
@@ -727,61 +658,185 @@ class HashFormBuilder {
         return $query_results;
     }
 
+    /**
+     * What a rule does when it matches.
+     */
+    public static function condition_actions() {
+        return array(
+            'show' => esc_html__('Show', 'hash-form'),
+            'hide' => esc_html__('Hide', 'hash-form'),
+        );
+    }
+
+    /**
+     * How a rule compares the answer it watches.
+     */
+    public static function condition_operators() {
+        return array(
+            'equal' => esc_html__('Equals to', 'hash-form'),
+            'not_equal' => esc_html__('Not Equals to', 'hash-form'),
+            'greater_than' => esc_html__('Greater Than', 'hash-form'),
+            'greater_than_or_equal' => esc_html__('Greater Than Or Equals to', 'hash-form'),
+            'less_than' => esc_html__('Less Than', 'hash-form'),
+            'less_than_or_equal' => esc_html__('Less Than Or Equals to', 'hash-form'),
+            'is_like' => esc_html__('Is Like', 'hash-form'),
+            'is_not_like' => esc_html__('Is Not Like', 'hash-form'),
+        );
+    }
+
+    /**
+     * Fields a rule can point at.
+     *
+     * Layout fields hold no answer, so they can neither be watched nor be
+     * usefully shown and hidden. The trigger side excludes a little more:
+     * name and address post several values under one id, which the comparison
+     * has no way to pick between.
+     *
+     * This list used to be written out four times — twice in the panel and
+     * twice in the AJAX handler that appends a row — and the copies had
+     * already drifted.
+     *
+     * @param object[] $fields Form fields.
+     * @param bool     $trigger Whether this is the watched side of a rule.
+     * @return object[]
+     */
+    public static function condition_fields($fields, $trigger = false) {
+        $skip = array('heading', 'paragraph', 'separator', 'spacer', 'image', 'captcha');
+
+        if ($trigger) {
+            // html and multi_step post nothing, so a rule watching one could
+            // never match. They stay available on the other side, where a
+            // rule can still show and hide them.
+            $skip = array_merge($skip, array('name', 'address', 'html', 'multi_step'));
+        }
+
+        $usable = array();
+
+        foreach ($fields as $field) {
+            if (!in_array($field->type, $skip, true)) {
+                $usable[] = $field;
+            }
+        }
+
+        return $usable;
+    }
+
+    /**
+     * One rule, as shown in the Conditional Logic panel.
+     *
+     * The panel and the AJAX handler that appends a row both render through
+     * here, so a newly added rule cannot look different from a saved one —
+     * which it did: the saved rows carried untranslated English labels.
+     *
+     * @param object[] $fields Form fields.
+     * @param array    $row    Saved rule, or empty for a new one.
+     */
+    public static function condition_row_html($fields, $row = array()) {
+        $value = isset($row['compare_value']) ? $row['compare_value'] : '';
+        ?>
+        <div class="hf-condition-row">
+            <div class="hf-condition-head">
+                <span class="hf-condition-index" aria-hidden="true"></span>
+                <button type="button" class="hf-condition-remove" title="<?php esc_attr_e('Delete this rule', 'hash-form'); ?>">
+                    <span class="mdi mdi-trash-can-outline" aria-hidden="true"></span>
+                    <span class="screen-reader-text"><?php esc_html_e('Delete this rule', 'hash-form'); ?></span>
+                </button>
+            </div>
+
+            <div class="hf-condition-grid">
+                <label class="hf-condition-cell hf-condition-cell-action">
+                    <span><?php esc_html_e('Action', 'hash-form'); ?></span>
+                    <select name="condition_action[]">
+                        <?php foreach (self::condition_actions() as $key => $label) { ?>
+                            <option value="<?php echo esc_attr($key); ?>" <?php selected(isset($row['condition_action']) ? $row['condition_action'] : '', $key); ?>><?php echo esc_html($label); ?></option>
+                        <?php } ?>
+                    </select>
+                </label>
+
+                <label class="hf-condition-cell hf-condition-cell-target">
+                    <span><?php esc_html_e('This field', 'hash-form'); ?></span>
+                    <select name="compare_from[]">
+                        <option value=""><?php esc_html_e('Select a field', 'hash-form'); ?></option>
+                        <?php foreach (self::condition_fields($fields) as $field) { ?>
+                            <option value="<?php echo esc_attr($field->id); ?>" <?php selected(isset($row['compare_from']) ? $row['compare_from'] : '', $field->id); ?>><?php echo esc_html($field->name . ' (ID: ' . $field->id . ')'); ?></option>
+                        <?php } ?>
+                    </select>
+                </label>
+
+                <label class="hf-condition-cell hf-condition-cell-trigger">
+                    <span><?php esc_html_e('When', 'hash-form'); ?></span>
+                    <select name="compare_to[]">
+                        <option value=""><?php esc_html_e('Select a field', 'hash-form'); ?></option>
+                        <?php foreach (self::condition_fields($fields, true) as $field) { ?>
+                            <option value="<?php echo esc_attr($field->id); ?>" <?php selected(isset($row['compare_to']) ? $row['compare_to'] : '', $field->id); ?>><?php echo esc_html($field->name . ' (ID: ' . $field->id . ')'); ?></option>
+                        <?php } ?>
+                    </select>
+                </label>
+
+                <label class="hf-condition-cell hf-condition-cell-operator">
+                    <span><?php esc_html_e('Is', 'hash-form'); ?></span>
+                    <select name="compare_condition[]">
+                        <?php foreach (self::condition_operators() as $key => $label) { ?>
+                            <option value="<?php echo esc_attr($key); ?>" <?php selected(isset($row['compare_condition']) ? $row['compare_condition'] : '', $key); ?>><?php echo esc_html($label); ?></option>
+                        <?php } ?>
+                    </select>
+                </label>
+
+                <label class="hf-condition-cell hf-condition-cell-value">
+                    <span><?php esc_html_e('Value', 'hash-form'); ?></span>
+                    <input type="text" name="compare_value[]" value="<?php echo esc_attr($value); ?>" placeholder="<?php esc_attr_e('Answer to compare against', 'hash-form'); ?>" />
+                </label>
+            </div>
+        </div>
+        <?php
+    }
+
     public function add_more_condition_block() {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
         check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
 
         $form_id = HashFormHelper::get_post('form_id', 'absint', 0);
-        $fields = HashFormFields::get_form_fields($form_id);
-        ?>
-        <div class="hf-condition-repeater-block">
-            <select name="condition_action[]" required>
-                <option value="show"><?php esc_html_e('Show', 'hash-form'); ?></option>
-                <option value="hide"><?php esc_html_e('Hide', 'hash-form'); ?></option>
-            </select>
-
-            <select name="compare_from[]" required>
-                <option value=""><?php esc_html_e('Select Field', 'hash-form'); ?></option>
-                <?php
-                foreach ($fields as $field) {
-                    if (!($field->type == 'heading' || $field->type == 'paragraph' || $field->type == 'separator' || $field->type == 'spacer' || $field->type == 'image' || $field->type == 'captcha')) {
-                        ?>
-                        <option value="<?php echo esc_attr($field->id); ?>"><?php echo esc_html($field->name) . ' (ID: ' . esc_attr($field->id) . ')'; ?></option>
-                        <?php
-                    }
-                }
-                ?>
-            </select>
-
-            <span class="hf-condition-seperator"><?php esc_html_e('if', 'hash-form'); ?></span>
-            <select name="compare_to[]" required>
-                <option value=""><?php esc_html_e('Select Field', 'hash-form'); ?></option>
-                <?php
-                foreach ($fields as $field) {
-                    if (!($field->type == 'heading' || $field->type == 'paragraph' || $field->type == 'separator' || $field->type == 'spacer' || $field->type == 'image' || $field->type == 'captcha' || $field->type == 'name' || $field->type == 'address')) {
-                        ?>
-                        <option value="<?php echo esc_attr($field->id); ?>"><?php echo esc_html($field->name) . ' (ID: ' . esc_html($field->id) . ')'; ?></option>
-                        <?php
-                    }
-                }
-                ?>
-            </select>
-
-            <select name="compare_condition[]" required>
-                <option value="equal"><?php esc_html_e('Equals to', 'hash-form'); ?></option>
-                <option value="not_equal"><?php esc_html_e('Not Equals to', 'hash-form'); ?></option>
-                <option value="greater_than"><?php esc_html_e('Greater Than', 'hash-form'); ?></option>
-                <option value="greater_than_or_equal"><?php esc_html_e('Greater Than Or Equals to', 'hash-form'); ?></option>
-                <option value="less_than"><?php esc_html_e('Less Than', 'hash-form'); ?></option>
-                <option value="less_than_or_equal"><?php esc_html_e('Less Than Or Equals to', 'hash-form'); ?></option>
-                <option value="is_like"><?php esc_html_e('Is Like', 'hash-form'); ?></option>
-                <option value="is_not_like"><?php esc_html_e('Is Not Like', 'hash-form'); ?></option>
-            </select>
-
-            <input type="text" name="compare_value[]" required />
-            <span class="hf-condition-remove mdi mdi-close"></span>
-        </div>
-        <?php
+        self::condition_row_html(HashFormFields::get_form_fields($form_id));
         die();
+    }
+
+    /**
+     * Discards conditional logic rules that name no fields.
+     *
+     * The panel is saved over AJAX from serializeArray(), so the browser's
+     * own required checks never run — a rule left half-filled used to be
+     * stored, then read back on every page load as a rule that can never
+     * match. The five columns are parallel arrays, so they are rebuilt
+     * together or they fall out of step.
+     *
+     * @param array $vars Posted settings.
+     * @return array
+     */
+    private static function drop_incomplete_conditions($vars) {
+        if (!isset($vars['condition_action']) || !is_array($vars['condition_action'])) {
+            return $vars;
+        }
+
+        $columns = array('condition_action', 'compare_from', 'compare_to', 'compare_condition', 'compare_value');
+        $kept = array_fill_keys($columns, array());
+
+        foreach (array_keys($vars['condition_action']) as $key) {
+            $from = isset($vars['compare_from'][$key]) ? trim($vars['compare_from'][$key]) : '';
+            $to = isset($vars['compare_to'][$key]) ? trim($vars['compare_to'][$key]) : '';
+
+            if ('' === $from || '' === $to) {
+                continue;
+            }
+
+            foreach ($columns as $column) {
+                $kept[$column][] = isset($vars[$column][$key]) ? $vars[$column][$key] : '';
+            }
+        }
+
+        return array_merge($vars, $kept);
     }
 
     public static function get_show_hide_conditions($id) {
@@ -805,7 +860,7 @@ class HashFormBuilder {
 
     public function add_plugin_action_link($links) {
         $custom['settings'] = sprintf(
-            '<a href="%s" aria-label="%s">%s</a>', esc_url(add_query_arg('page', 'hashform', admin_url('admin.php'))), esc_attr__('Hash Froms', 'hash-form'), esc_html__('Settings', 'hash-form')
+            '<a href="%s" aria-label="%s">%s</a>', esc_url(add_query_arg('page', 'hashform', admin_url('admin.php'))), esc_attr__('Hash Forms', 'hash-form'), esc_html__('Settings', 'hash-form')
         );
 
         return array_merge($custom, (array) $links);
@@ -820,47 +875,26 @@ class HashFormBuilder {
         $sizeLimit = HashFormHelper::get_var('sizeLimit');
         $upload_dir = wp_upload_dir();
 
-        $default_allowed_extenstions = array(
-            'pdf',
-            'doc',
-            'docx',
-            'xls',
-            'xlsx',
-            'odt',
-            'ppt',
-            'pptx',
-            'pps',
-            'ppsx',
-            'jpg',
-            'jpeg',
-            'png',
-            'gif',
-            'bmp',
-            'mp3',
-            'mp4',
-            'ogg',
-            'wav',
-            'mp4',
-            'm4v',
-            'mov',
-            'wmv',
-            'avi',
-            'mpg',
-            'ogv',
-            '3gp',
-            'txt',
-            'zip',
-            'rar',
-            '7z',
-            'csv'
-        );
+        // One shared list, defined in admin/forms/sanitization.php, so this
+        // and the field's own sanitizer cannot disagree about a format.
+        $default_allowed_extenstions = hashform_allowed_file_extensions();
 
-        if ($allowedExtensions) {
+        // get_allowed_mime_types() is applied again inside HashFormFileUploader,
+        // so anything this site has not actually enabled is still refused.
+
+        // The request controls the shape of this value; a scalar would emit a
+        // warning into the middle of the JSON response below.
+        if (is_array($allowedExtensions) && $allowedExtensions) {
+            $filtered_allowed_extenstions = array();
             foreach ($allowedExtensions as $ext) {
                 if (in_array($ext, $default_allowed_extenstions)) {
                     $filtered_allowed_extenstions[] = $ext;
                 }
             }
+
+            // Never trust the request for the size limit beyond what the
+            // server would accept anyway.
+            $sizeLimit = min(absint($sizeLimit), wp_max_upload_size());
 
             $uploader = new HashFormFileUploader($filtered_allowed_extenstions, $sizeLimit);
             $result = $uploader->handleUpload($upload_dir['basedir'] . HASHFORM_UPLOAD_DIR, $replaceOldFile = false, $upload_dir['baseurl'] . HASHFORM_UPLOAD_DIR);
@@ -873,12 +907,19 @@ class HashFormBuilder {
     public function file_delete_action() {
         if (wp_verify_nonce(HashFormHelper::get_post('_wpnonce'), 'hashform-upload-ajax-nonce')) {
             $path = str_replace(' ', '+', HashFormHelper::get_post('path', 'wp_kses_post'));
-            $upload_dir = wp_upload_dir();
-            $temp_dir = $upload_dir['basedir'] . HASHFORM_UPLOAD_DIR . '/temp/';
-            $check = wp_delete_file($temp_dir . HashFormHelper::decrypt($path));
+            $file = HashFormHelper::decrypt($path);
 
-            if ($check) {
-                die('success');
+            // An empty name would resolve to the temp directory itself.
+            if ($file) {
+                $upload_dir = wp_upload_dir();
+                $temp_dir = $upload_dir['basedir'] . HASHFORM_UPLOAD_DIR . '/temp';
+
+                // Unlike wp_delete_file(), this confirms the resolved path sits
+                // inside the temp directory and returns a usable bool on every
+                // supported WordPress version.
+                if (wp_delete_file_from_directory($temp_dir . '/' . $file, $temp_dir)) {
+                    die('success');
+                }
             }
         }
         die('error');
@@ -892,7 +933,10 @@ class HashFormBuilder {
         // Remove old temp files
         if (is_dir($temp_dir) and ($dir = opendir($temp_dir))) {
             while (($file = readdir($dir)) !== false) {
-                $temp_file_path = $temp_dir . DIRECTORY_SEPARATOR . $file;
+                $temp_file_path = $temp_dir . $file;
+                if (!is_file($temp_file_path)) {
+                    continue;
+                }
                 if ((filemtime($temp_file_path) < time() - $max_file_age)) {
                     wp_delete_file($temp_file_path);
                 }
@@ -990,6 +1034,12 @@ class HashFormBuilder {
 
 
     public function register_translation_strings() {
+        // Without WPML there is nothing to register; skip the full forms +
+        // fields scan that would otherwise run on every request.
+        if (!has_action('wpml_register_single_string')) {
+            return;
+        }
+
         $all_forms = HashFormListing::get_published_table_data();
 
         foreach ($all_forms as $form) {

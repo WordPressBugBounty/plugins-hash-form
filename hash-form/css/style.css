@@ -45,6 +45,19 @@
     grid-column: span 12 / span 12;
 }
 
+/* One grid cell holding fields stacked under each other. Flex, not grid, so
+   the span classes the fields still carry have no effect inside it. */
+.hf-column-group {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+}
+
+.hf-form-custom-style .hf-column-group {
+    gap: var(--hf-form-row-gap, 20px);
+}
+
 .hf-grid-11 {
     grid-column: span 11 / span 11;
 }
@@ -712,8 +725,15 @@
 }
 
 /* paragraph */
+
+/* One field can hold several paragraphs now, so they need space between them
+   without adding space above the first or below the last. */
 .hf-form-field.hashform-field-type-paragraph p {
-    margin: 0;
+    margin: 0 0 1em;
+}
+
+.hf-form-field.hashform-field-type-paragraph p:last-child {
+    margin-bottom: 0;
 }
 
 .hf-form-custom-style .hf-form-field.hashform-field-type-paragraph p {
@@ -1099,12 +1119,21 @@
     max-width: var(--hf-width);
 }
 
+/* An <hr>, so the break is announced rather than only drawn. Its own borders
+   and margins are cleared, since the field writes the ones it wants inline. */
 .hf-form-field.hashform-field-type-separator .hf-separator-border {
     border-color: #333;
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    width: 100%;
 }
 
 .hf-form-custom-style .hf-form-field.hashform-field-type-separator .hf-separator-border {
-    border-color: var(--hf-divider-color, #000);
+    border-color: var(--hf-divider-color, #333);
 }
 
 /* HTML */
@@ -1280,46 +1309,115 @@ body.hashform_preview_page .hf-form-preview {
 
 
 
-/* Date Picker Default Styles */
+/* -----------------------------------------------------------------------------
+ * Pickers: shared tokens
+ *
+ * Both the date and the time picker move their panel to <body> as they open, so
+ * neither sits inside #hf-container-{id} and neither can inherit the per form
+ * --hf-field-* tokens through the cascade. frontend.js copies the handful that
+ * matter onto whichever panel is opening, which is what makes a picker follow
+ * the palette of the form that was clicked even with several differently styled
+ * forms on one page. The values below are the fallbacks for when that has not
+ * run, and they are shared so the two pickers cannot drift apart.
+ * -------------------------------------------------------------------------- */
+.ui-datepicker,
+.ui-timepicker-wrapper {
+    --hf-pick-accent: #2271b1;
+    --hf-pick-on-accent: #fff;
+    --hf-pick-surface: #fff;
+    --hf-pick-text: #1e2327;
+    --hf-pick-muted: #646970;
+    --hf-pick-border: #e2e5ea;
+    --hf-pick-font: inherit;
+    --hf-pick-radius: 12px;
+    --hf-pick-cell: 36px;
+    --hf-pick-shadow: 0 12px 28px -8px rgba(16, 24, 40, .18), 0 4px 10px -4px rgba(16, 24, 40, .1);
+
+    /* Two declarations: the flat rgba is the fallback for engines without
+       color-mix, the second wins everywhere else and tracks the accent. */
+    --hf-pick-soft: rgba(34, 113, 177, .1);
+    --hf-pick-soft: color-mix(in srgb, var(--hf-pick-accent) 12%, transparent);
+}
+
+/* -----------------------------------------------------------------------------
+ * Date picker
+ * -------------------------------------------------------------------------- */
+/* -----------------------------------------------------------------------------
+ * Preview
+ *
+ * The submit button is rendered disabled on the preview page so a look at the
+ * form cannot post an entry. It kept the full button styling though, so it
+ * invited a click and then did nothing at all.
+ * -------------------------------------------------------------------------- */
+.hashform_preview_page .hashform-form button[disabled] {
+    cursor: not-allowed;
+    filter: grayscale(1);
+    opacity: .55;
+}
+
+/* jQuery UI appends this one shared div to <body> as soon as any datepicker
+   is attached, and leaves it to a jQuery UI theme stylesheet to keep it
+   hidden until it is opened. WordPress does not enqueue one, so with only the
+   rules below it rendered as an empty bordered box at the foot of every page
+   carrying a date field. Matched on the id, so an inline datepicker — which
+   is a different element and meant to be visible — is untouched. The script
+   sets display inline when opening and closing, so this only supplies the
+   state before it has ever been opened. */
+#ui-datepicker-div {
+    display: none;
+    position: absolute;
+}
+
 .ui-datepicker {
-    padding: 0;
-    margin: 0;
-    border-radius: 0;
-    background-color: #fff;
-    border: 1px solid #dcdcde;
-    border-top: none;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+    background-color: var(--hf-pick-surface);
+    border: 1px solid var(--hf-pick-border);
+    border-radius: var(--hf-pick-radius);
+    box-shadow: var(--hf-pick-shadow);
+    color: var(--hf-pick-text);
+    font-family: var(--hf-pick-font);
+    margin: 6px 0 0;
     min-width: 17em;
+    padding: 12px;
     width: auto !important;
     z-index: 999999 !important;
 }
 
 .ui-datepicker * {
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-        Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
     border-radius: 0;
+    font-family: inherit;
+    padding: 0;
     -webkit-user-select: none;
     user-select: none;
 }
 
 .ui-datepicker .ui-datepicker-group {
     float: left;
+    padding: 0 6px;
 }
 
 .ui-datepicker table {
-    font-size: 13px;
-    margin: 0;
     border: none;
     border-collapse: collapse;
+    font-size: 13px;
+    margin: 0;
+    width: 100%;
 }
 
+/* ---------- Header ---------- */
+
+/* jQuery UI prints prev, next, then the title. Flex order puts them back in
+   reading order without touching the markup. */
 .ui-datepicker .ui-widget-header,
 .ui-datepicker .ui-datepicker-header {
+    align-items: center;
+    background: none;
     background-image: none;
     border: none;
-    color: #fff;
+    color: var(--hf-pick-text);
+    display: flex;
     font-weight: normal;
+    gap: 4px;
+    padding: 0 0 8px;
 }
 
 .ui-datepicker .ui-datepicker-header .ui-state-hover {
@@ -1329,47 +1427,54 @@ body.hashform_preview_page .hf-form-preview {
 }
 
 .ui-datepicker .ui-datepicker-title {
-    margin: 0;
-    padding: 10px 0;
-    color: #fff;
+    color: var(--hf-pick-text);
+    flex: 1;
     font-size: 14px;
-    line-height: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0;
+    order: 2;
     text-align: center;
 }
 
 .ui-datepicker .ui-datepicker-prev,
 .ui-datepicker .ui-datepicker-next {
-    position: relative;
-    top: 0;
-    height: 34px;
-    width: 34px;
-}
-
-.ui-datepicker .ui-state-hover.ui-datepicker-prev,
-.ui-datepicker .ui-state-hover.ui-datepicker-next {
+    align-items: center;
     border: none;
-}
-
-.ui-datepicker .ui-datepicker-prev,
-.ui-datepicker .ui-datepicker-prev-hover {
-    left: 0;
-}
-
-.ui-datepicker .ui-datepicker-next,
-.ui-datepicker .ui-datepicker-next-hover {
-    right: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    height: 30px;
+    justify-content: center;
+    left: auto;
+    position: relative;
+    right: auto;
+    top: 0;
+    transition: background-color .15s ease;
+    width: 30px;
 }
 
 .ui-datepicker .ui-datepicker-prev {
-    float: left;
+    order: 1;
+}
+
+.ui-datepicker .ui-datepicker-next {
+    order: 3;
+}
+
+.ui-datepicker .ui-state-hover.ui-datepicker-prev,
+.ui-datepicker .ui-state-hover.ui-datepicker-next,
+.ui-datepicker .ui-datepicker-prev-hover,
+.ui-datepicker .ui-datepicker-next-hover {
+    background: var(--hf-pick-soft);
+    border: none;
+    left: auto;
+    right: auto;
+    top: 0;
 }
 
 .ui-datepicker .ui-datepicker-prev:before {
     content: "\f341";
-}
-
-.ui-datepicker .ui-datepicker-next {
-    float: right;
 }
 
 .ui-datepicker .ui-datepicker-next:before {
@@ -1388,259 +1493,261 @@ body.hashform_preview_page .hf-form-preview {
 
 .ui-datepicker .ui-datepicker-next:not(.ui-state-disabled):before,
 .ui-datepicker .ui-datepicker-prev:not(.ui-state-disabled):before {
-    font: normal 20px/34px "dashicons";
-    padding-left: 7px;
-    color: #fff;
+    color: var(--hf-pick-muted);
+    font: normal 20px/1 "dashicons";
+    height: 20px;
     speak: none;
+    width: 20px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    width: 34px;
-    height: 34px;
 }
 
 .ui-datepicker .ui-datepicker-prev-hover:before,
 .ui-datepicker .ui-datepicker-next-hover:before {
-    opacity: 0.7;
+    color: var(--hf-pick-accent);
+    opacity: 1;
 }
 
 .ui-datepicker select.ui-datepicker-month,
 .ui-datepicker select.ui-datepicker-year {
-    width: 33%;
+    border: 1px solid var(--hf-pick-border);
+    border-radius: 6px;
+    color: var(--hf-pick-text);
+    font-size: 13px;
+    margin: 0 2px;
+    max-width: 46%;
+    padding: 3px 30px 3px 3px;
+    width: auto;
+    height: auto;
 }
 
+.ui-datepicker select.ui-datepicker-month:focus,
+.ui-datepicker select.ui-datepicker-year:focus {
+    border-color: var(--hf-pick-accent);
+    outline: 0;
+}
+
+/* ---------- Weekday row ---------- */
+
 .ui-datepicker thead {
-    color: #fff;
+    background: none;
+    color: var(--hf-pick-muted);
     font-weight: 600;
 }
 
 .ui-datepicker th {
-    padding: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    padding: 6px 0;
+    text-align: center;
+    text-transform: uppercase;
 }
+
+/* ---------- Days ---------- */
 
 .ui-datepicker td {
-    padding: 0;
-    border: 1px solid #f0f0f1;
-}
-
-.ui-datepicker td.ui-datepicker-other-month {
-    border: transparent;
+    border: none;
+    padding: 1px;
+    text-align: center;
 }
 
 .ui-datepicker tr:first-of-type td {
-    border-top: 1px solid #f0f0f1;
+    border-top: none;
 }
 
-.ui-datepicker td.ui-datepicker-week-end {
-    background-color: #f6f7f7;
+.ui-datepicker td .ui-state-default {
+    align-items: center;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    color: var(--hf-pick-text);
+    display: flex;
+    font-weight: normal;
+    height: var(--hf-pick-cell);
+    justify-content: center;
+    margin: 0 auto;
+    padding: 0;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color .15s ease, color .15s ease;
+    width: var(--hf-pick-cell);
 }
 
-.ui-datepicker td.ui-datepicker-today {
-    background-color: #f5e6ab;
+.ui-datepicker td .ui-state-hover {
+    background: var(--hf-pick-soft);
+    color: var(--hf-pick-text);
 }
 
-.ui-datepicker td.ui-datepicker-current-day {
-    background: #b8e6bf;
+.ui-datepicker td.ui-datepicker-today .ui-state-default {
+    box-shadow: inset 0 0 0 1px var(--hf-pick-accent);
+    color: var(--hf-pick-accent);
+    font-weight: 600;
+}
+
+.ui-datepicker td.ui-datepicker-current-day .ui-state-default,
+.ui-datepicker td .ui-state-active {
+    background: var(--hf-pick-accent);
+    box-shadow: none;
+    color: var(--hf-pick-on-accent);
+    font-weight: 600;
+}
+
+.ui-datepicker td.ui-datepicker-other-month .ui-state-default {
+    color: var(--hf-pick-muted);
+    opacity: .45;
 }
 
 .ui-datepicker td.ui-state-disabled {
     cursor: default;
-    opacity: 0.2;
+    opacity: .35;
 }
 
 .ui-datepicker td.ui-state-disabled .ui-state-default {
-    background: #dcdcde;
+    background: transparent;
     cursor: default;
 }
 
-.ui-datepicker td .ui-state-default {
-    background: transparent;
-    border: none;
-    text-align: center;
-    text-decoration: none;
-    width: auto;
-    display: block;
-    padding: 5px 10px;
-    font-weight: normal;
-    color: #3c434a;
-}
-
 .ui-datepicker td .ui-state-default.ui-priority-secondary {
-    opacity: 0.3;
+    opacity: .45;
 }
 
 .ui-datepicker td .ui-state-default.ui-priority-secondary.ui-state-hover {
     opacity: 1;
 }
 
-/* WordPress Color Schemes */
-/* Default/Unknown */
-.ui-datepicker .ui-widget-header,
-.ui-datepicker .ui-datepicker-header {
-    background: #2271b1;
+.ui-datepicker td .ui-state-default:focus-visible {
+    outline: 2px solid var(--hf-pick-accent);
+    outline-offset: 1px;
 }
 
-.ui-datepicker thead {
-    background: #2c3338;
+@media (prefers-reduced-motion: reduce) {
+
+    .ui-datepicker .ui-datepicker-prev,
+    .ui-datepicker .ui-datepicker-next,
+    .ui-datepicker td .ui-state-default {
+        transition-duration: .001ms;
+    }
 }
 
-.ui-datepicker td .ui-state-hover {
-    background: #2271b1;
-    color: #fff;
+/* -----------------------------------------------------------------------------
+ * Time picker
+ *
+ * Replaces the stock jquery.timepicker stylesheet, which is no longer enqueued.
+ * That sheet carried its own blue (#1980EC), its own grey and its own shadow, so
+ * a date and a time field sitting next to each other looked like they came from
+ * different plugins. Everything here comes off the shared picker tokens above.
+ * -------------------------------------------------------------------------- */
+.ui-timepicker-wrapper {
+    background: var(--hf-pick-surface);
+    border: 1px solid var(--hf-pick-border);
+    border-radius: var(--hf-pick-radius);
+    box-shadow: var(--hf-pick-shadow);
+    color: var(--hf-pick-text);
+    font-family: var(--hf-pick-font);
+    margin: 6px 0 0;
+    /* The stock sheet capped this at 150px, which showed about five slots.
+       Roughly nine now, still short enough to stay inside a viewport. */
+    max-height: 280px;
+    outline: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 6px;
+    width: auto;
+    z-index: 999999;
+
+    scrollbar-width: thin;
+    scrollbar-color: var(--hf-pick-border) transparent;
 }
 
-/* Fresh */
-body.admin-color-fresh .ui-datepicker .ui-widget-header,
-body.admin-color-fresh .ui-datepicker .ui-datepicker-header {
-    background: #2271b1;
+.ui-timepicker-wrapper::-webkit-scrollbar {
+    width: 8px;
 }
 
-body.admin-color-fresh .ui-datepicker thead {
-    background: #2c3338;
+.ui-timepicker-wrapper::-webkit-scrollbar-thumb {
+    background: var(--hf-pick-border);
+    border-radius: 999px;
 }
 
-body.admin-color-fresh .ui-datepicker td .ui-state-hover {
-    background: #2271b1;
+.ui-timepicker-wrapper::-webkit-scrollbar-track {
+    background: transparent;
 }
 
-/* Blue */
-body.admin-color-blue .ui-datepicker .ui-widget-header,
-body.admin-color-blue .ui-datepicker .ui-datepicker-header {
-    background: #096484;
+.ui-timepicker-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
-body.admin-color-blue .ui-datepicker thead {
-    background: #4796b3;
+.ui-timepicker-list li {
+    border-radius: 6px;
+    color: var(--hf-pick-text);
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.4;
+    list-style: none;
+    margin: 0;
+    /* Was 3px 0 3px 5px. A 34px row clears the 24px minimum touch target
+       without making the list feel airy. */
+    padding: 8px 12px;
+    transition: background-color .15s ease, color .15s ease;
+    white-space: nowrap;
 }
 
-body.admin-color-blue .ui-datepicker td .ui-state-hover {
-    background: #096484;
+.ui-timepicker-list li + li {
+    margin-top: 1px;
 }
 
-/* Coffee */
-body.admin-color-coffee .ui-datepicker .ui-widget-header,
-body.admin-color-coffee .ui-datepicker .ui-datepicker-header {
-    background: #59524c;
+/* The library keeps .ui-timepicker-selected on the chosen row while the pointer
+   is elsewhere in the list, so hover has to win over it to read correctly. */
+.ui-timepicker-list li:hover,
+.ui-timepicker-list:hover .ui-timepicker-selected:hover {
+    background: var(--hf-pick-soft);
+    color: var(--hf-pick-text);
 }
 
-body.admin-color-coffee .ui-datepicker thead {
-    background: #46403c;
+li.ui-timepicker-selected,
+.ui-timepicker-list .ui-timepicker-selected {
+    background: var(--hf-pick-accent);
+    color: var(--hf-pick-on-accent);
+    font-weight: 600;
 }
 
-body.admin-color-coffee .ui-datepicker td .ui-state-hover {
-    background: #c7a589;
+.ui-timepicker-list:hover .ui-timepicker-selected {
+    background: var(--hf-pick-accent);
+    color: var(--hf-pick-on-accent);
 }
 
-/* Ectoplasm */
-body.admin-color-ectoplasm .ui-datepicker .ui-widget-header,
-body.admin-color-ectoplasm .ui-datepicker .ui-datepicker-header {
-    background: #523f6d;
+.ui-timepicker-duration {
+    color: var(--hf-pick-muted);
+    margin-left: 6px;
 }
 
-body.admin-color-ectoplasm .ui-datepicker thead {
-    background: #413256;
+.ui-timepicker-list li:hover .ui-timepicker-duration {
+    color: var(--hf-pick-muted);
 }
 
-body.admin-color-ectoplasm .ui-datepicker td .ui-state-hover {
-    background: #a3b745;
+li.ui-timepicker-selected .ui-timepicker-duration,
+.ui-timepicker-list .ui-timepicker-selected .ui-timepicker-duration {
+    color: var(--hf-pick-on-accent);
+    opacity: .75;
 }
 
-/* Midnight */
-body.admin-color-midnight .ui-datepicker .ui-widget-header,
-body.admin-color-midnight .ui-datepicker .ui-datepicker-header {
-    background: #363b3f;
+.ui-timepicker-list li.ui-timepicker-disabled,
+.ui-timepicker-list li.ui-timepicker-disabled:hover,
+.ui-timepicker-list li.ui-timepicker-selected.ui-timepicker-disabled {
+    background: transparent;
+    color: var(--hf-pick-muted);
+    cursor: default;
+    font-weight: normal;
+    opacity: .4;
 }
 
-body.admin-color-midnight .ui-datepicker thead {
-    background: #26292c;
-}
+@media (prefers-reduced-motion: reduce) {
 
-body.admin-color-midnight .ui-datepicker td .ui-state-hover {
-    background: #e14d43;
-}
-
-/* Modern */
-body.admin-color-modern .ui-datepicker .ui-widget-header,
-body.admin-color-modern .ui-datepicker .ui-datepicker-header {
-    background: #3858e9;
-}
-
-body.admin-color-modern .ui-datepicker thead {
-    background: #26292c;
-}
-
-body.admin-color-modern .ui-datepicker td .ui-state-hover {
-    background: #3858e9;
-}
-
-/* Ocean */
-body.admin-color-ocean .ui-datepicker .ui-widget-header,
-body.admin-color-ocean .ui-datepicker .ui-datepicker-header {
-    background: #738e96;
-}
-
-body.admin-color-ocean .ui-datepicker thead {
-    background: #627c83;
-}
-
-body.admin-color-ocean .ui-datepicker td .ui-state-hover {
-    background: #9ebaa0;
-}
-
-/* Sunrise */
-body.admin-color-sunrise .ui-datepicker .ui-widget-header,
-body.admin-color-sunrise .ui-datepicker .ui-datepicker-header {
-    background: #e65054;
-}
-
-body.admin-color-sunrise .ui-datepicker thead {
-    background: #b32d2e;
-}
-
-body.admin-color-sunrise .ui-datepicker td .ui-state-hover {
-    background: #dd823b;
-}
-
-/* Light */
-body.admin-color-light .ui-datepicker .ui-widget-header,
-body.admin-color-light .ui-datepicker .ui-datepicker-header {
-    background: #8c8f94;
-}
-
-body.admin-color-light .ui-datepicker thead {
-    background: #50575e;
-}
-
-body.admin-color-light .ui-datepicker td .ui-state-hover {
-    background: #04a4cc;
-}
-
-/* bbPress Color Schemes */
-/* Evergreen */
-body.admin-color-bbp-evergreen .ui-datepicker .ui-widget-header,
-body.admin-color-bbp-evergreen .ui-datepicker .ui-datepicker-header {
-    background: #56b274;
-}
-
-body.admin-color-bbp-evergreen .ui-datepicker thead {
-    background: #36533f;
-}
-
-body.admin-color-bbp-evergreen .ui-datepicker td .ui-state-hover {
-    background: #446950;
-}
-
-/* Mint */
-body.admin-color-bbp-mint .ui-datepicker .ui-widget-header,
-body.admin-color-bbp-mint .ui-datepicker .ui-datepicker-header {
-    background: #4ca26a;
-}
-
-body.admin-color-bbp-mint .ui-datepicker thead {
-    background: #4f6d59;
-}
-
-body.admin-color-bbp-mint .ui-datepicker td .ui-state-hover {
-    background: #5fb37c;
+    .ui-timepicker-list li {
+        transition-duration: .001ms;
+    }
 }
 
 /* Parent Input Alignment */
@@ -1770,6 +1877,17 @@ body.wp-admin.rtl .ui-datepicker {
 }
 
 @media screen and (max-width:767px) {
+
+    /* Fields sit on a twelve column grid, and until now nothing collapsed it:
+       two fields sharing a row stayed side by side on a phone, about 145px
+       each on a 390px screen. .hf-grouped-field is the same grid one level
+       down, holding the parts of an address or a name. The attribute
+       selector out-weighs .hf-grid-N whatever order the rules end up in. */
+    .hf-container > [class*="hf-grid-"],
+    .hf-container .hf-grouped-field > [class*="hf-grid-"] {
+        grid-column: span 12 / span 12;
+    }
+
     .hf-form-custom-style .hf-container .hf-field-label {
         font-size: var(--hf-label-typo-font-size-sm, var(--hf-label-typo-font-size-md, var(--hf-label-typo-font-size, 1em)));
         letter-spacing: var(--hf-label-typo-letter-spacing-sm, var(--hf-label-typo-letter-spacing-md, var(--hf-label-typo-letter-spacing, inherit)));
@@ -1859,4 +1977,12 @@ body > .hf-form-tempate {
     max-width: 1200px;
     margin: 0 auto;
     padding: 40px;
+}
+/* Shown in place of a form that is closed, full or login-only. */
+.hf-form-closed-msg {
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    color: #50575e;
+    padding: 16px 20px;
 }

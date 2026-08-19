@@ -98,7 +98,10 @@ abstract class HashFormFieldType {
         $container_class[] = ($field['type'] == 'captcha' && $global_settings['re_type'] == 'v3' && !is_admin()) ? 'hf-recaptcha-v3 hf-hidden' : '';
 
         if (in_array($field['type'], array('heading', 'paragraph'))) {
-            $text_alignment = isset($field['text_alignment']) && $field['text_alignment'] ? $field['text_alignment'] : 'inline';
+            // 'inline' was the fallback, and no stylesheet has ever defined
+            // hf-text-alignment-inline. Left is what the field itself defaults
+            // to, so a field saved before the option existed reads the same.
+            $text_alignment = isset($field['text_alignment']) && $field['text_alignment'] ? $field['text_alignment'] : 'left';
             $container_class[] = 'hf-text-alignment-' . trim($text_alignment);
         }
 
@@ -171,6 +174,9 @@ abstract class HashFormFieldType {
             <div id="hf-editor-field-container-<?php echo esc_attr($field['id']); ?>" class="hf-editor-field-container" style="<?php echo ($field_max_width ? ('--hf-width:' . esc_attr($field_max_width) . esc_attr($field_max_width_unit)) : ''); ?><?php echo ((isset($image_max_width) && $image_max_width) ? '--hf-image-width: ' . esc_attr($image_max_width) . esc_attr($image_max_width_unit) : ''); ?>">
                 <div class="hf-editor-action-buttons">
                     <a href="#" class="hf-editor-move-action" title="<?php esc_attr_e('Move Field', 'hash-form'); ?>" data-container="body" aria-label="<?php esc_attr_e('Move Field', 'hash-form'); ?>"><span class="mdi mdi-cursor-move"></span></a>
+                    <?php if (!in_array($field['type'], array('divider', 'end_divider'), true)) { ?>
+                        <a href="#" class="hf-editor-duplicate-action" title="<?php esc_attr_e('Duplicate', 'hash-form'); ?>" data-container="body" aria-label="<?php esc_attr_e('Duplicate', 'hash-form'); ?>" data-duplicatefield="<?php echo esc_attr($field['id']); ?>"><span class="mdi mdi-content-copy"></span></a>
+                    <?php } ?>
                     <a href="#" class="hf-editor-delete-action" title="<?php esc_attr_e('Delete', 'hash-form'); ?>" data-container="body" aria-label="<?php esc_attr_e('Delete', 'hash-form'); ?>" data-deletefield="<?php echo esc_attr($field['id']); ?>"><span class="mdi mdi-trash-can-outline"></span></a>
                 </div>
 
@@ -265,13 +271,22 @@ abstract class HashFormFieldType {
             'auto_width' => false,
             'default' => true,
             'description' => true,
-            'image_max_width' => false
+            'image_max_width' => false,
+            // Length, pattern, matching and uniqueness rules. Only meaningful
+            // for fields that hold a single scalar answer.
+            'advanced_validation' => false
         );
     }
 
     protected function field_attrs() {
         $attrs = array();
+        $default_attrs = array();
         $display = $this->display_field_settings();
+
+        $field = $this->get_field();
+        if (!empty($field['required'])) {
+            $default_attrs['aria-required'] = 'true';
+        }
 
         if (isset($display['id']) && $display['id']) {
             $default_attrs['id'] = $this->html_id();
@@ -380,7 +395,7 @@ abstract class HashFormFieldType {
 
     protected function hidden_field_option() {
         $field = $this->get_field();
-        $ajax_action = get_post('action', 'sanitize_text_field');
+        $ajax_action = HashFormHelper::get_post('action', 'sanitize_text_field');
         if ($ajax_action === 'hashform_import_options')
             return;
         $opt_key = '000';
@@ -415,6 +430,11 @@ abstract class HashFormFieldType {
     public function get_default_field_options() {
         $opts = array(
             'grid_id' => '',
+            // Fields sharing a key stack inside one column of a column row.
+            'column_group' => '',
+            // Every column of that row, as group:width pairs, so the columns
+            // nobody dropped a field into can still be rebuilt.
+            'column_row' => '',
             'label_position' => '',
             'label_alignment' => '',
             'hide_label' => '',
@@ -448,6 +468,14 @@ abstract class HashFormFieldType {
             'invalid' => esc_html__('This field is invalid.', 'hash-form'),
             'rows' => '10',
             'max' => '',
+            // Advanced validation
+            'min_length' => '',
+            'pattern' => '',
+            'pattern_message' => esc_html__('Please match the requested format.', 'hash-form'),
+            'match_field' => '',
+            'match_message' => esc_html__('These fields do not match.', 'hash-form'),
+            'unique' => '',
+            'unique_message' => esc_html__('This value has already been submitted.', 'hash-form'),
             'disable' => array(
                 'line1' => '',
                 'line2' => '',
@@ -497,10 +525,10 @@ abstract class HashFormFieldType {
     }
 
     protected function add_min_max() {
-        $field = $this->field();
-        $min = $field['minnum'];
-        $max = $field['maxnum'];
-        $step = $field['step'];
+        $field = $this->get_field();
+        $min = isset($field['minnum']) ? $field['minnum'] : '';
+        $max = isset($field['maxnum']) ? $field['maxnum'] : '';
+        $step = isset($field['step']) ? $field['step'] : '';
 
         if (!is_numeric($min))
             $min = 0;
@@ -511,7 +539,7 @@ abstract class HashFormFieldType {
         if (!is_numeric($step) && $step !== 'any')
             $step = 1;
 
-        $input_html .= ' min="' . esc_attr($min) . '" max="' . esc_attr($max) . '" step="' . esc_attr($step) . '"';
+        return ' min="' . esc_attr($min) . '" max="' . esc_attr($max) . '" step="' . esc_attr($step) . '"';
     }
 
     public function validate($args) {

@@ -10,7 +10,13 @@ class HashFormSettings {
     }
 
     public function menu() {
-        add_submenu_page('hashform', 'Hash Form | ' . esc_html__('Settings', 'hash-form'), esc_html__('Settings', 'hash-form'), 'manage_options', 'hashform-settings', array($this, 'route'));
+        // With Pro active, every setting is managed from the per-module
+        // popups on the Modules screen, so the Settings page is not added.
+        // (Pro's OAuth callbacks still run on admin_init and exit before the
+        // page would render, so their registered redirect URIs keep working.)
+        if (!defined('HASH_FORM_PRO_VERSION')) {
+            add_submenu_page('hashform', 'Hash Form | ' . esc_html__('Settings', 'hash-form'), esc_html__('Settings', 'hash-form'), 'manage_options', 'hashform-settings', array($this, 'route'));
+        }
         add_submenu_page('hashform', esc_html__('Documentation', 'hash-form'), esc_html__('Documentation', 'hash-form'), 'manage_options', esc_url_raw('https://hashthemes.com/documentation/hash-form-drag-and-drop-form-builder-documentation/'));
     }
 
@@ -33,12 +39,25 @@ class HashFormSettings {
             'email-settings' => array(
                 'name' => esc_html__('Email Settings', 'hash-form'),
                 'icon' => 'mdi mdi-email-multiple-outline'
+            ),
+            'general-settings' => array(
+                'name' => esc_html__('General', 'hash-form'),
+                'icon' => 'mdi mdi-tune'
             )
         ));
         $vars = apply_filters('hash_form_settings_vars', array(
             'current' => 'captcha-settings'
         ));
         extract($vars);
+
+        // Deep-link support: honor ?t=<section> and never point at a section
+        // that does not exist (e.g. after the pro plugin swaps the list).
+        $requested_tab = HashFormHelper::get_var('t', 'sanitize_title');
+        if ($requested_tab && isset($sections[$requested_tab])) {
+            $current = $requested_tab;
+        } elseif (!isset($sections[$current])) {
+            $current = key($sections);
+        }
         ?>
 
         <div class="hf-settings-wrap wrap">
@@ -72,6 +91,7 @@ class HashFormSettings {
                                     <?php HashFormHelper::print_message(); ?>
 
                                     <input type="hidden" name="hashform_action" value="process-form" />
+                    <input type="hidden" name="hashform_rendered_checkboxes" value="" />
                                     <?php
                                     wp_nonce_field('hashform_process_form_action', 'hashform_process_form_nonce');
                                     foreach ($sections as $key => $section) {
@@ -104,6 +124,43 @@ class HashFormSettings {
                 </form>
             </div>
         </div>
+        <script>
+        (function () {
+            // Keep the selected tab in the form action and the address bar so
+            // saving (or reloading) returns to the same section.
+            var form = document.forms['hashform_settings_form'];
+            if (!form) {
+                return;
+            }
+            // Tell the server which checkboxes this page rendered, so it only
+            // forces those off when they are unchecked (absent from the POST).
+            form.addEventListener('submit', function () {
+                var keys = [];
+                form.querySelectorAll('input[type="checkbox"]').forEach(function (box) {
+                    var match = (box.name || '').match(/^hashform_settings\[([^\]]+)\]$/);
+                    if (match) {
+                        keys.push(match[1]);
+                    }
+                });
+                var field = form.querySelector('input[name="hashform_rendered_checkboxes"]');
+                if (field) {
+                    field.value = keys.join(',');
+                }
+            });
+            document.querySelectorAll('.hf-settings-tab a').forEach(function (link) {
+                link.addEventListener('click', function () {
+                    var tab = (this.getAttribute('href') || '').replace('#hf-', '');
+                    if (!tab) {
+                        return;
+                    }
+                    var url = new URL(window.location.href);
+                    url.searchParams.set('t', tab);
+                    window.history.replaceState(null, '', url.toString());
+                    form.setAttribute('action', '?page=hashform-settings&t=' + encodeURIComponent(tab));
+                });
+            });
+        })();
+        </script>
         <?php
     }
 
@@ -113,11 +170,28 @@ class HashFormSettings {
             wp_die(esc_html__('Permission Denied', 'hash-form'));
         }
 
-        $settings = HashFormHelper::recursive_parse_args(HashFormHelper::get_post('hashform_settings', 'esc_html'), self::checkbox_settings());
-        $settings = HashFormHelper::sanitize_array($settings, self::sanitize_rules());
+        $posted = HashFormHelper::get_post('hashform_settings', 'esc_html');
+        $posted = is_array($posted) ? $posted : array();
+
+        // Unchecked checkboxes are absent from the POST. Only force off the
+        // ones this page actually rendered (listed by the form's JS), so
+        // settings managed elsewhere — e.g. the module popups — survive.
+        $rendered = HashFormHelper::get_post('hashform_rendered_checkboxes', 'sanitize_text_field');
+        $rendered = $rendered ? array_filter(array_map('sanitize_key', explode(',', $rendered))) : array_keys(self::checkbox_settings());
+        foreach ($rendered as $checkbox_key) {
+            if (!isset($posted[$checkbox_key])) {
+                $posted[$checkbox_key] = 'off';
+            }
+        }
+
+        $posted = HashFormHelper::sanitize_array($posted, self::sanitize_rules());
+
+        // Merge over the saved options instead of replacing them, so fields
+        // not present on this page are preserved.
+        $settings = array_merge(self::get_settings(), $posted);
 
         update_option('hashform_options', $settings);
-        $_SESSION['hashform_message'] = esc_html__('Settings Saved !', 'hash-form');
+        HashFormHelper::set_message(esc_html__('Settings Saved !', 'hash-form'));
 
         self::display_form();
     }
@@ -143,8 +217,13 @@ class HashFormSettings {
 
         $header_image = $settings['header_image'];
 
+        // Whitelist: the value feeds both a callable name and an include path.
         $email_template = HashFormHelper::get_post('email_template');
-        $test_email = HashFormHelper::get_post('test_email');
+        if (!in_array($email_template, array('template1', 'template2', 'template3'), true)) {
+            $email_template = 'template1';
+        }
+
+        $test_email = HashFormHelper::get_post('test_email', 'sanitize_email');
         $email_subject = esc_html__('Test Email', 'hash-form');
         $count = 0;
 
@@ -201,7 +280,9 @@ class HashFormSettings {
     }
 
     public static function checkbox_settings() {
-        return apply_filters('hash_form_settings_checkbox', array());
+        return apply_filters('hash_form_settings_checkbox', array(
+            'load_google_fonts' => 'on',
+        ));
     }
 
     public static function default_values() {
@@ -213,8 +294,19 @@ class HashFormSettings {
             'privkey_v3' => '',
             're_lang' => 'en',
             're_threshold' => '0.5',
+            /*
+             * Read by every captcha field as the message shown when a
+             * challenge is not passed, and defined nowhere until now: each of
+             * them looked up an array key that did not exist, so a field
+             * carrying no message of its own told the visitor "null".
+             */
+            're_msg' => 'The captcha was not completed correctly. Please try again.',
             'header_image' => '',
             'email_template' => 'template1',
+            // Left on so an existing site's typography does not change under
+            // it. Sites that would rather not call out to Google can switch it
+            // off without touching their style templates.
+            'load_google_fonts' => 'on',
         ));
     }
 
@@ -227,8 +319,10 @@ class HashFormSettings {
             'privkey_v3' => 'sanitize_text_field',
             're_lang' => 'sanitize_text_field',
             're_threshold' => 'sanitize_text_field',
+            're_msg' => 'sanitize_text_field',
             'header_image' => 'sanitize_text_field',
             'email_template' => 'sanitize_text_field',
+            'load_google_fonts' => 'hashform_sanitize_checkbox',
         ));
     }
 

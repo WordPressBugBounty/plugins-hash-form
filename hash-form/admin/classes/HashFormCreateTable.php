@@ -22,6 +22,37 @@ class HashFormCreateTable {
         flush_rewrite_rules();
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         $this->create_tables();
+        update_option('hashform_db_version', HASHFORM_VERSION);
+    }
+
+    /**
+     * Activation is the only thing that used to run dbDelta, so a site that
+     * updated the plugin never received new columns. Run it once per version
+     * instead.
+     */
+    public static function maybe_upgrade() {
+        if (get_option('hashform_db_version') === HASHFORM_VERSION) {
+            return;
+        }
+
+        $db = new self();
+        $db->upgrade();
+        $db->migrate_existing_entries_to_read();
+    }
+
+    /**
+     * Entries that predate the read/unread column would all show up as unread,
+     * which is noise rather than news. Mark them read once.
+     */
+    private function migrate_existing_entries_to_read() {
+        if (get_option('hashform_entries_read_migrated')) {
+            return;
+        }
+
+        global $wpdb;
+        $wpdb->query("UPDATE {$this->entries} SET is_read = 1 WHERE is_read = 0"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+
+        update_option('hashform_entries_read_migrated', 1);
     }
 
     public function collation() {
@@ -71,6 +102,9 @@ class HashFormCreateTable {
 		user_id BIGINT(20) default NULL,
 		delivery_status tinyint(1) default 0,
                 status varchar(255) default NULL,
+                is_read tinyint(1) default 0,
+                is_starred tinyint(1) default 0,
+                notes longtext default NULL,
                 created_at datetime NOT NULL,
                 PRIMARY KEY  (id),
                 KEY form_id (form_id),

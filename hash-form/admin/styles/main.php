@@ -18,7 +18,7 @@ $id = get_the_ID();
     </select>
 </div>
 
-<h2 class="hf-settings-heading"><?php esc_html_e('Form', 'hash-form'); ?><span class="mdi mdi-triangle-small-down"></span></h2>
+<h2 class="hf-settings-heading"><?php esc_html_e('Form', 'hash-form'); ?><span class="mdi mdi-chevron-down"></span></h2>
 
 <div class="hf-form-settings">
     <div class="hf-settings-row">
@@ -165,7 +165,7 @@ $id = get_the_ID();
     </div>
 </div>
 
-<h2 class="hf-settings-heading"><?php esc_html_e('Labels', 'hash-form'); ?><span class="mdi mdi-triangle-small-down"></span></h2>
+<h2 class="hf-settings-heading"><?php esc_html_e('Labels', 'hash-form'); ?><span class="mdi mdi-chevron-down"></span></h2>
 
 <div class="hf-form-settings">
     <div class="hf-settings-row">
@@ -189,7 +189,7 @@ $id = get_the_ID();
 </div>
 
 
-<h2 class="hf-settings-heading"><?php esc_html_e('Description', 'hash-form'); ?><span class="mdi mdi-triangle-small-down"></span></h2>
+<h2 class="hf-settings-heading"><?php esc_html_e('Description', 'hash-form'); ?><span class="mdi mdi-chevron-down"></span></h2>
 <div class="hf-form-settings">
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Typography', 'hash-form'); ?></label>
@@ -206,7 +206,7 @@ $id = get_the_ID();
 </div>
 
 
-<h2 class="hf-settings-heading"><?php esc_html_e('Fields', 'hash-form'); ?><span class="mdi mdi-triangle-small-down"></span></h2>
+<h2 class="hf-settings-heading"><?php esc_html_e('Fields', 'hash-form'); ?><span class="mdi mdi-chevron-down"></span></h2>
 
 <div class="hf-form-settings">
     <div class="hf-settings-row">
@@ -413,7 +413,7 @@ $id = get_the_ID();
     </div>
 </div>
 
-<h2 class="hf-settings-heading"><?php esc_html_e('Upload Button', 'hash-form'); ?><span class="mdi mdi-triangle-small-down"></span></h2>
+<h2 class="hf-settings-heading"><?php esc_html_e('Upload Button', 'hash-form'); ?><span class="mdi mdi-chevron-down"></span></h2>
 <div class="hf-form-settings">
     <div class="hf-tab-container">
         <ul class="hf-setting-tab">
@@ -613,7 +613,7 @@ $id = get_the_ID();
     </div>
 </div>
 
-<h2 class="hf-settings-heading"><?php esc_html_e('Submit Button', 'hash-form'); ?><span class="mdi mdi-triangle-small-down"></span></h2>
+<h2 class="hf-settings-heading"><?php esc_html_e('Submit Button', 'hash-form'); ?><span class="mdi mdi-chevron-down"></span></h2>
 <div class="hf-form-settings">
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Typography', 'hash-form'); ?></label>
@@ -819,7 +819,7 @@ $id = get_the_ID();
 </div>
 
 
-<h2 class="hf-settings-heading"><?php esc_html_e('Validation', 'hash-form'); ?><span class="mdi mdi-triangle-small-down"></span></h2>
+<h2 class="hf-settings-heading"><?php esc_html_e('Validation', 'hash-form'); ?><span class="mdi mdi-chevron-down"></span></h2>
 <div class="hf-form-settings">
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Typography', 'hash-form'); ?></label>
@@ -845,7 +845,7 @@ $id = get_the_ID();
 </div>
 
 
-<h2 class="hf-settings-heading"><?php esc_html_e('Form Title', 'hash-form'); ?><span class="mdi mdi-triangle-small-down"></span></h2>
+<h2 class="hf-settings-heading"><?php esc_html_e('Form Title', 'hash-form'); ?><span class="mdi mdi-chevron-down"></span></h2>
 <div class="hf-form-settings">
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Typography', 'hash-form'); ?></label>
@@ -862,7 +862,7 @@ $id = get_the_ID();
 </div>
 
 
-<h2 class="hf-settings-heading"><?php esc_html_e('Form Description', 'hash-form'); ?><span class="mdi mdi-triangle-small-down"></span></h2>
+<h2 class="hf-settings-heading"><?php esc_html_e('Form Description', 'hash-form'); ?><span class="mdi mdi-chevron-down"></span></h2>
 <div class="hf-form-settings">
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Typography', 'hash-form'); ?></label>
@@ -879,7 +879,7 @@ $id = get_the_ID();
 </div>
 
 
-<h2 class="hf-settings-heading"><?php esc_html_e('Heading', 'hash-form'); ?><span class="mdi mdi-triangle-small-down"></span></h2>
+<h2 class="hf-settings-heading"><?php esc_html_e('Heading', 'hash-form'); ?><span class="mdi mdi-chevron-down"></span></h2>
 <div class="hf-form-settings">
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Typography', 'hash-form'); ?></label>
@@ -887,7 +887,7 @@ $id = get_the_ID();
     </div>
 </div>
 
-<h2 class="hf-settings-heading"><?php esc_html_e('Paragraph', 'hash-form'); ?><span class="mdi mdi-triangle-small-down"></span></h2>
+<h2 class="hf-settings-heading"><?php esc_html_e('Paragraph', 'hash-form'); ?><span class="mdi mdi-chevron-down"></span></h2>
 <div class="hf-form-settings">
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Typography', 'hash-form'); ?></label>
@@ -895,7 +895,7 @@ $id = get_the_ID();
     </div>
 </div>
 
-<h2 class="hf-settings-heading"><?php esc_html_e('Divider', 'hash-form'); ?><span class="mdi mdi-triangle-small-down"></span></h2>
+<h2 class="hf-settings-heading"><?php esc_html_e('Divider', 'hash-form'); ?><span class="mdi mdi-chevron-down"></span></h2>
 <div class="hf-form-settings">
     <div class="hf-settings-row">
         <label class="hf-setting-label hf-color-input-label"><?php esc_html_e('Color', 'hash-form'); ?></label>
@@ -905,7 +905,7 @@ $id = get_the_ID();
     </div>
 </div>
 
-<h2 class="hf-settings-heading"><?php esc_html_e('Star', 'hash-form'); ?><span class="mdi mdi-triangle-small-down"></span></h2>
+<h2 class="hf-settings-heading"><?php esc_html_e('Star', 'hash-form'); ?><span class="mdi mdi-chevron-down"></span></h2>
 <div class="hf-form-settings">
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Size', 'hash-form'); ?></label>
@@ -928,7 +928,7 @@ $id = get_the_ID();
     </div>
 </div>
 
-<h2 class="hf-settings-heading"><?php esc_html_e('Range Slider', 'hash-form'); ?><span class="mdi mdi-triangle-small-down"></span></h2>
+<h2 class="hf-settings-heading"><?php esc_html_e('Range Slider', 'hash-form'); ?><span class="mdi mdi-chevron-down"></span></h2>
 <div class="hf-form-settings">
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('Height', 'hash-form'); ?></label>
@@ -967,7 +967,7 @@ $id = get_the_ID();
 <?php do_action('hashform_styles_settings', $hashform_styles); ?>
 
 
-<h2 class="hf-settings-heading"><?php esc_html_e('Import/Export', 'hash-form'); ?><span class="mdi mdi-triangle-small-down"></span></h2>
+<h2 class="hf-settings-heading"><?php esc_html_e('Import/Export', 'hash-form'); ?><span class="mdi mdi-chevron-down"></span></h2>
 <div class="hf-form-settings">
     <p>
         <?php esc_html_e("You can export the form styles and then import the form styles in the same or different website.", "hash-form"); ?>
@@ -1005,7 +1005,8 @@ $id = get_the_ID();
                     </div>
                     <input type="file" name="hashform_import_file" class="hf-dropzone">
                 </div>
-                <button class="button button-primary" id="hashform_import" type="submit" name="hashform_import"><i class='icofont-download'></i> <?php esc_html_e("Import", "hash-form") ?></button>
+                <?php // icofont is not among the plugin's icon fonts, so the old <i> rendered nothing. ?>
+                <button class="button button-primary" id="hashform_import" type="submit" name="hashform_import"><span class="mdi mdi-tray-arrow-up" aria-hidden="true"></span> <?php esc_html_e("Import", "hash-form") ?></button>
                 <input type="hidden" name="hashform_imex_action" value="import_style" />
                 <input type="hidden" name="hashform_style_id" value="<?php echo esc_attr($id); ?>" />
                 <?php wp_nonce_field("hashform_imex_import_nonce", "hashform_imex_import_nonce"); ?>

@@ -48,6 +48,59 @@ qq.indexOf = function (arr, elt, from) {
     return -1;
 };
 
+/**
+ * File preparers.
+ *
+ * An extension point for anything that needs to replace a File on its way to
+ * the server, such as resizing an image before it is sent. A preparer is called
+ * with (file, options) and returns a File, or a Promise for one. Returning
+ * anything else, or throwing, leaves the file exactly as it was: a preparer that
+ * fails must never cost the visitor their upload.
+ *
+ * Register with qq.addFilePreparer(fn). Preparers run in registration order,
+ * each receiving the previous one's result, and they run before validation.
+ */
+qq.filePreparers = [];
+
+qq.addFilePreparer = function (fn) {
+    if (typeof fn === 'function') {
+        qq.filePreparers.push(fn);
+    }
+};
+
+qq.prepareFiles = function (files, options, callback) {
+    var list = Array.prototype.slice.call(files);
+
+    // With nothing registered this stays synchronous, so the queue behaves
+    // exactly as it did before the seam existed.
+    if (!qq.filePreparers.length || typeof Promise === 'undefined') {
+        callback(list);
+        return;
+    }
+
+    var pending = list.map(function (file) {
+        // The non-XHR fallback passes the file input element itself rather than
+        // a File; preparers should only ever see real files.
+        if (typeof File === 'undefined' || !(file instanceof File)) {
+            return Promise.resolve(file);
+        }
+
+        return qq.filePreparers.reduce(function (chain, prepare) {
+            return chain.then(function (current) {
+                return Promise.resolve(prepare(current, options)).then(function (result) {
+                    return (result instanceof File) ? result : current;
+                }, function () {
+                    return current;
+                });
+            });
+        }, Promise.resolve(file));
+    });
+
+    Promise.all(pending).then(callback, function () {
+        callback(list);
+    });
+};
+
 qq.getUniqueId = (function () {
     var id = 0;
     return function () {
@@ -440,19 +493,26 @@ qq.FileUploaderBasic.prototype = {
         this._button.reset();
     },
     _uploadFileList: function (files) {
-        var goodFiles = [];
-        for (var i = 0; i < files.length; i++) {
-            if (this._validateFile(files[i])) {
-                goodFiles.push(files[i]);
-            } else {
-                if (this._options.abortOnFailure)
-                    return;
-            }
-        }
+        var self = this;
 
-        for (var i = 0; i < goodFiles.length; i++) {
-            this._uploadFile(goodFiles[i]);
-        }
+        // Preparers run before validation on purpose: a photo shrunk by one is
+        // then measured against the size limit at its new size, which is the
+        // only ordering that lets an oversized image become an allowed one.
+        qq.prepareFiles(files, this._options, function (prepared) {
+            var goodFiles = [];
+            for (var i = 0; i < prepared.length; i++) {
+                if (self._validateFile(prepared[i])) {
+                    goodFiles.push(prepared[i]);
+                } else {
+                    if (self._options.abortOnFailure)
+                        return;
+                }
+            }
+
+            for (var i = 0; i < goodFiles.length; i++) {
+                self._uploadFile(goodFiles[i]);
+            }
+        });
     },
     _uploadFile: function (fileContainer) {
         var id = this._handler.add(fileContainer);
@@ -775,7 +835,12 @@ qq.extend(qq.FileUploader.prototype, {
             qq.addClass(item, this._classes.fail);
         }
         if (result.path) {
-            jQuery(item).append('<span class="hf-preview-remove" data-path="' + result.path + '" data-remove-id="hf-uploaded-' + id + '">' + hashform_file_vars.remove_txt + '</span></div>');
+            // Dropped into the file line when the template provides one, so it
+            // sits beside the name rather than on a row of its own. Falls back
+            // to the item for any caller still using the old flat template.
+            var row = jQuery(item).find('.hf-file-row');
+            var target = row.length ? row : jQuery(item);
+            target.append('<span class="hf-preview-remove" data-path="' + result.path + '" data-remove-id="hf-uploaded-' + id + '">' + hashform_file_vars.remove_txt + '</span>');
         }
     },
     _addToList: function (id, fileName) {

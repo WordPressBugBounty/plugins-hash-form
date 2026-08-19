@@ -1,0 +1,836 @@
+/**
+ * Forms and Entries list screens.
+ *
+ * Both were plain WP list tables with no header and no surface, which stood
+ * out once the Modules screen was reworked. Same tokens and the same header /
+ * card language, applied over the list table markup rather than replacing it —
+ * WP_List_Table output is not ours to restructure.
+ *
+ * Scoped to .hf-list-screen so nothing here reaches other admin screens.
+ */
+
+.hf-list-screen {
+    background: var(--hf-page, #f5f6f8);
+    margin: 0 0 0 -20px;
+    min-height: calc(100vh - 32px);
+    padding: 0 0 var(--hf-space-6, 32px);
+}
+
+.hf-list-screen * {
+    box-sizing: border-box;
+}
+
+.hf-list-screen .wrap {
+    margin: 0 auto;
+    max-width: 1400px;
+    padding: 0 var(--hf-space-6, 32px);
+}
+
+/* WP prints admin notices into this empty h1; keep it out of the layout until
+   it has something in it. */
+.hf-list-screen .wrap > h1:empty {
+    display: none;
+}
+
+/* ---------- Core CPT list (style templates) ----------
+ *
+ * The plugin's own list pages print .hf-list-screen around their markup. A
+ * core list table owns its wrapper, so the class goes on <body> instead —
+ * which means the container rules above would apply to the page itself.
+ * They are neutralised here and put on the admin content column, where the
+ * injected header and the table both live.
+ */
+
+body.hf-list-screen {
+    margin: 0;
+    min-height: 0;
+    padding: 0;
+}
+
+body.hf-list-screen #wpcontent {
+    background: var(--hf-page, #f5f6f8);
+    min-height: calc(100vh - 32px);
+    padding-bottom: var(--hf-space-6, 32px);
+}
+
+body.hf-list-screen #wpbody-content {
+    padding-bottom: 0;
+}
+
+/* Edge to edge across the content column: cancels the 20px #wpcontent keeps
+   clear of the admin menu, the same way the other lists cancel it on their
+   own wrapper. */
+/* clear:both is right where the bar sits inside #wpbody-content, but here it
+   is a direct child of #wpcontent and would clear the floated admin menu —
+   pushing the whole screen a thousand pixels down. */
+body.hf-list-screen .hf-list-header {
+    clear: none;
+    margin-left: -20px;
+    width: calc(100% + 20px);
+}
+
+/* The tiles sit outside .wrap here, so they need its measure themselves. */
+body.hf-list-screen .hf-list-stats-wrap {
+    margin: 0 auto;
+    max-width: 1400px;
+    padding: 0 var(--hf-space-6, 32px);
+}
+
+/* Core prints its own H1 and Add New button above the table; the bar above
+   already carries both. */
+body.hf-list-screen .wrap > h1.wp-heading-inline,
+body.hf-list-screen .wrap > a.page-title-action,
+body.hf-list-screen .wrap > .wp-header-end {
+    display: none;
+}
+
+/* Core's status links are a plain "All (1) | Published (1)" list. The
+   plugin's own lists render pills, so the same treatment is mapped onto the
+   core markup rather than the two sitting side by side looking unrelated. */
+/* Kept floated, as core has it: the search box that follows floats right and
+   wraps alongside, which is the only thing putting the two on one line —
+   they are printed into different parents, so no flex container can hold
+   both. */
+body.hf-list-screen .subsubsub {
+    display: flex;
+    flex-wrap: wrap;
+    float: left;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+}
+
+body.hf-list-screen .subsubsub li {
+    color: transparent;
+    margin: 0;
+}
+
+body.hf-list-screen .subsubsub li a {
+    align-items: center;
+    border-radius: 3px;
+    color: var(--hf-text-muted, #646970);
+    display: inline-flex;
+    font-size: var(--hf-font-base, 13px);
+    font-weight: 500;
+    gap: var(--hf-space-2, 8px);
+    line-height: 1;
+    padding: var(--hf-space-2, 8px) var(--hf-space-3, 12px);
+    text-decoration: none;
+    transition: background-color var(--hf-transition, .15s ease), color var(--hf-transition, .15s ease);
+}
+
+body.hf-list-screen .subsubsub li a:hover {
+    background: var(--hf-surface-sunken, #fafbfc);
+    color: var(--hf-text, #1e2327);
+}
+
+body.hf-list-screen .subsubsub li a.current {
+    background: var(--hf-accent-soft, #f0f6fc);
+    color: var(--hf-accent-text, #a3591b);
+    font-weight: 500;
+}
+
+body.hf-list-screen .subsubsub .count {
+    background: #f0f1f3;
+    border-radius: var(--hf-radius-pill, 999px);
+    color: var(--hf-text-faint, #8c9196);
+    font-size: var(--hf-font-xs, 11px);
+    font-weight: 600;
+    line-height: 1.6;
+    min-width: 20px;
+    padding: 0 5px;
+    text-align: center;
+}
+
+body.hf-list-screen .subsubsub li a.current .count {
+    background: var(--hf-accent, #2271b1);
+    color: var(--hf-text-inverse, #fff);
+}
+
+/* ---------- Header ---------- */
+
+/* WP floats #screen-meta-links (the Screen Options tab) at the top of the
+   content area, ahead of anything a plugin prints. Left in flow it either
+   pushes the header bar down, leaving a strip of page background above it,
+   or — since a flex container is a block formatting context and will not
+   overlap a float — squeezes the bar's contents out of line with the table.
+
+   Taking it out of flow removes both problems: the bar starts at the very
+   top and spans the full width, and the tab hangs over its top right corner
+   the way it normally hangs over the top of a list screen.
+
+   :has() is the scope. Where it is unsupported the tab stays in flow and the
+   clear below keeps the old, safe behaviour. */
+#wpbody-content:has(.hf-list-screen) {
+    position: relative;
+}
+
+#wpbody-content:has(.hf-list-screen) > #screen-meta-links {
+    float: none;
+    margin: 0;
+    position: absolute;
+    right: 20px;
+    top: 0;
+    z-index: 100;
+}
+
+/* The bar itself is edge to edge: it sits outside .wrap, so nothing caps its
+   width, and .hf-list-screen is already pulled flush to the left of the
+   content area. */
+.hf-list-header {
+    background: var(--hf-surface, #fff);
+    border-bottom: 1px solid var(--hf-border, #e2e5ea);
+    clear: both;
+    margin: 0 0 var(--hf-space-5, 24px);
+    padding: 0;
+}
+
+/* The padding lives here so the title and the Add New button line up with
+   the table below rather than with the far edges of a wide screen. */
+.hf-list-header-inner {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--hf-space-3, 12px);
+    justify-content: space-between;
+    margin: 0 auto;
+    max-width: 1400px;
+    min-height: 34px;
+    padding: var(--hf-space-4, 16px) var(--hf-space-6, 32px);
+    /* Extra room on the right for the Screen Options tab, which now overlaps
+       this end of the bar. backend.js measures the actual overlap and sets
+       the custom property; a hardcoded guess only ever fitted the English
+       label. Falls back to 0 wherever the script has not run, or where the
+       tab is back in the flow and needs no room. */
+    padding-right: calc(var(--hf-space-6, 32px) + var(--hf-screen-meta-w, 0px));
+    width: 100%;
+}
+
+.hf-list-screen .hf-list-title {
+    color: var(--hf-text, #1e2327);
+    font-size: var(--hf-font-xl, 20px);
+    font-weight: 600;
+    letter-spacing: -.01em;
+    margin: 0;
+    padding: 0;
+}
+
+.hf-list-screen .hf-add-new-form {
+    margin: 0;
+}
+
+.hf-list-screen .hf-add-new-form .button {
+    background: var(--hf-accent, #2271b1);
+    border: 1px solid var(--hf-accent, #2271b1);
+    border-radius: var(--hf-radius-sm, 4px);
+    color: var(--hf-text-inverse, #fff);
+    font-size: var(--hf-font-base, 13px);
+    font-weight: 500;
+    height: auto;
+    line-height: 1.4;
+    min-height: 34px;
+    padding: var(--hf-space-2, 8px) var(--hf-space-4, 16px);
+    text-shadow: none;
+    transition: background-color var(--hf-transition, .15s ease);
+}
+
+.hf-list-screen .hf-add-new-form .button:hover,
+.hf-list-screen .hf-add-new-form .button:focus {
+    background: var(--hf-accent-hover, #135e96);
+    border-color: var(--hf-accent-hover, #135e96);
+    color: var(--hf-text-inverse, #fff);
+}
+
+/* ---------- Header stats ---------- */
+
+.hf-list-screen .hf-list-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--hf-space-3, 12px);
+    margin: 0 0 var(--hf-space-5, 24px);
+}
+
+.hf-list-screen .hf-stat {
+    background: var(--hf-surface, #fff);
+    border: 1px solid var(--hf-border, #e2e5ea);
+    border-radius: var(--hf-radius, 8px);
+    box-shadow: var(--hf-shadow-sm, 0 1px 2px rgba(16, 24, 40, .05));
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 130px;
+    padding: var(--hf-space-3, 12px) var(--hf-space-4, 16px);
+    text-decoration: none;
+    transition: border-color var(--hf-transition, .15s ease), box-shadow var(--hf-transition, .15s ease);
+}
+
+.hf-list-screen a.hf-stat:hover,
+.hf-list-screen a.hf-stat:focus {
+    border-color: var(--hf-border-strong, #d3d8e0);
+    box-shadow: var(--hf-shadow-md, 0 4px 10px -2px rgba(16, 24, 40, .1));
+}
+
+.hf-list-screen a.hf-stat:focus-visible {
+    outline: 2px solid var(--hf-accent, #2271b1);
+    outline-offset: 1px;
+}
+
+.hf-list-screen .hf-stat-value {
+    color: var(--hf-text, #1e2327);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -.02em;
+    line-height: 1.2;
+}
+
+.hf-list-screen .hf-stat-label {
+    color: var(--hf-text-muted, #646970);
+    font-size: var(--hf-font-xs, 11px);
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+/* ---------- Status links and filters ---------- */
+
+/* Status tabs and the search box share one row above the table. */
+.hf-list-screen .hf-list-toolbar {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--hf-space-3, 12px);
+    justify-content: space-between;
+    margin: 0 0 var(--hf-space-4, 16px);
+}
+
+.hf-list-screen .hf-list-toolbar .search-box {
+    margin: 0;
+}
+
+/* A segmented control rather than core's pipe-separated sentence, which read
+   as stray text next to the panels around it. float is reset because the
+   subsubsub class is kept for compatibility and core floats it left. */
+.hf-list-screen .hf-view-tabs {
+    align-items: center;
+    background: var(--hf-surface, #fff);
+    border: 1px solid var(--hf-border, #e2e5ea);
+    border-radius: var(--hf-radius-sm, 4px);
+    display: inline-flex;
+    float: none;
+    gap: 2px;
+    margin: 0;
+    padding: 2px;
+}
+
+.hf-list-screen .hf-view-tab {
+    align-items: center;
+    border-radius: 3px;
+    color: var(--hf-text-muted, #646970);
+    display: inline-flex;
+    font-size: var(--hf-font-base, 13px);
+    font-weight: 500;
+    gap: var(--hf-space-2, 8px);
+    line-height: 1;
+    padding: var(--hf-space-2, 8px) var(--hf-space-3, 12px);
+    text-decoration: none;
+    transition: background-color var(--hf-transition, .15s ease), color var(--hf-transition, .15s ease);
+}
+
+.hf-list-screen .hf-view-tab:hover {
+    background: var(--hf-surface-sunken, #fafbfc);
+    color: var(--hf-text, #1e2327);
+}
+
+.hf-list-screen .hf-view-tab:focus-visible {
+    outline: 2px solid var(--hf-accent, #2271b1);
+    outline-offset: -1px;
+}
+
+.hf-list-screen .hf-view-tab.current {
+    background: var(--hf-accent-soft, #f0f6fc);
+    color: var(--hf-accent-text, #a3591b);
+}
+
+.hf-list-screen .hf-view-tab .count {
+    background: #f0f1f3;
+    border-radius: var(--hf-radius-pill, 999px);
+    color: var(--hf-text-faint, #8c9196);
+    font-size: var(--hf-font-xs, 11px);
+    font-weight: 600;
+    line-height: 1.6;
+    min-width: 20px;
+    padding: 0 5px;
+    text-align: center;
+}
+
+.hf-list-screen .hf-view-tab.current .count {
+    background: var(--hf-accent, #2271b1);
+    color: var(--hf-text-inverse, #fff);
+}
+
+.hf-list-screen .tablenav {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--hf-space-2, 8px);
+    height: auto;
+    margin: 0 0 var(--hf-space-3, 12px);
+    padding: 0;
+}
+
+.hf-list-screen .tablenav.bottom {
+    margin: var(--hf-space-3, 12px) 0 0;
+}
+
+.hf-list-screen .tablenav .actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--hf-space-2, 8px);
+    padding: 0;
+}
+
+.hf-list-screen .tablenav br,
+.hf-list-screen .tablenav .clear {
+    display: none;
+}
+
+/* width is reset from the token sheet, which stretches every field to 100%
+   for the stacked settings panels. Here a control shares a line with the
+   button that acts on it, so a full-width field pushes that button onto the
+   next row. */
+.hf-list-screen select,
+.hf-list-screen input[type="search"],
+.hf-list-screen input[type="text"] {
+    border: 1px solid var(--hf-border-strong, #d3d8e0);
+    border-radius: var(--hf-radius-sm, 4px);
+    box-shadow: none;
+    color: var(--hf-text, #1e2327);
+    font-size: var(--hf-font-base, 13px);
+    min-height: 34px;
+    width: auto;
+}
+
+.hf-list-screen select:focus,
+.hf-list-screen input[type="search"]:focus,
+.hf-list-screen input[type="text"]:focus {
+    border-color: var(--hf-accent, #2271b1);
+    box-shadow: 0 0 0 1px var(--hf-accent, #2271b1);
+    outline: 0;
+}
+
+.hf-list-screen .button:not(.hf-trigger-modal) {
+    border-color: var(--hf-border-strong, #d3d8e0);
+    border-radius: var(--hf-radius-sm, 4px);
+    color: var(--hf-text, #1e2327);
+    font-size: var(--hf-font-base, 13px);
+    min-height: 34px;
+}
+
+.hf-list-screen .button:not(.hf-trigger-modal):hover {
+    background: var(--hf-surface-sunken, #fafbfc);
+    border-color: var(--hf-text-faint, #8c9196);
+    color: var(--hf-text, #1e2327);
+}
+
+.hf-list-screen .search-box {
+    align-items: center;
+    display: flex;
+    gap: var(--hf-space-2, 8px);
+    margin: 0 0 var(--hf-space-3, 12px);
+    justify-content: flex-end;
+}
+
+/* Core floats this input, which a flex parent ignores everywhere except in
+   the margin it also sets. */
+.hf-list-screen .search-box input[type="search"] {
+    float: none;
+    margin: 0;
+}
+
+.hf-list-screen .search-box input[type="search"] {
+    min-width: 220px;
+}
+
+/* ---------- The table itself ---------- */
+
+.hf-list-screen .wp-list-table {
+    background: var(--hf-surface, #fff);
+    border: 1px solid var(--hf-border, #e2e5ea);
+    border-radius: var(--hf-radius, 8px);
+    border-collapse: separate;
+    border-spacing: 0;
+    box-shadow: var(--hf-shadow-sm, 0 1px 2px rgba(16, 24, 40, .05));
+    overflow: hidden;
+}
+
+.hf-list-screen .wp-list-table thead th,
+.hf-list-screen .wp-list-table tfoot th {
+    background: var(--hf-surface-sunken, #fafbfc);
+    border-bottom: 1px solid var(--hf-border, #e2e5ea);
+    color: var(--hf-text-muted, #646970);
+    font-size: var(--hf-font-xs, 11px);
+    font-weight: 700;
+    letter-spacing: .04em;
+    padding: var(--hf-space-3, 12px) var(--hf-space-4, 16px);
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* Keeps the sort arrow on the same line as the label it belongs to. */
+.hf-list-screen .wp-list-table thead th a,
+.hf-list-screen .wp-list-table tfoot th a {
+    align-items: center;
+    display: inline-flex;
+    gap: var(--hf-space-1, 4px);
+}
+
+.hf-list-screen .wp-list-table tfoot th {
+    border-bottom: 0;
+    border-top: 1px solid var(--hf-border, #e2e5ea);
+}
+
+.hf-list-screen .wp-list-table thead th a,
+.hf-list-screen .wp-list-table tfoot th a {
+    color: inherit;
+}
+
+.hf-list-screen .wp-list-table tbody td,
+.hf-list-screen .wp-list-table tbody th {
+    border-bottom: 1px solid var(--hf-border, #e2e5ea);
+    color: var(--hf-text, #1e2327);
+    font-size: var(--hf-font-base, 13px);
+    padding: var(--hf-space-3, 12px) var(--hf-space-4, 16px);
+    vertical-align: top;
+    float: none;
+}
+
+.hf-list-screen .wp-list-table tbody tr:last-child td,
+.hf-list-screen .wp-list-table tbody tr:last-child th {
+    border-bottom: 0;
+}
+
+.hf-list-screen .wp-list-table tbody tr:hover {
+    background: var(--hf-surface-sunken, #fafbfc);
+}
+
+.hf-list-screen .wp-list-table .no-items td {
+    color: var(--hf-text-muted, #646970);
+    padding: var(--hf-space-7, 48px) var(--hf-space-4, 16px);
+    text-align: center;
+}
+
+/* WP's own striping fights the hover state. */
+.hf-list-screen .wp-list-table.striped > tbody > :nth-child(odd) {
+    background: transparent;
+}
+
+.hf-list-screen .wp-list-table .row-title,
+.hf-list-screen .wp-list-table .column-form_title a {
+    color: var(--hf-text, #1e2327);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.hf-list-screen .wp-list-table .row-title:hover,
+.hf-list-screen .wp-list-table .column-form_title a:hover {
+    color: var(--hf-accent-text, #a3591b);
+}
+
+/* Row actions stay out of the way until the row is hovered, as in core. */
+.hf-list-screen .wp-list-table .row-actions {
+    color: var(--hf-text-faint, #8c9196);
+    font-size: var(--hf-font-sm, 12px);
+    padding: 2px 0 0;
+}
+
+.hf-list-screen .wp-list-table .check-column {
+    padding-left: var(--hf-space-4, 16px);
+    width: 32px;
+}
+
+/* Now that cells align to the top, the checkbox lines up with the top of the
+   title's line box rather than its centre. A pixel down reads level with the
+   text. */
+.hf-list-screen .wp-list-table tbody .check-column {
+    padding-top: 13px;
+}
+
+/* ---------- Entry count badge ---------- */
+
+.hf-list-screen .hf-entry-badge {
+    background: var(--hf-accent-soft, #f0f6fc);
+    border-radius: var(--hf-radius-pill, 999px);
+    color: var(--hf-accent-text, #a3591b);
+    display: inline-block;
+    font-size: var(--hf-font-sm, 12px);
+    font-weight: 600;
+    line-height: 1.7;
+    min-width: 36px;
+    padding: 1px var(--hf-space-2, 8px);
+    text-align: center;
+    text-decoration: none;
+    transition: background-color var(--hf-transition, .15s ease), color var(--hf-transition, .15s ease);
+}
+
+.hf-list-screen .hf-entry-badge:hover,
+.hf-list-screen .hf-entry-badge:focus {
+    background: var(--hf-accent, #2271b1);
+    color: var(--hf-text-inverse, #fff);
+}
+
+/* Nothing submitted yet: present, but not competing for attention with the
+   rows that do have entries. */
+.hf-list-screen .hf-entry-badge.is-empty {
+    background: #f0f1f3;
+    color: var(--hf-text-faint, #8c9196);
+}
+
+.hf-list-screen .hf-entry-badge.is-empty:hover,
+.hf-list-screen .hf-entry-badge.is-empty:focus {
+    background: var(--hf-border, #e2e5ea);
+    color: var(--hf-text-muted, #646970);
+}
+
+/* ---------- Shortcode chip ---------- */
+
+.hf-list-screen .hf-shortcode-chip {
+    align-items: center;
+    background: var(--hf-surface-sunken, #fafbfc);
+    border: 1px solid var(--hf-border, #e2e5ea);
+    border-radius: var(--hf-radius-sm, 4px);
+    color: var(--hf-text-muted, #646970);
+    cursor: pointer;
+    display: inline-flex;
+    gap: var(--hf-space-2, 8px);
+    max-width: 100%;
+    padding: 3px var(--hf-space-2, 8px);
+    transition: border-color var(--hf-transition, .15s ease), color var(--hf-transition, .15s ease);
+}
+
+.hf-list-screen .hf-shortcode-chip code {
+    background: none;
+    color: inherit;
+    font-size: var(--hf-font-sm, 12px);
+    padding: 0;
+    white-space: nowrap;
+}
+
+.hf-list-screen .hf-shortcode-chip .dashicons {
+    color: var(--hf-text-faint, #8c9196);
+    font-size: 15px;
+    height: 15px;
+    width: 15px;
+}
+
+.hf-list-screen .hf-shortcode-chip:hover,
+.hf-list-screen .hf-shortcode-chip:focus-visible {
+    border-color: var(--hf-accent, #2271b1);
+    color: var(--hf-text, #1e2327);
+}
+
+.hf-list-screen .hf-shortcode-chip:hover .dashicons {
+    color: var(--hf-accent-text, #a3591b);
+}
+
+/* Copy confirmation. The icon becomes a tick rather than moving anything, so
+   the row does not reflow under the pointer. */
+.hf-list-screen .hf-shortcode-chip.is-copied {
+    border-color: var(--hf-success, #2e9e5b);
+    color: var(--hf-success, #2e9e5b);
+}
+
+.hf-list-screen .hf-shortcode-chip.is-copied .dashicons {
+    color: var(--hf-success, #2e9e5b);
+}
+
+.hf-list-screen .hf-shortcode-chip.is-copied .dashicons:before {
+    content: "\f147";
+}
+
+/* ---------- Empty states ---------- */
+
+.hf-list-screen .hf-empty-state {
+    background: var(--hf-surface, #fff);
+    border: 1px solid var(--hf-border, #e2e5ea);
+    border-radius: var(--hf-radius, 8px);
+    box-shadow: var(--hf-shadow-sm, 0 1px 2px rgba(16, 24, 40, .05));
+    padding: var(--hf-space-7, 48px) var(--hf-space-5, 24px);
+    text-align: center;
+}
+
+.hf-list-screen .hf-empty-icon {
+    align-items: center;
+    background: var(--hf-accent-soft, #f0f6fc);
+    border-radius: var(--hf-radius-pill, 999px);
+    color: var(--hf-accent-text, #a3591b);
+    display: inline-flex;
+    height: 64px;
+    justify-content: center;
+    width: 64px;
+}
+
+.hf-list-screen .hf-empty-icon:before {
+    font-size: 30px;
+}
+
+.hf-list-screen .hf-empty-title {
+    color: var(--hf-text, #1e2327);
+    font-size: var(--hf-font-lg, 16px);
+    font-weight: 600;
+    margin: var(--hf-space-4, 16px) 0 var(--hf-space-2, 8px);
+}
+
+.hf-list-screen .hf-empty-text {
+    color: var(--hf-text-muted, #646970);
+    font-size: var(--hf-font-md, 14px);
+    line-height: 1.6;
+    margin: 0 auto var(--hf-space-5, 24px);
+    max-width: 420px;
+}
+
+.hf-list-screen .hf-empty-upsell {
+    color: var(--hf-text-muted, #646970);
+    font-size: var(--hf-font-sm, 12px);
+    margin: var(--hf-space-5, 24px) 0 0;
+}
+
+/* ---------- Pagination ----------
+ *
+ * Core floats this block and sizes its arrows with rules that the button
+ * styling above overrode piecemeal, so the count, the arrows and the page
+ * input all ended up on slightly different heights. Rebuilt as one flex row
+ * placed after the button rules, which it ties with on specificity. */
+
+.hf-list-screen .tablenav-pages {
+    align-items: center;
+    display: flex;
+    float: none;
+    gap: var(--hf-space-3, 12px);
+    /* Trails the bulk actions to the far end of the row. */
+    margin: 0 0 0 auto;
+}
+
+.hf-list-screen .tablenav-pages .displaying-num {
+    color: var(--hf-text-muted, #646970);
+    font-size: var(--hf-font-sm, 12px);
+    margin: 0;
+}
+
+.hf-list-screen .pagination-links {
+    align-items: center;
+    display: flex;
+    gap: var(--hf-space-1, 4px);
+}
+
+/* Arrows and the disabled spans core swaps in for them share one square
+   footprint, so the group keeps its shape on the first and last page. */
+.hf-list-screen .pagination-links .button,
+.hf-list-screen .pagination-links .tablenav-pages-navspan {
+    align-items: center;
+    background: var(--hf-surface, #fff);
+    border: 1px solid var(--hf-border-strong, #d3d8e0);
+    border-radius: var(--hf-radius-sm, 4px);
+    color: var(--hf-text, #1e2327);
+    display: inline-flex;
+    font-size: var(--hf-font-md, 14px);
+    height: 32px;
+    justify-content: center;
+    line-height: 1;
+    margin: 0;
+    min-height: 0;
+    min-width: 32px;
+    padding: 0;
+    transition: background-color var(--hf-transition, .15s ease), border-color var(--hf-transition, .15s ease), color var(--hf-transition, .15s ease);
+}
+
+.hf-list-screen .pagination-links a.button:hover,
+.hf-list-screen .pagination-links a.button:focus {
+    background: var(--hf-surface-sunken, #fafbfc);
+    border-color: var(--hf-accent, #2271b1);
+    color: var(--hf-accent-text, #a3591b);
+}
+
+.hf-list-screen .pagination-links a.button:focus-visible {
+    outline: 2px solid var(--hf-accent, #2271b1);
+    outline-offset: 1px;
+}
+
+/* No page to go to: present, so the row does not shift, but clearly inert. */
+.hf-list-screen .pagination-links .tablenav-pages-navspan,
+.hf-list-screen .pagination-links .button.disabled {
+    background: var(--hf-surface-sunken, #fafbfc);
+    border-color: var(--hf-border, #e2e5ea);
+    color: var(--hf-text-faint, #8c9196);
+    cursor: default;
+}
+
+.hf-list-screen .paging-input {
+    align-items: center;
+    color: var(--hf-text-muted, #646970);
+    display: flex;
+    font-size: var(--hf-font-base, 13px);
+    gap: var(--hf-space-2, 8px);
+    margin: 0 var(--hf-space-1, 4px);
+}
+
+.hf-list-screen .paging-input .current-page {
+    height: 32px;
+    min-height: 0;
+    padding: 0 var(--hf-space-1, 4px);
+    text-align: center;
+    width: 44px;
+}
+
+.hf-list-screen .paging-input .tablenav-paging-text {
+    white-space: nowrap;
+}
+
+/* One page of results: core keeps the count and drops the arrows. */
+.hf-list-screen .tablenav-pages.one-page .pagination-links {
+    display: none;
+}
+
+@media only screen and (max-width: 782px) {
+    .hf-list-screen {
+        margin-left: -10px;
+    }
+
+    .hf-list-screen .wrap {
+        padding-left: var(--hf-space-3, 12px);
+        padding-right: var(--hf-space-3, 12px);
+    }
+
+    /* On a phone there is no width to spare for the tab to hang over, so put
+       it back in the flow and let the bar clear it as WP intends. */
+    #wpbody-content:has(.hf-list-screen) > #screen-meta-links {
+        float: right;
+        margin: 0 20px 0 0;
+        position: static;
+    }
+
+    .hf-list-header-inner {
+        padding: var(--hf-space-3, 12px);
+    }
+
+    .hf-list-screen .search-box {
+        justify-content: flex-start;
+    }
+
+    /* Its own row rather than crammed beside the bulk actions. */
+    .hf-list-screen .tablenav-pages {
+        justify-content: space-between;
+        margin-left: 0;
+        width: 100%;
+    }
+
+    /* Two per row rather than one wide tile each. */
+    .hf-list-screen .hf-stat {
+        flex: 1 1 calc(50% - var(--hf-space-3, 12px));
+        min-width: 0;
+    }
+
+    .hf-list-screen .hf-empty-state {
+        padding: var(--hf-space-6, 32px) var(--hf-space-4, 16px);
+    }
+}

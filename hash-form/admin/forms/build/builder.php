@@ -32,7 +32,7 @@ defined('ABSPATH') || die();
     <div class="hf-no-fields">
         <span>
             <h3><?php esc_html_e('Add Fields Here', 'hash-form'); ?></h3>
-            <p><?php esc_html_e('Click or drag a field from the sidebar to add it to your form', 'hash-form'); ?></p>
+            <p><?php esc_html_e('Drag a field from the sidebar to add it to your form', 'hash-form'); ?></p>
         </span>
     </div>
 </div>
@@ -43,15 +43,31 @@ defined('ABSPATH') || die();
             <h2>
                 <?php esc_html_e('Bulk Edit Options', 'hash-form'); ?>
             </h2>
-            <a class="dismiss" title="<?php esc_attr_e('Close', 'hash-form'); ?>"><span class="mdi mdi-window-close"></span></a>
+            <?php // A button, not an anchor: an <a> with no href cannot be reached by keyboard. ?>
+            <button type="button" class="dismiss" title="<?php esc_attr_e('Close', 'hash-form'); ?>">
+                <span class="mdi mdi-window-close" aria-hidden="true"></span>
+                <span class="screen-reader-text"><?php esc_html_e('Close', 'hash-form'); ?></span>
+            </button>
         </div>
 
         <div class="hf-bulk-edit-body hf-editor-grid-container">
             <div class="hf-grid-8 hf-bulk-edit-content">
-                <p>
-                    <?php esc_html_e('Edit or add field options (one per line)', 'hash-form'); ?>
+                <label class="hf-bulk-edit-label" for="hf-bulk-options">
+                    <?php esc_html_e('One option per line', 'hash-form'); ?>
+                </label>
+
+                <textarea name="hashform_bulk_options" id="hf-bulk-options" spellcheck="false"></textarea>
+
+                <p class="hf-bulk-edit-help">
+                    <?php
+                    printf(
+                            /* translators: %s: the label|value example, shown in code formatting. */
+                            esc_html__('With separate values switched on, write each line as %s.', 'hash-form'),
+                            '<code>' . esc_html__('Label|value', 'hash-form') . '</code>'
+                    );
+                    ?>
                 </p>
-                <textarea name="hashform_bulk_options" id="hf-bulk-options"></textarea>
+
                 <input type="hidden" value="" id="bulk-field-id" />
                 <input type="hidden" value="" id="bulk-option-type" />
             </div>
@@ -59,7 +75,10 @@ defined('ABSPATH') || die();
                 <h3>
                     <?php esc_html_e('Insert Presets', 'hash-form'); ?>
                 </h3>
-                <ul class="hf-default-opts">
+                <p class="hf-bulk-edit-help">
+                    <?php esc_html_e('Replaces whatever is in the box.', 'hash-form'); ?>
+                </p>
+                <ul class="hf-default-opts hf-scroll">
                     <?php
                     $preset_options = HashFormHelper::get_options_presets();
                     foreach ($preset_options as $class => $option) {
@@ -67,6 +86,7 @@ defined('ABSPATH') || die();
                         <li class="<?php echo esc_attr($class); ?>">
                             <a href="#" class="hf-insert-preset" data-opts="<?php echo esc_attr(wp_json_encode($option['options'])); ?>">
                                 <?php echo esc_html($option['label']); ?>
+                                <span class="hf-preset-count"><?php echo esc_html(number_format_i18n(count($option['options']))); ?></span>
                             </a>
                         </li>
                     <?php } ?>
@@ -75,8 +95,11 @@ defined('ABSPATH') || die();
         </div>
 
         <div class="hf-bulk-edit-modal-footer">
-            <button class="button" id="hf-update-bulk-options">
-                <?php esc_attr_e('Update Options', 'hash-form'); ?>
+            <button type="button" class="button dismiss">
+                <?php esc_html_e('Cancel', 'hash-form'); ?>
+            </button>
+            <button type="button" class="button button-primary" id="hf-update-bulk-options">
+                <?php esc_html_e('Update Options', 'hash-form'); ?>
             </button>
         </div>
     </div>

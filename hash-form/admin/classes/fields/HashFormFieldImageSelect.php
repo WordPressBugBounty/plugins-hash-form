@@ -38,7 +38,8 @@ class HashFormFieldImageSelect extends HashFormFieldType {
 
         $options = $field['options'] ? $field['options'] : array();
         $default = $field['default_value'] ? $field['default_value'] : array();
-        $field_type = $field['select_option_type'];
+        // A field saved before this option existed has no key for it.
+        $field_type = isset($field['select_option_type']) ? $field['select_option_type'] : '';
         ?>
 
         <div class="hf-choice-container">

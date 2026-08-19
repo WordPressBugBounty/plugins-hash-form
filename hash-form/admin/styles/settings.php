@@ -24,6 +24,19 @@ wp_nonce_field('hf-styles-nonce', 'hashform_styles_nonce');
 
         <div id="hf-form-panel" class="hf-style-form-panel">
             <div class="hf-form-wrap">
+                <?php
+                /*
+                 * The same canvas header the builder and the form Style tab
+                 * carry, so a style template is built on the same surface a
+                 * form is. The right slot names the form being previewed;
+                 * admin-settings.js keeps it in step with the select.
+                 */
+                ?>
+                <div class="hf-canvas-header">
+                    <span class="hf-canvas-title"><?php esc_html_e('Style Preview', 'hash-form'); ?></span>
+                    <span class="hf-canvas-count" id="hf-style-preview-form"><?php esc_html_e('Default Demo Form', 'hash-form'); ?></span>
+                </div>
+
                 <?php HashFormHelper::print_message(); ?>
                 <div class="hf-template-preview"></div>
             </div>

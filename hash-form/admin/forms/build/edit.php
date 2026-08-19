@@ -38,6 +38,27 @@ if (defined('DOING_AJAX')) {
 
             <div id="hf-form-panel">
                 <div class="hf-form-wrap">
+                    <?php
+                    /*
+                     * The canvas was an unbroken white rectangle with no anchor
+                     * of its own. A slim header names what is being edited and
+                     * gives the card a top edge to sit under.
+                     */
+                    $hf_field_count = count(HashFormFields::get_form_fields($form->id));
+                    ?>
+                    <div class="hf-canvas-header">
+                        <span class="hf-canvas-title"><?php echo esc_html($form->name); ?></span>
+                        <span class="hf-canvas-count">
+                            <?php
+                            printf(
+                                    /* translators: %s: number of fields on the form. */
+                                    esc_html(_n('%s field', '%s fields', $hf_field_count, 'hash-form')),
+                                    esc_html(number_format_i18n($hf_field_count))
+                            );
+                            ?>
+                        </span>
+                    </div>
+
                     <form method="post">
                         <?php require(HASHFORM_PATH . 'admin/forms/build/builder.php'); ?>
                     </form>

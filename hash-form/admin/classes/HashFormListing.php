@@ -13,6 +13,13 @@ class HashFormListing extends \WP_List_Table {
     private $table_data;
     private $status;
 
+    /**
+     * One GROUP BY for every form on the screen instead of a COUNT(*) per
+     * row. Static because the header stats and the table both want it, and
+     * the screen builds more than one instance of this class per request.
+     */
+    private static $entry_counts;
+
     public function __construct() {
         parent::__construct(
             array(
@@ -24,21 +31,68 @@ class HashFormListing extends \WP_List_Table {
         $this->status = htmlspecialchars_decode(HashFormHelper::get_var('status', 'sanitize_text_field', 'published'));
     }
 
+    /**
+     * Only reached when a search or filter came back empty; the "no forms at
+     * all" case is handled by empty_state() before the table is drawn.
+     */
     public function no_items() {
-        esc_html_e('No forms found. Please create a new one.', 'hash-form');
+        esc_html_e('No forms matched your search.', 'hash-form');
+    }
+
+    /**
+     * A bare table with an empty body is a poor first impression, so the
+     * whole table is swapped for a panel when there is genuinely nothing to
+     * list. A search that returns nothing still gets the table, so the search
+     * box and column headers stay where the user left them.
+     */
+    public function display() {
+        $searching = '' !== (string) HashFormHelper::get_var('s');
+
+        if ($this->has_items() || $searching) {
+            parent::display();
+            return;
+        }
+
+        $this->empty_state();
+    }
+
+    private function empty_state() {
+        if ('trash' == $this->status) {
+            ?>
+            <div class="hf-empty-state">
+                <span class="hf-empty-icon dashicons dashicons-trash" aria-hidden="true"></span>
+                <h3 class="hf-empty-title"><?php esc_html_e('The trash is empty', 'hash-form'); ?></h3>
+                <p class="hf-empty-text"><?php esc_html_e('Forms you move to the trash stay here until you delete them permanently.', 'hash-form'); ?></p>
+                <a class="hf-btn" href="<?php echo esc_url(admin_url('admin.php?page=hashform')); ?>"><?php esc_html_e('Back to all forms', 'hash-form'); ?></a>
+            </div>
+            <?php
+            return;
+        }
+        ?>
+        <div class="hf-empty-state">
+            <span class="hf-empty-icon dashicons dashicons-feedback" aria-hidden="true"></span>
+            <h3 class="hf-empty-title"><?php esc_html_e('No forms yet', 'hash-form'); ?></h3>
+            <p class="hf-empty-text"><?php esc_html_e('Create your first form, then drop it on any page with the shortcode or the Hash Form block.', 'hash-form'); ?></p>
+            <a href="#" class="hf-btn hf-btn-primary hf-trigger-modal"><?php esc_html_e('Create your first form', 'hash-form'); ?></a>
+            <?php
+            // Ready-made templates and the AI generator live in the Pro
+            // plugin, which replaces this same modal with its own.
+            if (!defined('HASH_FORM_PRO_VERSION')) {
+                ?>
+                <p class="hf-empty-upsell">
+                    <?php esc_html_e('Prefer to start from a template?', 'hash-form'); ?>
+                    <a href="https://hashthemes.com/plugin/hash-form-pro/" target="_blank" rel="noopener"><?php esc_html_e('Hash Form Pro', 'hash-form'); ?></a>
+                    <?php esc_html_e('adds a form template library and an AI form generator.', 'hash-form'); ?>
+                </p>
+                <?php
+            }
+            ?>
+        </div>
+        <?php
     }
 
     public function column_default($item, $column_name) {
-        switch ($column_name) {
-            case 'cd':
-            case 'name':
-            case 'entries':
-            case 'id':
-            case 'shortcode':
-            case 'created_at':
-            default:
-                return $item[$column_name];
-        }
+        return isset($item[$column_name]) ? $item[$column_name] : '';
     }
 
     public function get_columns() {
@@ -77,8 +131,6 @@ class HashFormListing extends \WP_List_Table {
             $row_actions[] = '<span class="' . esc_attr($id) . '"><a href="' . $action['url'] . '">' . $action['label'] . '</a></span>';
         }
 
-        $output .= '<div class="row-desc">' . $item['description'] . '</div>';
-
         $output .= '<div class="row-actions">' . implode(' | ', $row_actions) . '</div>';
 
         return $output;
@@ -96,30 +148,35 @@ class HashFormListing extends \WP_List_Table {
         $hashform_columns = $this->get_columns();
         $hashform_sortable = $this->get_sortable_columns();
         $hashform_hidden = (is_array(get_user_meta(get_current_user_id(), 'managetoplevel_page_hashformcolumnshidden', true))) ? get_user_meta(get_current_user_id(), 'managetoplevel_page_hashformcolumnshidden', true) : array();
-        $hashform_primary = 'id';
+        // The title column carries the row actions, so it is the one that
+        // must stay visible and hold the toggle on narrow screens.
+        $hashform_primary = 'name';
         $this->_column_headers = array($hashform_columns, $hashform_hidden, $hashform_sortable, $hashform_primary);
 
         if ($this->table_data) {
-            foreach ($this->table_data as $item) {
+            // Sort the raw rows (not the rendered HTML) so ordering works on
+            // real values, then render only the rows of the current page.
+            usort($this->table_data, array(&$this, 'usort_reorder'));
+
+            /* pagination */
+            $per_page = $this->get_items_per_page('forms_per_page', 10);
+            $current_page = $this->get_pagenum();
+            $total_items = count($this->table_data);
+
+            $page_rows = array_slice($this->table_data, (($current_page - 1) * $per_page), $per_page);
+
+            $data = array();
+            foreach ($page_rows as $item) {
                 $id = $item['id'];
                 $data[$id] = array(
                     'name' => $this->column_title($item),
                     'entries' => $this->get_entry_link($id),
                     'id' => $id,
                     'form_key' => $item['form_key'],
-                    'shortcode' => '[hashform id="' . $id . '"]',
+                    'shortcode' => $this->get_shortcode_chip($id),
                     'created_at' => HashFormHelper::convert_date_format($item['created_at'])
                 );
             }
-
-            usort($data, array(&$this, 'usort_reorder'));
-
-            /* pagination */
-            $per_page = $this->get_items_per_page('forms_per_page', 10);
-            $current_page = $this->get_pagenum();
-            $total_items = count($data);
-
-            $data = array_slice($data, (($current_page - 1) * $per_page), $per_page);
 
             $this->set_pagination_args(array(
                 'total_items' => $total_items,
@@ -132,16 +189,21 @@ class HashFormListing extends \WP_List_Table {
     }
 
     private function usort_reorder($a, $b) {
-        // If no sort, default to user_login
+        $sortable = array('name', 'id', 'form_key', 'created_at');
+
         $orderby = HashFormHelper::get_var('orderby', 'sanitize_text_field', 'created_at');
+        if (!in_array($orderby, $sortable, true)) {
+            $orderby = 'created_at';
+        }
 
-        // If no order, default to asc
-        $order = HashFormHelper::get_var('order', 'sanitize_text_field', 'DESC');
+        $order = strtolower(HashFormHelper::get_var('order', 'sanitize_text_field', 'desc'));
 
-        // Determine sort order
-        $result = strcmp($a[$orderby], $b[$orderby]);
+        if ('id' === $orderby) {
+            $result = (int) $a['id'] < (int) $b['id'] ? -1 : (((int) $a['id'] > (int) $b['id']) ? 1 : 0);
+        } else {
+            $result = strcmp($a[$orderby], $b[$orderby]);
+        }
 
-        // Send final sort direction to usort
         return ($order === 'asc') ? $result : -$result;
     }
 
@@ -183,6 +245,10 @@ class HashFormListing extends \WP_List_Table {
     }
 
     protected function display_tablenav($which) {
+        if ('top' === $which) {
+            // Signs the bulk actions and "Empty Trash" submits in this form.
+            wp_nonce_field('bulk-' . $this->_args['plural']);
+        }
         ?>
         <div class="tablenav <?php echo esc_attr($which); ?>">
             <?php if ($this->has_items()) { ?>
@@ -206,6 +272,12 @@ class HashFormListing extends \WP_List_Table {
             <div class="alignleft actions"><?php submit_button(esc_html__('Empty Trash', 'hash-form'), 'apply', 'delete_all', false); ?></div>
             <?php
         }
+
+        if ('top' === $which) {
+            // Where add-ons hang their own form tools, mirroring the entries
+            // list. Pro uses it; nothing in the free plugin does.
+            do_action('hashform_forms_tablenav', $this->status);
+        }
     }
 
     public function get_sortable_columns() {
@@ -227,7 +299,7 @@ class HashFormListing extends \WP_List_Table {
         } else {
             $actions['duplicate'] = array(
                 'label' => esc_html__('Duplicate', 'hash-form'),
-                'url' => wp_nonce_url('?page=hashform&hashform_action=duplicate&id=' . $form_id)
+                'url' => wp_nonce_url('?page=hashform&hashform_action=duplicate&id=' . $form_id, 'duplicate_form_' . absint($form_id))
             );
             $actions['edit'] = array(
                 'label' => esc_html__('Edit', 'hash-form'),
@@ -261,8 +333,54 @@ class HashFormListing extends \WP_List_Table {
     }
 
     public function get_entry_link($id) {
-        $count = HashFormEntry::get_entry_count($id);
-        return '<a href="' . esc_url(admin_url('admin.php?page=hashform-entries&form_id=' . $id)) . '">' . $count . '</a>';
+        $count = $this->get_entry_count($id);
+
+        // Dimmed at zero so the rows that actually have submissions are the
+        // ones the eye lands on when scanning the column.
+        $class = 'hf-entry-badge' . ($count ? '' : ' is-empty');
+
+        return '<a class="' . esc_attr($class) . '" href="' . esc_url(admin_url('admin.php?page=hashform-entries&form_id=' . $id)) . '">' . esc_html(number_format_i18n($count)) . '</a>';
+    }
+
+    private static function get_entry_counts() {
+        if (null === self::$entry_counts) {
+            self::$entry_counts = HashFormEntry::get_entry_counts();
+        }
+        return self::$entry_counts;
+    }
+
+    private function get_entry_count($id) {
+        $counts = self::get_entry_counts();
+        return isset($counts[$id]) ? (int) $counts[$id] : 0;
+    }
+
+    /**
+     * The shortcode as a click-to-copy chip. A plain <button> rather than a
+     * link because this row sits inside the GET filter form, where a stray
+     * submit would reload the screen.
+     */
+    private function get_shortcode_chip($id) {
+        $shortcode = '[hashform id="' . $id . '"]';
+
+        return '<button type="button" class="hf-shortcode-chip" data-hf-clipboard="' . esc_attr($shortcode) . '">'
+                . '<code>' . esc_html($shortcode) . '</code>'
+                . '<span class="dashicons dashicons-admin-page" aria-hidden="true"></span>'
+                . '<span class="screen-reader-text">' . esc_html__('Copy shortcode', 'hash-form') . '</span>'
+                . '</button>';
+    }
+
+    /**
+     * Totals for the header bar. Static so the screen can print them without
+     * having to prepare the table first.
+     */
+    public static function get_stats() {
+        $counts = self::get_count();
+
+        return array(
+            'forms' => (int) $counts->published,
+            'entries' => array_sum(self::get_entry_counts()),
+            'trash' => (int) $counts->trash,
+        );
     }
 
     public function get_views() {
@@ -276,40 +394,37 @@ class HashFormListing extends \WP_List_Table {
         $counts = self::get_count();
 
         foreach ($statuses as $status => $name) {
-            $class = ($status == $this->status) ? ' class="current"' : '';
-            if ($counts->{$status}) {
-                $links[$status] = '<a href="' . esc_url('?page=hashform&status=' . $status) . '" ' . $class . '>' . sprintf('%1$s <span class="count">(%2$s)</span>', $name, number_format_i18n($counts->{$status})) . '</a>';
+            // Trash only earns a tab once something is in it. All keeps its
+            // tab either way, so a lone Trash link never sits there on its
+            // own with no way back.
+            if ('published' !== $status && !$counts->{$status}) {
+                continue;
             }
+
+            $links[$status] = HashFormHelper::view_tab(
+                            admin_url('admin.php?page=hashform&status=' . $status), $name, $counts->{$status}, $status == $this->status
+            );
         }
+
         return $links;
     }
 
     public function views() {
-        $views = $this->get_views();
-        if (empty($views))
-            return;
-        echo "<ul class='subsubsub'>\n";
-        foreach ($views as $class => $view) {
-            $views[$class] = "\t" . '<li class="' . esc_attr($class) . '">' . wp_kses_post($view);
-        }
-        echo wp_kses_post(implode(" |</li>\n", $views) . "</li>\n");
-        echo '</ul>';
+        HashFormHelper::render_view_tabs($this->get_views());
     }
 
     public static function get_count() {
         global $wpdb;
-        $results = $wpdb->get_results($wpdb->prepare("SELECT status FROM {$wpdb->prefix}hashform_forms WHERE id!=%d", 0));
-        $statuses = array('published', 'draft', 'trash');
-        $counts = array_fill_keys($statuses, 0);
+        $results = $wpdb->get_results("SELECT status, COUNT(*) AS count FROM {$wpdb->prefix}hashform_forms GROUP BY status");
+        $counts = array('published' => 0, 'trash' => 0);
         foreach ($results as $row) {
             if ('trash' != $row->status) {
-                $counts['published']++;
+                $counts['published'] += $row->count;
             } else {
-                $counts['trash']++;
+                $counts['trash'] += $row->count;
             }
         }
-        $counts = (object) $counts;
-        return $counts;
+        return (object) $counts;
     }
 
     public static function get_status($id = 0) {

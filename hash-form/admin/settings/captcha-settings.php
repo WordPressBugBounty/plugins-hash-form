@@ -16,7 +16,7 @@ $captcha_lang = array('en' => 'English', 'af' => 'Afrikaans', 'am' => 'Amharic',
     ?>
 </p>
 
-<div class="hf-form-container hf-grid-container">
+<div class="hf-form-container">
     <div class="hf-settings-row">
         <label class="hf-setting-label"><?php esc_html_e('reCAPTCHA Type', 'hash-form'); ?></label>
         <select name="hashform_settings[re_type]" id="hf-re-type" data-condition="toggle">

@@ -12,20 +12,86 @@ class HashFormPreview {
         header('Content-Type: text/html; charset=' . get_option('blog_charset'));
         $id = htmlspecialchars_decode(HashFormHelper::get_var('form', 'absint'));
         $form = HashFormBuilder::get_form_vars($id);
-        require(HASHFORM_PATH . 'admin/forms/preview/preview.php');
+
+        // This endpoint is public, so an unknown or trashed id must not reach
+        // the template, which dereferences $form before it checks anything.
+        if (!$form || $form->status === 'trash') {
+            wp_die(esc_html__('Please select a valid form', 'hash-form'));
+        }
+
+        /*
+         * Two documents behind one URL. The outer one is a plain shell — a
+         * toolbar and an iframe — and the inner one is the form on its own,
+         * rendered with the theme and every front-end asset exactly as a
+         * visitor would get it.
+         *
+         * The width buttons have to change a real viewport to be worth
+         * anything: narrowing a div would leave the form's own media queries
+         * reading the desktop window and reporting a mobile layout that is
+         * not what a phone gets.
+         */
+        if (HashFormHelper::get_var('hf_frame', 'absint')) {
+            require HASHFORM_PATH . 'admin/forms/preview/preview.php';
+        } else {
+            require HASHFORM_PATH . 'admin/forms/preview/shell.php';
+        }
+
         wp_die();
+    }
+
+    /**
+     * The URL of the form on its own, without the surrounding toolbar.
+     */
+    public static function frame_url($id) {
+        return add_query_arg(
+                array(
+                    'action' => 'hashform_preview',
+                    'form' => absint($id),
+                    'hf_frame' => 1,
+                ),
+                admin_url('admin-ajax.php')
+        );
+    }
+
+    /**
+     * Widths the preview can be shown at.
+     *
+     * Values are the iframe width in pixels; 0 means fill the window.
+     */
+    public static function preview_widths() {
+        return array(
+            'desktop' => array('label' => esc_html__('Desktop', 'hash-form'), 'width' => 0, 'icon' => 'monitor'),
+            'tablet' => array('label' => esc_html__('Tablet', 'hash-form'), 'width' => 768, 'icon' => 'tablet'),
+            'mobile' => array('label' => esc_html__('Mobile', 'hash-form'), 'width' => 390, 'icon' => 'mobile'),
+        );
     }
 
     public static function show_form($id) {
         $form = HashFormBuilder::get_form_vars($id);
-        if (!$form || $form->status === 'trash')
-            return esc_html__('Please select a valid form', 'hash-form');
+        if (!$form || $form->status === 'trash') {
+            // Callers buffer output, so the message must be echoed.
+            echo esc_html__('Please select a valid form', 'hash-form');
+            return;
+        }
 
-        self::get_form_contents($id);
+        self::get_form_contents($id, $form);
     }
 
-    public static function get_form_contents($id) {
-        $form = HashFormBuilder::get_form_vars($id);
+    public static function get_form_contents($id, $form = null) {
+        // Frontend assets are registered globally but only loaded once a form
+        // actually renders.
+        HashFormLoader::enqueue_form_assets();
+
+        $form = $form ? $form : HashFormBuilder::get_form_vars($id);
+
+        // Scheduled, limited or login-only forms show their notice instead.
+        $restriction = HashFormRestrictions::check($form);
+
+        if (empty($restriction['allowed'])) {
+            echo wp_kses_post(HashFormRestrictions::get_closed_html($restriction));
+            return;
+        }
+
         $values = HashFormHelper::get_fields_array($id);
 
         $styles = $form->styles ? $form->styles : '';

@@ -7,11 +7,42 @@ class HashFormFieldCaptcha extends HashFormFieldType {
 
     protected function field_settings_for_type() {
         return array(
+            // No 'captcha_size' here: nothing reads that key, and the size is
+            // a setting of its own rather than something field_attrs() prints.
             'required' => false,
             'invalid' => true,
-            'captcha_size' => true,
             'default' => false,
             'max_width' => false
+        );
+    }
+
+    /**
+     * Whether the widget is the visible checkbox kind, which is what the size
+     * and theme settings describe. A v3 widget draws nothing.
+     */
+    public static function is_v2() {
+        $settings = HashFormSettings::get_settings();
+
+        return 'v3' !== $settings['re_type'];
+    }
+
+    /**
+     * The sizes and themes reCAPTCHA v2 accepts.
+     *
+     * Both are written into data attributes the Google script reads, so a
+     * value it does not know leaves the widget on its own defaults.
+     */
+    public static function captcha_sizes() {
+        return array(
+            'normal' => esc_html__('Normal', 'hash-form'),
+            'compact' => esc_html__('Compact', 'hash-form'),
+        );
+    }
+
+    public static function captcha_themes() {
+        return array(
+            'light' => esc_html__('Light', 'hash-form'),
+            'dark' => esc_html__('Dark', 'hash-form'),
         );
     }
 
@@ -44,9 +75,10 @@ class HashFormFieldCaptcha extends HashFormFieldType {
         $settings = HashFormSettings::get_settings();
         if (!self::should_show_captcha())
             return '';
+
         ?>
 
-        <div id="<?php echo esc_attr($this->html_id()); ?>" class="g-recaptcha" data-sitekey="<?php echo ($settings['re_type'] == 'v3' ? esc_attr($settings['pubkey_v3']) : esc_attr($settings['pubkey_v2'])); ?>" data-size="<?php echo esc_attr($this->captcha_size($settings)); ?>" data-theme="<?php echo isset($this->field['captcha_theme']) ? esc_attr($this->field['captcha_theme']) : ''; ?>"></div>
+        <div id="<?php echo esc_attr($this->html_id()); ?>" class="g-recaptcha" data-sitekey="<?php echo esc_attr(self::site_key()); ?>" data-size="<?php echo esc_attr($this->captcha_size($settings)); ?>" data-theme="<?php echo esc_attr($this->captcha_theme()); ?>"></div>
         <?php
     }
 
@@ -61,9 +93,19 @@ class HashFormFieldCaptcha extends HashFormFieldType {
     }
 
     protected function recaptcha_api_url($settings) {
-        $api_js_url = 'https://www.google.com/recaptcha/api.js?';
-        $api_js_url .= $settings['re_type'] == 'v3' ? 'render=' . $settings['pubkey_v3'] : '';
-        $api_js_url .= empty($lang) ? '' : '&hl=' . $settings['re_lang'];
+        $api_js_url = 'https://www.google.com/recaptcha/api.js';
+        $params = array();
+
+        if ($settings['re_type'] == 'v3') {
+            $params['render'] = $settings['pubkey_v3'];
+        }
+
+        if (!empty($settings['re_lang'])) {
+            $params['hl'] = $settings['re_lang'];
+        }
+        if ($params) {
+            $api_js_url .= '?' . http_build_query($params);
+        }
         return $api_js_url;
     }
 
@@ -71,10 +113,18 @@ class HashFormFieldCaptcha extends HashFormFieldType {
         if ($settings['re_type'] == 'v3') {
             return 'invisible';
         }
-        if (!isset($this->field['captcha_size'])) {
-            return 'normal';
-        }
-        return $this->field['captcha_size'] === 'default' ? 'normal' : $this->field['captcha_size'];
+
+        $size = isset($this->field['captcha_size']) ? $this->field['captcha_size'] : '';
+
+        return array_key_exists($size, self::captcha_sizes()) ? $size : 'normal';
+    }
+
+    protected function captcha_theme() {
+        $theme = isset($this->field['captcha_theme']) ? $this->field['captcha_theme'] : '';
+
+        // Written out even when empty before, which is not a theme the script
+        // recognises.
+        return array_key_exists($theme, self::captcha_themes()) ? $theme : 'light';
     }
 
     protected function validate_against_api($args) {
@@ -108,38 +158,51 @@ class HashFormFieldCaptcha extends HashFormFieldType {
             if ($invalid_message === esc_html__('The reCAPTCHA was not entered correctly', 'hash-form')) {
                 $invalid_message = '';
             }
-            $errors['field' . $args['id']] = ($invalid_message === '' ? $settings['re_msg '] : $invalid_message);
+            $errors['field' . $args['id']] = ($invalid_message === '' ? $settings['re_msg'] : $invalid_message);
         }
 
         return $errors;
     }
 
     public function validate($args) {
-        $errors = array();
+        /*
+         * Without a site key no widget is rendered, so there is no response to
+         * verify. Failing validation here meant a form carrying this field
+         * could never be submitted, and the error pointed at a field that was
+         * not on the page. The field is skipped instead.
+         */
         if (!self::should_show_captcha()) {
-            $errors['field' . $args['id']] = esc_html__('The reCAPTCHA keys are not entered.', 'hash-form');
-            return $errors;
-        } else {
-            return $this->validate_against_api($args);
+            return array();
         }
+
+        return $this->validate_against_api($args);
+    }
+
+    public static function site_key() {
+        $settings = HashFormSettings::get_settings();
+
+        return $settings['re_type'] == 'v3' ? $settings['pubkey_v3'] : $settings['pubkey_v2'];
+    }
+
+    protected static function secret_key() {
+        $settings = HashFormSettings::get_settings();
+
+        return $settings['re_type'] == 'v3' ? $settings['privkey_v3'] : $settings['privkey_v2'];
     }
 
     public static function should_show_captcha() {
-        $settings = HashFormSettings::get_settings();
-        $site_key = $settings['re_type'] == 'v3' ? $settings['pubkey_v3'] : $settings['pubkey_v2'];
-        return !empty($site_key);
+        return '' !== trim((string) self::site_key());
     }
 
     protected function send_api_check($args) {
-        $settings = HashFormSettings::get_settings();
         $arg_array = array(
             'body' => array(
-                'secret' => $settings['re_type'] == 'v3' ? $settings['privkey_v3'] : $settings['privkey_v2'],
+                'secret' => self::secret_key(),
                 'response' => $args['value'],
                 'remoteip' => HashFormHelper::get_ip_address(),
-                'token_field' => 'g-recaptcha-response',
             ),
         );
+
         return wp_remote_post('https://www.google.com/recaptcha/api/siteverify', $arg_array);
     }
 

@@ -96,21 +96,81 @@
     margin: 0;
 }
 
+/* The post title is the style template's name, and it was a bare wp-admin
+   field with a focus ring in the admin colour scheme sitting above a screen
+   that is otherwise all plugin. */
+.post-type-hashform-styles #titlediv #title {
+    border: 1px solid var(--hf-border-strong, #d3d8e0);
+    border-radius: var(--hf-radius, 8px);
+    box-shadow: none;
+    font-size: var(--hf-font-xl, 20px);
+    font-weight: 600;
+    padding: var(--hf-space-3, 12px) var(--hf-space-4, 16px);
+}
+
+.post-type-hashform-styles #titlediv #title:focus {
+    border-color: var(--hf-accent, #dd823b);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--hf-accent, #dd823b) 18%, transparent);
+    outline: 0;
+}
+
+/* Style groups
+ *
+ * Fifteen of these stack down the sidebar, and they were pale blue bars with
+ * ALL CAPS bold labels — a colour and a treatment used nowhere else in the
+ * plugin. Same accordion as the per-form settings panels now, so a style
+ * template is built in the same furniture a form is configured in. */
 #hashform-styles-metabox .hf-settings-heading {
-    background: #ddedf8;
-    padding: 8px 20px;
-    color: #333;
-    margin: 0 0 20px;
-    text-transform: uppercase;
-    font-weight: bold;
+    align-items: center;
+    background: var(--hf-surface, #fff);
+    border: 1px solid var(--hf-border, #e2e5ea);
+    border-radius: var(--hf-radius, 8px);
+    color: var(--hf-text, #1e2327);
     cursor: pointer;
     display: flex;
-    align-items: center;
+    font-size: var(--hf-font-md, 14px);
+    font-weight: 600;
     justify-content: space-between;
+    letter-spacing: 0;
+    margin: 0 0 var(--hf-space-2, 8px);
+    padding: var(--hf-space-3, 12px) var(--hf-space-4, 16px);
+    text-transform: none;
+    transition: background-color var(--hf-transition, .15s ease), border-color var(--hf-transition, .15s ease);
+}
+
+#hashform-styles-metabox .hf-settings-heading:hover {
+    background: var(--hf-surface-sunken, #fafbfc);
+    border-color: var(--hf-border-strong, #d3d8e0);
+}
+
+/* Open: the heading and its panel read as one block, so the seam between
+   them is closed up. */
+#hashform-styles-metabox .hf-settings-heading.hf-active {
+    border-bottom-color: transparent;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    margin-bottom: 0;
 }
 
 #hashform-styles-metabox .hf-settings-heading .mdi {
+    color: var(--hf-text-faint, #8c9196);
     font-size: 20px;
+    line-height: 1;
+    transition: transform var(--hf-transition-slow, .25s ease);
+}
+
+#hashform-styles-metabox .hf-settings-heading.hf-active .mdi {
+    color: var(--hf-accent, #dd823b);
+    transform: rotate(180deg);
+}
+
+#hashform-styles-metabox .hf-form-settings {
+    background: var(--hf-surface, #fff);
+    border: 1px solid var(--hf-border, #e2e5ea);
+    border-radius: 0 0 var(--hf-radius, 8px) var(--hf-radius, 8px);
+    border-top: 0;
+    margin: 0 0 var(--hf-space-2, 8px);
+    padding: var(--hf-space-4, 16px);
 }
 
 .hf-form-settings {
@@ -127,11 +187,15 @@
     width: 100%;
 }
 
+/* Was bold, which put a setting's label at the same weight as the group
+   headings above it and left the sub-labels beneath looking like a third
+   tier. 500 sits where the rest of the plugin's labels sit. */
 .hf-settings-row .hf-setting-label {
+    color: var(--hf-text, #1e2327);
     display: block;
-    font-weight: bold;
-    font-size: 13px;
-    margin: 0 0 5px;
+    font-size: var(--hf-font-base, 13px);
+    font-weight: 500;
+    margin: 0 0 var(--hf-space-2, 8px);
 }
 
 .hf-setting-fields p.hf-desc {
@@ -146,17 +210,6 @@
 
 .hf-setting-fields input[type="number"] {
     width: 80px;
-}
-
-.hf-settings-updated {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    background: green;
-    color: #FFF;
-    padding: 15px 20px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
 .hf-style-form-panel .hf-form-wrap{
@@ -178,212 +231,337 @@
 }
 
 .hf-setting-tab-panel {
-    border: 1px solid #EEE;
+    border: 1px solid var(--hf-border, #e2e5ea);
+    border-radius: 0 0 var(--hf-radius-sm, 4px) var(--hf-radius-sm, 4px);
+    border-top: 0;
     margin: 0;
-    padding: 15px;
+    padding: var(--hf-space-4, 16px);
 }
 
 .hf-setting-tab-panel .hf-settings-row {
     margin: 0 0 10px;
 }
 
+/* Was a solid blue block with white ALL CAPS beside a grey one — a two tone
+   pair that matched nothing else. A segmented control on the tokens. */
+.hf-tab-container .hf-setting-tab {
+    background: var(--hf-surface-sunken, #fafbfc);
+    border: 1px solid var(--hf-border, #e2e5ea);
+    border-radius: var(--hf-radius-sm, 4px);
+    gap: 2px;
+    padding: 2px;
+}
+
 .hf-setting-tab li {
-    padding: 12px 20px;
-    margin: 0;
-    text-transform: uppercase;
-    font-weight: bold;
-    color: #000;
-    flex-grow: 1;
+    background: none;
+    border-radius: 3px;
+    color: var(--hf-text-muted, #646970);
     cursor: pointer;
+    flex-grow: 1;
+    font-size: var(--hf-font-sm, 12px);
+    font-weight: 500;
+    margin: 0;
+    padding: 6px 12px;
     text-align: center;
-    background: #eaeaea;
-    font-size: 12px;
+    text-transform: none;
+    transition: background-color var(--hf-transition, .15s ease), color var(--hf-transition, .15s ease);
 }
 
 .hf-setting-tab li:hover {
-    background: #ddedf8;
+    background: rgba(16, 24, 40, .05);
+    color: var(--hf-text, #1e2327);
 }
 
 .hf-setting-tab li.hf-tab-active {
-    background: #2170b1;
-    color: #FFF;
+    background: var(--hf-surface, #fff);
+    box-shadow: var(--hf-shadow-sm, 0 1px 2px rgba(16, 24, 40, .05));
+    color: var(--hf-accent-text, #a3591b);
 }
 
-/* Icon Chooser */
+/* Icon Chooser
+ *
+ * Structure is fixed by admin-settings.js: .hf-selected-icon, then its
+ * sibling .hf-icon-box, then the hidden .hf-icon input. The script also
+ * slideToggles the box and show/hides individual <li> while filtering, so the
+ * list must not depend on its own display value — the icons lay themselves
+ * out as inline-flex items, which survives jQuery setting display:block on
+ * the <ul> during fadeIn.
+ */
 .hf-icon-box-wrap {
+    max-width: 380px;
     position: relative;
-    width: 382px;
+    width: 100%;
 }
 
-.hf-icon-box-wrap .hf-icon-box {
+/* The trigger. It used to be a 60px grey square with the caret hung off its
+   right edge by a negative offset, which read as a broken input rather than
+   a control, and showed nothing at all until an icon had been chosen. */
+.hf-icon-box-wrap .hf-selected-icon {
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--hf-border-strong, #d3d8e0);
+    border-radius: var(--hf-radius-sm, 4px);
+    cursor: pointer;
+    display: flex;
+    gap: var(--hf-space-2, 8px);
+    min-height: 36px;
+    padding: 0 var(--hf-space-2, 8px) 0 var(--hf-space-3, 12px);
+    transition: border-color var(--hf-transition, .15s ease), box-shadow var(--hf-transition, .15s ease);
+    width: 100%;
+}
+
+.hf-icon-box-wrap .hf-selected-icon:hover {
+    border-color: var(--hf-text-faint, #8c9196);
+}
+
+.hf-icon-box-wrap .hf-selected-icon:focus-visible {
+    border-color: var(--hf-accent, #2271b1);
+    box-shadow: 0 0 0 3px rgba(34, 113, 177, .15);
+    outline: 0;
+}
+
+.hf-icon-box-wrap .hf-selected-icon > i {
+    color: var(--hf-text, #1e2327);
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Nothing chosen yet: the <i> carries no class, so it occupies no space and
+   the prompt shows in its place. */
+.hf-icon-box-wrap .hf-icon-placeholder {
+    color: var(--hf-text-faint, #8c9196);
+    font-size: var(--hf-font-base, 13px);
+}
+
+.hf-icon-box-wrap .hf-selected-icon:not(:has(> i[class=""])) .hf-icon-placeholder {
     display: none;
 }
 
-.hf-icon-box-wrap .hf-selected-icon {
-    background: #f6f6f6;
-    height: 45px;
-    line-height: 45px;
-    text-align: center;
-    border: 1px solid #eee;
-    position: relative;
-    margin-right: 44px;
-    cursor: pointer;
-    font-size: 22px;
-    width: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.hf-icon-box-wrap .hf-icon-caret {
+    color: var(--hf-text-faint, #8c9196);
+    font-size: 18px;
+    line-height: 1;
+    margin-left: auto;
 }
 
-.hf-icon-box-wrap .hf-selected-icon span {
+/* The panel. It was a block in the flow, so opening it pushed every field
+   below it down the page. */
+.hf-icon-box-wrap .hf-icon-box {
+    background: #fff;
+    border: 1px solid var(--hf-border, #e2e5ea);
+    border-radius: var(--hf-radius, 8px);
+    box-shadow: var(--hf-shadow-lg, 0 12px 28px -8px rgba(16, 24, 40, .18), 0 4px 10px -4px rgba(16, 24, 40, .1));
+    display: none;
+    left: 0;
+    overflow: hidden;
     position: absolute;
-    background: #f6f6f6;
-    right: -45px;
-    top: -1px;
-    height: 45px;
-    width: 45px;
-    border: 1px solid #eee;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.hf-icon-box-wrap .hf-selected-icon span i.hf-down-icon {
-    display: block;
-    border: solid #333;
-    border-width: 0 2px 2px 0;
-    display: inline-block;
-    padding: 3px;
-    transform: rotate(45deg);
+    right: 0;
+    top: calc(100% + 6px);
+    z-index: 20;
 }
 
 .hf-icon-box-wrap .hf-icon-search {
-    display: flex;
     align-items: center;
-    padding: 10px;
-    background: #f7f7f7;
-    border: 1px solid #eee;
-    border-top: 0;
+    background: var(--hf-surface-sunken, #fafbfc);
+    border: 0;
+    border-bottom: 1px solid var(--hf-border, #e2e5ea);
+    display: flex;
+    gap: var(--hf-space-2, 8px);
+    padding: var(--hf-space-2, 8px);
 }
 
-.hf-icon-box-wrap .hf-icon-search select {
-    width: 150px;
-    margin-right: 10px;
+.hf-content .hf-icon-box-wrap .hf-icon-search select,
+.hf-content .hf-icon-box-wrap .hf-icon-search input {
+    background-color: #fff;
+    border: 1px solid var(--hf-border-strong, #d3d8e0);
+    border-radius: var(--hf-radius-sm, 4px);
+    font-size: var(--hf-font-sm, 12px);
+    margin: 0;
+    min-height: 30px;
+    padding: 2px var(--hf-space-2, 8px);
+}
+
+/* The family names are long enough that 150px clipped them under the arrow. */
+.hf-content .hf-icon-box-wrap .hf-icon-search select {
+    flex: 0 0 46%;
+    padding-right: 24px;
+    width: auto;
+}
+
+.hf-content .hf-icon-box-wrap .hf-icon-search input {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
 }
 
 .hf-icon-box-wrap .hf-icon-list {
-    height: 215px;
-    overflow-y: scroll;
-    font-size: 18px;
-    border: 1px solid #eee;
     background: #fff;
-    border-top: 0;
-    padding: 4px;
-    margin: 0;
+    border: 0;
     display: none;
-    cursor: pointer;
-    box-sizing: border-box;
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
+    margin: 0;
+    max-height: 232px;
+    overflow-y: auto;
+    padding: var(--hf-space-2, 8px);
+    /* The scrollbar was hidden outright, so a list of two thousand icons gave
+       no sign that there was anything below the fold. */
+    scrollbar-width: thin;
 }
 
 .hf-icon-box-wrap .hf-icon-list::-webkit-scrollbar {
-    display: none;
+    width: 8px;
+}
+
+.hf-icon-box-wrap .hf-icon-list::-webkit-scrollbar-thumb {
+    background: var(--hf-border-strong, #d3d8e0);
+    border-radius: var(--hf-radius-pill, 999px);
 }
 
 .hf-icon-box-wrap .hf-icon-list:first-of-type {
     display: block;
 }
 
+/* inline-flex, not float: see the note at the top. */
 .hf-icon-box-wrap .hf-icon-list li {
-    float: left;
-    display: flex;
     align-items: center;
+    border: 0;
+    border-radius: var(--hf-radius-sm, 4px);
+    color: var(--hf-text-muted, #646970);
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 16px;
+    height: 32px;
     justify-content: center;
-    height: 43px;
-    width: 43px;
-    border: 1px solid #eee;
-    border-radius: 3px;
-    font-size: 18px;
-    margin: 4px;
-    transition: all 0.3s ease;
+    margin: 1px;
+    transition: background-color var(--hf-transition, .15s ease), color var(--hf-transition, .15s ease);
+    width: 32px;
 }
 
-.hf-type-icon .hf-icon-box-wrap .hf-icon-list li {
-    height: 38px;
-    width: 38px;
-}
-
+/* Scaling by 1.3 on hover made an icon overlap its neighbours, so the one
+   under the pointer was the hardest to see. */
 .hf-icon-box-wrap .hf-icon-list li:hover {
-    background: #333;
-    border: 1px solid #333;
-    color: #fff;
-    -webkit-transform: scale(1.3);
-    transform: scale(1.3);
+    background: var(--hf-accent-soft, #f0f6fc);
+    border: 0;
+    color: var(--hf-accent-text, #a3591b);
+    transform: none;
 }
 
 .hf-icon-box-wrap .hf-icon-list li.icon-active {
-    background: #0073aa;
-    border: 1px solid #0073aa;
+    background: var(--hf-accent, #2271b1);
+    border: 0;
     color: #fff;
 }
 
-/* Image Uploader */
+/* Image Uploader
+ *
+ * Used by the custom open/close icons on the Popup Display panel. The script
+ * empties .hf-custom-menu-image-icon and clears .hf-upload-background-url on
+ * remove, and appends an <img> on upload, so "is something set?" is simply
+ * whether that box has an <img> in it.
+ */
+.hf-icon-image-uploader {
+    align-items: center;
+    display: flex;
+    gap: var(--hf-space-2, 8px);
+}
+
+/* display:contents so the tile and Remove become items of the row above,
+   which lets Remove sit after the Upload button rather than wrapping
+   underneath the thumbnail. */
 .hf-custom-img-icon-btn {
+    display: contents;
+    margin: 0;
     position: relative;
-    width: 60px;
-    margin-bottom: 10px;
+    width: auto;
 }
 
 .hf-custom-menu-image-icon {
-    height: 60px;
-    width: 60px;
-    border: 2px dashed #EEE;
+    align-items: center;
+    background: var(--hf-surface-sunken, #fafbfc);
+    border: 1px dashed var(--hf-border-strong, #d3d8e0);
+    border-radius: var(--hf-radius-sm, 4px);
+    display: flex;
+    height: 40px;
+    justify-content: center;
+    overflow: hidden;
+    width: 40px;
+}
+
+/* An empty tile said nothing; now it reads as somewhere an image goes.
+   :not(:has(img)) rather than :empty — the template leaves whitespace inside
+   the box, so it is never truly empty on first render. */
+.hf-custom-menu-image-icon:not(:has(img)):before {
+    color: var(--hf-text-faint, #8c9196);
+    content: "\F0976";
+    font-family: "Material Design Icons";
+    font-size: 20px;
+    line-height: 1;
 }
 
 .hf-custom-menu-image-icon img {
     height: 100%;
+    object-fit: contain;
     width: 100%;
-    object-fit: cover;
 }
 
-.hf-image-remove {
-    position: absolute;
-    right: 5px;
-    top: 5px;
-    width: 20px;
-    height: 20px;
-    background: #FF0000;
-    opacity: 0.6;
-    text-indent: -9999px;
+/* The upload control was an unstyled wp .button beside a red circle. */
+.hf-content .hf-icon-image-uploader .hf-image-upload {
+    order: 2;
+    background: #fff;
+    border: 1px solid var(--hf-border-strong, #d3d8e0);
+    border-radius: var(--hf-radius-sm, 4px);
+    box-shadow: none;
+    color: var(--hf-text, #1e2327);
     cursor: pointer;
-    border-radius: 50%;
+    font-size: var(--hf-font-base, 13px);
+    font-weight: 500;
+    line-height: inherit;
+    margin: 0;
+    padding: 9px var(--hf-space-3, 12px);
+    text-shadow: none;
+    transition: background-color var(--hf-transition, .15s ease), border-color var(--hf-transition, .15s ease);
 }
 
-.hf-custom-img-icon-btn:hover .hf-image-remove {
+.hf-content .hf-icon-image-uploader .hf-image-upload:hover {
+    background: var(--hf-surface-sunken, #fafbfc);
+    border-color: var(--hf-text-faint, #8c9196);
+}
+
+/* Was a 20px red circle with its label pushed off-screen by text-indent,
+   sitting over the corner of the thumbnail. */
+.hf-image-remove {
+    background: none;
+    border-radius: var(--hf-radius-sm, 4px);
+    color: var(--hf-text-faint, #8c9196);
+    cursor: pointer;
+    font-size: var(--hf-font-sm, 12px);
+    height: auto;
+    opacity: 1;
+    padding: 4px var(--hf-space-2, 8px);
+    position: static;
+    text-indent: 0;
+    transition: background-color var(--hf-transition, .15s ease), color var(--hf-transition, .15s ease);
+    width: auto;
+}
+
+.hf-image-remove:hover {
+    background: #fdf2f2;
+    color: var(--hf-danger, #d3383c);
     opacity: 1;
 }
 
 .hf-image-remove:before,
 .hf-image-remove:after {
-    position: absolute;
-    left: 9px;
-    content: ' ';
-    height: 10px;
-    width: 1px;
-    background-color: #fff;
-    top: 5px;
+    content: none;
 }
 
-.hf-image-remove:before {
-    transform: rotate(45deg);
+/* After the Upload button rather than before it. */
+.hf-image-remove {
+    order: 3;
 }
 
-.hf-image-remove:after {
-    transform: rotate(-45deg);
+/* Nothing to remove until an image has actually been chosen. */
+.hf-icon-image-uploader:not(:has(.hf-custom-menu-image-icon img)) .hf-image-remove {
+    display: none;
 }
 
 /* Typography */
@@ -407,46 +585,117 @@
 }
 
 .hf-typography-fields li > label {
+    color: var(--hf-text-muted, #646970);
     display: block;
-    margin-bottom: 6px;
+    font-size: var(--hf-font-sm, 12px);
+    margin-bottom: var(--hf-space-1, 4px);
 }
 
-/*Toggle Button*/
+/* The typography selects came out shorter than every other control on the
+   screen, so a row of them sat oddly against the sliders and number boxes
+   beside them. */
+.hf-style-sidebar .hf-typography-fields select,
+.hf-style-sidebar .hf-settings-row select {
+    min-height: 34px;
+}
+
+/* Slider rows: the number box, its unit and the track on one baseline. The
+   unit used to hang outside the field entirely. */
+/* Slider takes the room that is left; the number box and its unit are fixed
+   and stay inside the panel. The unit used to sit a pixel or two past the
+   panel edge. */
+.hf-style-sidebar .hf-range-slider-wrap {
+    align-items: center;
+    display: flex;
+}
+
+.hf-style-sidebar .hf-range-slider-wrap .hf-range-slider {
+    /* basis 0, so the track takes exactly what is left after the number box
+       and its unit rather than starting from its own width and shrinking
+       proportionally, which left the unit hanging off the panel. */
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.hf-style-sidebar .hf-range-slider-wrap .hf-range-input-selector {
+    flex: 0 0 auto;
+}
+
+/* The unit is absolutely positioned at left:100% of the track, which put it
+   outside the row — fine when the row was narrower than the panel, but it
+   now fills the panel and the unit landed past the edge. In flow instead. */
+.hf-style-sidebar .hf-settings-row .hf-range-slider-wrap .hf-range-input-unit {
+    color: var(--hf-text-faint, #8c9196);
+    font-size: var(--hf-font-sm, 12px);
+    left: auto;
+    margin-left: var(--hf-space-1, 4px);
+    position: static;
+    top: auto;
+    transform: none;
+}
+
+.hf-style-sidebar .hf-settings-row .hf-range-slider-wrap .hf-range-slider + .hf-range-input-selector {
+    min-height: 32px;
+}
+
+/* Toggle Button
+ *
+ * Red for off and green for on read as an error state rather than a setting:
+ * a switch someone had never touched looked like something was wrong. Grey
+ * for off, accent for on — the same switch as the Pro Modules screen, which
+ * had already been corrected in isolation while every screen sharing this
+ * rule kept the old colours. */
 .hf-toggle-input-field input[type=checkbox] {
-    width: 40px;
-    height: 20px;
-    border-radius: 20px;
-    background: rgb(255, 42, 43);
-    position: relative;
+    background: #d5d9df;
     border: 0;
+    border-radius: var(--hf-radius-pill, 999px);
+    box-shadow: none;
+    cursor: pointer;
+    height: 24px;
     margin: 0;
     min-width: 0;
-    box-shadow: none;
+    position: relative;
+    transition: background-color var(--hf-transition-slow, .25s ease);
+    width: 42px;
+}
+
+.hf-toggle-input-field input[type=checkbox]:hover {
+    background: #c7ccd4;
 }
 
 .hf-toggle-input-field input[type=checkbox]:before {
+    background: #fff;
+    border: 0;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, .3);
+    box-sizing: border-box;
     content: "";
     display: block;
-    position: absolute;
+    height: 20px;
     left: 2px;
-    top: 2px;
-    transition: all 0.2s ease;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    border: 4px solid #FFF;
-    background-color: rgb(255, 42, 43);
-    box-sizing: border-box;
     margin: 0;
+    position: absolute;
+    top: 2px;
+    transition: transform .2s cubic-bezier(.34, 1.4, .64, 1);
+    width: 20px;
 }
 
 .hf-toggle-input-field input[type=checkbox]:checked {
-    background-color: rgb(15, 202, 128);
+    background: var(--hf-accent, #2271b1);
+}
+
+.hf-toggle-input-field input[type=checkbox]:checked:hover {
+    background: var(--hf-accent-hover, #135e96);
 }
 
 .hf-toggle-input-field input[type=checkbox]:checked:before {
-    background-color: rgb(15, 202, 128);
-    transform: translateX(20px);
+    background: #fff;
+    transform: translateX(18px);
+}
+
+.hf-toggle-input-field input[type=checkbox]:focus-visible {
+    outline: 2px solid var(--hf-accent, #2271b1);
+    outline-offset: 2px;
 }
 
 /*Choosen Select*/
@@ -507,7 +756,7 @@
     position: absolute;
     top: 0;
     height: 100%;
-    background: #13a1dc;
+    background: var(--hf-accent, #dd823b);
 }
 
 .hf-settings-row .hf-range-slider-wrap .hf-range-slider .ui-slider-handle {
@@ -570,7 +819,7 @@
     position: absolute;
     top: 0;
     height: 100%;
-    background: #13a1dc;
+    background: var(--hf-accent, #dd823b);
 }
 
 .hf-editor-field-content .hf-range-slider-wrap .hf-range-slider .ui-slider-handle {
@@ -605,16 +854,22 @@
 
 ul.hf-shadow-fields {
     display: flex;
+    /* Shares the row with the colour swatch now, so it takes the space that
+       is left rather than a fixed 225px that pushed the swatch off the
+       panel. */
+    flex: 1 1 auto;
     gap: 6px;
     margin: 0;
+    min-width: 0;
     padding: 0;
     position: relative;
     z-index: 9;
-    max-width: 225px;
 }
 
 .hf-shadow-fields li {
+    flex: 1 1 0;
     margin: 0;
+    min-width: 0;
 }
 
 .hf-shadow-fields li > label {
@@ -623,14 +878,29 @@ ul.hf-shadow-fields {
 }
 
 .hf-shadow-fields li input[type="number"] {
-    width: 50px;
+    padding-left: 2px;
+    padding-right: 2px;
     text-align: center;
-    padding-right: 0;
+    width: 100%;
+}
+
+/* The four number boxes and the colour swatch are siblings, and the swatch
+   used to be dragged over them with a negative offset — far enough to land
+   on top of Blur and Spread. Laid out as a row instead. */
+.hf-setting-fields:has(> .hf-shadow-fields) {
+    align-items: flex-start;
+    display: flex;
+    gap: var(--hf-space-2, 8px);
 }
 
 .hf-shadow-settings-field .hf-color-input-field {
-    position: relative;
-    top: -18px;
+    margin-top: 0;
+    position: static;
+}
+
+/* The swatch keeps its size while the number boxes give way. */
+.hf-setting-fields > .hf-shadow-settings-field {
+    flex: 0 0 auto;
 }
 
 .hf-setting-fields .hf-shadow-settings-field .wp-picker-open + .wp-picker-input-wrap {
@@ -648,40 +918,64 @@ ul.hf-shadow-fields {
 }
 
 .hf-unit-fields li {
+    flex: 1 1 0;
     margin: 0;
-}
-
-.hf-unit-fields li > label {
-    text-align: center;
-    display: block;
+    min-width: 0;
 }
 
 .hf-unit-fields li input[type="number"] {
-    width: 55px;
+    padding-left: 2px;
+    padding-right: 2px;
     text-align: center;
-    padding-right: 0;
+    width: 100%;
 }
 
+.hf-unit-fields li > label {
+    color: var(--hf-text-faint, #8c9196);
+    display: block;
+    font-size: var(--hf-font-xs, 11px);
+    margin-top: var(--hf-space-1, 4px);
+    text-align: center;
+}
+
+.hf-shadow-fields li > label {
+    color: var(--hf-text-faint, #8c9196);
+    display: block;
+    font-size: var(--hf-font-xs, 11px);
+    margin-top: var(--hf-space-1, 4px);
+    text-align: center;
+}
+
+/* Linked/unlinked is a toggle, not a filled button. It was a solid grey
+   block with a white chain — the heaviest thing in the panel, for the least
+   important control in the row. */
 .hf-unit-fields .hf-link-button {
+    align-self: flex-start;
+    background: var(--hf-surface, #fff);
+    border: 1px solid var(--hf-border-strong, #d3d8e0);
+    border-radius: var(--hf-radius-sm, 4px);
+    color: var(--hf-accent, #dd823b);
     cursor: pointer;
     outline: none;
-    border-radius: 2px;
-    border: 1px solid #8c8f94;
-    background-color: #a4afb7;
-    color: #fff;
+    transition: background-color var(--hf-transition, .15s ease), border-color var(--hf-transition, .15s ease), color var(--hf-transition, .15s ease);
 }
 
+.hf-unit-fields .hf-link-button:hover {
+    border-color: var(--hf-text-faint, #8c9196);
+}
+
+/* Unlinked is the quieter state: the sides are being set individually. */
 .hf-unit-fields.hf-not-linked .hf-link-button {
-    background: none;
-    color: inherit;
+    background: var(--hf-surface, #fff);
+    color: var(--hf-text-faint, #8c9196);
 }
 
 .hf-unit-fields .hf-link-button span {
-    font-size: 16px;
-    height: 38px;
-    width: 40px;
     align-items: center;
+    font-size: 16px;
+    height: 34px;
     justify-content: center;
+    width: 34px;
 }
 
 .hf-unit-fields .hf-link-button .hf-linked {
@@ -700,41 +994,6 @@ ul.hf-shadow-fields {
     display: flex;
 }
 
-
-/* Text Check Box */
-
-.hf-text-check-box {
-    border: 1px solid #EEE;
-    display: inline-flex;
-}
-
-.hf-text-check-box label {
-    border-right: 1px solid #EEE;
-}
-
-.hf-text-check-box label:last-child {
-    border: none;
-}
-
-.hf-text-check-box label span {
-    display: block;
-    padding: 10px 15px;
-}
-
-.hf-text-check-box label span i {
-    display: inline-block;
-    margin-right: 4px;
-    font-size: 0.9em;
-}
-
-.hf-text-check-box label input:checked + span {
-    background: #000;
-    color: #FFF;
-}
-
-.hf-text-check-box label input {
-    display: none;
-}
 
 /* Multiple Select */
 .hf-setting-fields .select2-container--default .select2-selection--multiple .select2-selection__clear {
@@ -784,38 +1043,71 @@ ul.hf-shadow-fields {
     position: relative;
 }
 
+/* A colour row is a label and a swatch on one line. It used to be two
+   stacked blocks with the lower one dragged up 35px to sit beside the label,
+   which left the row occupying its old height and the rhythm of the panel
+   uneven. */
+.hf-settings-row:has(> .hf-color-input-field),
+.hf-typography-fields li.hf-typography-color-field:has(> .hf-typography-input-field) {
+    align-items: flex-start;
+    display: flex;
+    gap: var(--hf-space-3, 12px);
+    justify-content: space-between;
+}
+
 .hf-typography-color-field .hf-typography-input-field,
 .hf-color-input-field {
     display: flex;
     justify-content: flex-end;
-    margin-top: -35px;
+    margin-top: 0;
+    min-width: 0;
 }
 
 .hf-settings-row .hf-color-input-label {
     margin: 0 !important;
-    padding: 10px 0 !important;
+    padding: 5px 0 !important;
 }
 
+/* The colour picker iris is a fixed ~257px widget sized by its own script,
+   so it is left alone; the container just spans the row so the picker is
+   laid out from the left rather than hung off the right edge of a 30px
+   swatch, which pushed it past the panel. */
 .hf-setting-fields .wp-picker-container {
+    align-items: flex-end;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    width: 100%;
 }
 
 .hf-setting-fields .wp-picker-container .wp-color-result.button {
+    border: 1px solid var(--hf-border-strong, #d3d8e0);
     border-radius: 50%;
-    margin: 0;
-    padding: 0;
+    box-shadow: none;
     height: 30px;
-    width: 30px;
+    margin: 0;
     overflow: hidden;
+    padding: 0;
+    width: 30px;
 }
 
+.hf-setting-fields .wp-picker-container .wp-color-result.button:hover {
+    border-color: var(--hf-text-faint, #8c9196);
+}
+
+.hf-setting-fields .wp-picker-container .wp-color-result.button:focus {
+    border-color: var(--hf-accent, #dd823b);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--hf-accent, #dd823b) 18%, transparent);
+    outline: 0;
+}
+
+/* Was a fixed 255px in a column narrower than that, so opening a picker
+   pushed its input and Clear button out past the left edge of the panel. */
 .hf-setting-fields .wp-picker-open + .wp-picker-input-wrap {
-    display: flex;
     clear: both;
-    width: 255px;
-    margin-top: 15px;
+    display: flex;
+    margin-top: var(--hf-space-2, 8px);
+    min-width: 0;
+    width: 100%;
 }
 
 .hf-setting-fields .wp-picker-input-wrap label {
@@ -836,7 +1128,7 @@ ul.hf-shadow-fields {
 }
 
 .hf-sticky-sidebar {
-    padding: 30px;
+    padding: 15px;
 }
 
 .hf-footer .hf-preview-close a {

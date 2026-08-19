@@ -16,26 +16,41 @@ $settings = $form->settings ? $form->settings : HashFormHelper::get_form_setting
         )
     );
 
+    /*
+     * 'desc' is optional: it is the one line under the panel heading saying
+     * what the tab governs. Sections added through the filter below that do
+     * not set one simply get the heading on its own.
+     */
     $sections = array(
         'email-settings' => array(
             'name' => esc_html__('Email Settings', 'hash-form'),
-            'icon' => 'mdi mdi-email-outline'
+            'icon' => 'mdi mdi-email-outline',
+            'desc' => esc_html__('The notification sent to you each time this form is submitted.', 'hash-form'),
         ),
         'auto-responder' => array(
             'name' => esc_html__('Auto Responder', 'hash-form'),
-            'icon' => 'mdi mdi-email-arrow-left-outline'
+            'icon' => 'mdi mdi-email-arrow-left-outline',
+            'desc' => esc_html__('An automatic reply sent back to whoever filled in the form.', 'hash-form'),
         ),
         'form-confirmation' => array(
             'name' => esc_html__('Confirmation', 'hash-form'),
-            'icon' => 'mdi mdi-send-check'
+            'icon' => 'mdi mdi-send-check',
+            'desc' => esc_html__('What the visitor sees once the form has been submitted, and what they see if it fails.', 'hash-form'),
         ),
         'conditional-logic' => array(
             'name' => esc_html__('Conditional Logic', 'hash-form'),
-            'icon' => 'mdi mdi-checkbox-multiple-marked-outline'
+            'icon' => 'mdi mdi-checkbox-multiple-marked-outline',
+            'desc' => esc_html__('Show and hide fields based on the answers already given.', 'hash-form'),
+        ),
+        'restrictions' => array(
+            'name' => esc_html__('Restrictions', 'hash-form'),
+            'icon' => 'mdi mdi-lock-outline',
+            'desc' => esc_html__('Limit who may submit this form and how often.', 'hash-form'),
         ),
         'import-export' => array(
             'name' => esc_html__('Import/Export', 'hash-form'),
-            'icon' => 'mdi mdi-swap-horizontal'
+            'icon' => 'mdi mdi-swap-horizontal',
+            'desc' => esc_html__('Move this form between sites, or keep a copy of it as a file.', 'hash-form'),
         ),
     );
     $sections = apply_filters('hashform_settings_sections', $sections);
@@ -66,7 +81,12 @@ $settings = $form->settings ? $form->settings : HashFormHelper::get_form_setting
                     foreach ($sections as $key => $section) {
                         ?>
                         <div id="hf-<?php echo esc_attr($key); ?>" class="<?php echo (($current === $key) ? '' : ' hf-hidden'); ?>">
-                            <h2><?php echo esc_html($section['name']); ?></h2>
+                            <div class="hf-panel-head">
+                                <h2><?php echo esc_html($section['name']); ?></h2>
+                                <?php if (!empty($section['desc'])) { ?>
+                                    <p class="hf-panel-desc"><?php echo esc_html($section['desc']); ?></p>
+                                <?php } ?>
+                            </div>
                             <?php
                             $file_path = HASHFORM_PATH . 'admin/forms/settings/';
                             if (file_exists($file_path . esc_attr($key) . '.php')) {

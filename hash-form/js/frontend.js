@@ -2,44 +2,198 @@ jQuery(function ($) {
 
     'use strict';
 
-    $(document).on('submit.hashform-form', '.hashform-form', function (e) {
-        e.preventDefault();
-        var form = $(this);
+    /* -----------------------------------------------------------------------
+     * Range sliders
+     * -------------------------------------------------------------------- */
 
-        if (form.find('button.hf-submit-button').hasClass('hf-button-loading')) {
-            return;
-        } else {
-            form.find('button.hf-submit-button').addClass('hf-button-loading');
-        }
-
-        const siteKey = $('.g-recaptcha').attr('data-sitekey');
-
-        const isV3 = $('.g-recaptcha').attr('data-size') == "invisible";
-        isV3 && grecaptcha.ready(function () {
-            grecaptcha.execute(siteKey, {action: 'hashform'}).then(function (token) {
-                form.append('<input type="hidden" id="recaptcha_token" value="' + token + '">');
+    function initRangeSliders(inputs) {
+        inputs.each(function () {
+            const input = $(this);
+            input.prev('.hf-range-slider').slider({
+                value: input.val(),
+                min: parseFloat(input.attr('min')),
+                max: parseFloat(input.attr('max')),
+                step: parseFloat(input.attr('step')),
+                range: 'min',
+                slide: function (e, ui) {
+                    $(this).next().val(ui.value);
+                }
             });
         });
+    }
 
-        $('.hf-error-msg').remove();
-        $('.hf-success-msg').remove();
-        $('.hf-failed-msg').remove();
+    initRangeSliders($('.hf-range-input-selector'));
+
+    // Update the slider when the input loses focus, as it has most likely changed.
+    $('.hf-range-input-selector').on('blur', function () {
+        const input = $(this);
+        let value = isNaN(input.val()) ? '' : input.val();
+
+        // Keep a manually typed value within the min/max bounds.
+        if (value) {
+            const min = parseFloat(input.attr('min'));
+            const max = parseFloat(input.attr('max'));
+            if (value < min) {
+                value = min;
+            }
+            if (value > max) {
+                value = max;
+            }
+        }
+
+        input.val(value);
+        input.prev('.hf-range-slider').slider('value', value);
+    });
+
+    /* -----------------------------------------------------------------------
+     * Form submission
+     * -------------------------------------------------------------------- */
+
+    // Scroll to the field holding the first validation error.
+    function firstErrorField(errors) {
+        const firstError = Object.keys(errors)[0];
+        const separator = firstError.indexOf('-');
+
+        if (separator > 0) {
+            const fieldId = firstError.slice(0, separator).replace('field', '');
+            const subField = firstError.slice(separator + 1);
+            return $('#hf-subfield-container-' + subField + '-' + fieldId);
+        }
+
+        return $('#hf-field-container-' + firstError.replace('field', ''));
+    }
+
+    /**
+     * Put a captcha back to its unanswered state.
+     *
+     * Each service's script is loaded whenever a field of its kind is on the
+     * form, whether or not a site key was set, so the script can be present
+     * with nothing rendered — grecaptcha.reset() throws "No reCAPTCHA clients
+     * exist" in that case. That used to abandon the rest of the failure
+     * handler, which is why an hCaptcha widget kept its spent token and the
+     * visitor's second attempt failed on a token already used up.
+     */
+    function resetCaptcha(name) {
+        const api = window[name];
+
+        if (!api || typeof api.reset !== 'function') {
+            return;
+        }
+
+        try {
+            api.reset();
+        } catch (e) {
+            // Nothing rendered to reset.
+        }
+    }
+
+    function resetRecaptcha() {
+        resetCaptcha('grecaptcha');
+        resetCaptcha('hcaptcha');
+        resetCaptcha('turnstile');
+    }
+
+    /**
+     * Never render an empty failure notice.
+     *
+     * A form whose Error Message setting is blank was appending an empty span,
+     * which reads to the visitor exactly like the submission having been ignored.
+     */
+    function failureText(message) {
+        return (typeof message === 'string' && message.trim())
+            ? message
+            : hashform_vars.generic_error;
+    }
+
+    function showValidationErrors(errors) {
+        $.each(errors, function (key, message) {
+            $('#hf-field-container-' + key.replace('field', ''))
+                .addClass('hashform-error-container')
+                .append('<span class="hf-error-msg">' + message + '</span>');
+        });
+
+        resetRecaptcha();
+
+        $('html, body').animate({
+            scrollTop: firstErrorField(errors).offset().top - 300
+        }, 300);
+    }
+
+    function resetForm(form) {
+        form.trigger('reset');
+        form.find('.hf-star-rating').removeClass('hf-star-checked');
+        initRangeSliders(form.find('.hf-range-input-selector'));
+        $('body').find('.hf-preview-remove').trigger('click');
+    }
+
+    /**
+     * A reCAPTCHA v3 token for this form, or '' when there is nothing to fetch.
+     *
+     * Scoped to the form being submitted. The widget used to be looked up as
+     * $('.g-recaptcha') — the first one in the document — so with two forms on
+     * a page one of them read the other's settings and took a path meant for a
+     * captcha it did not have.
+     */
+    function captchaToken(form) {
+        const captcha = form.find('.g-recaptcha');
+        const siteKey = captcha.attr('data-sitekey');
+        const isV3 = captcha.attr('data-size') === 'invisible';
+
+        if (!isV3 || !siteKey || typeof grecaptcha === 'undefined') {
+            return $.Deferred().resolve('').promise();
+        }
+
+        const pending = $.Deferred();
+
+        grecaptcha.ready(function () {
+            grecaptcha.execute(siteKey, { action: 'hashform' }).then(
+                (token) => pending.resolve(token),
+                // Let the server say what went wrong rather than stalling here.
+                () => pending.resolve('')
+            );
+        });
+
+        return pending.promise();
+    }
+
+    $(document).on('submit.hashform-form', '.hashform-form', function (e) {
+        e.preventDefault();
+
+        const form = $(this);
+        const submitButton = form.find('button.hf-submit-button');
+
+        // Ignore repeat submits while a request is in flight.
+        if (submitButton.hasClass('hf-button-loading')) {
+            return;
+        }
+        submitButton.addClass('hf-button-loading');
+
+        $('.hf-error-msg, .hf-success-msg, .hf-failed-msg').remove();
         $(document).find('.hashform-error-container').removeClass('hashform-error-container');
 
-        setTimeout(() => {
-            var data = form.serializeArray();
+        /*
+         * Wait for the token itself rather than for a second on the clock.
+         *
+         * A fixed one-second setTimeout used to wrap this whole block, so
+         * every submission of every form waited a second whether a captcha was
+         * on the page or not, and a token that took longer than that was
+         * dropped: the form posted an empty response and the visitor was told
+         * the reCAPTCHA was not entered correctly, with no way to get past it.
+         */
+        captchaToken(form).then((token) => {
+            const data = form.serializeArray();
 
-            if (isV3) {
-                const reCaptchaTokenValue = $(document).find('#recaptcha_token').val();
-                $(document).find('#recaptcha_token').remove();
-                data.forEach(function (item) {
-                    if (item.name === 'g-recaptcha-response') {
-                        item.value = item.value ? item.value : reCaptchaTokenValue;
-                    }
-                });
+            if (token) {
+                const existing = data.find((item) => item.name === 'g-recaptcha-response');
+
+                if (existing) {
+                    existing.value = existing.value || token;
+                } else {
+                    data.push({ name: 'g-recaptcha-response', value: token });
+                }
             }
 
-            jQuery.ajax({
+            $.ajax({
                 type: 'POST',
                 url: hashform_vars.ajaxurl,
                 dataType: 'json',
@@ -49,574 +203,562 @@ jQuery(function ($) {
                     location: window.location.href
                 },
                 success: function (response) {
-                    form.find('button.hf-submit-button').removeClass('hf-button-loading');
-                    if (response.status == "redirect") {
+                    submitButton.removeClass('hf-button-loading');
+
+                    if (response.status === 'redirect') {
                         window.location.replace(response.message);
-                    } else if (response.status == "success") {
-                        form.trigger("reset");
-                        form.find('.hf-star-rating').removeClass('hf-star-checked');
-                        form.find('.hf-range-input-selector').each(function () {
-                            var newSlider = $(this);
-                            var sliderValue = newSlider.val();
-                            var sliderMinValue = parseFloat(newSlider.attr('min'));
-                            var sliderMaxValue = parseFloat(newSlider.attr('max'));
-                            var sliderStepValue = parseFloat(newSlider.attr('step'));
-                            newSlider.prev('.hf-range-slider').slider({
-                                value: sliderValue,
-                                min: sliderMinValue,
-                                max: sliderMaxValue,
-                                step: sliderStepValue,
-                                range: 'min',
-                                slide: function (e, ui) {
-                                    $(this).next().val(ui.value);
-                                }
-                            });
-                        });
-                        $('body').find('.hf-preview-remove').trigger('click');
+                    } else if (response.status === 'success') {
+                        resetForm(form);
                         form.append('<span class="hf-success-msg">' + response.message + '</span>');
-                    } else if (response.status == "failed") {
-                        typeof grecaptcha !== "undefined" && grecaptcha?.reset();
-                        form.append('<span class="hf-failed-msg">' + response.message + '</span>');
+                    } else if (response.status === 'failed') {
+                        resetRecaptcha();
+                        form.append('<span class="hf-failed-msg">' + failureText(response.message) + '</span>');
+                    } else if (response.message && typeof response.message === 'object') {
+                        /*
+                         * A captcha that was not passed comes back as a field
+                         * error like any other, and this branch never reset the
+                         * widget — so the token stayed in the form, already
+                         * spent, and the visitor's next attempt failed on the
+                         * same token however carefully they answered it.
+                         */
+                        resetRecaptcha();
+                        showValidationErrors(response.message);
                     } else {
-                        $.each(response.message, function (key, value) {
-                            const errorFieldId = key.replace("field", "");
-                            $('#' + 'hf-field-container-' + errorFieldId).addClass('hashform-error-container').append('<span class="hf-error-msg">' + value + '</span>');
-                        });
-
-                        const firstError = Object.keys(response.message)[0];
-                        const subFieldIndex = firstError.indexOf('-');
-                        var firstErrorItem;
-
-                        if (subFieldIndex > 0) {
-                            const errorFieldId = firstError.substr(0, subFieldIndex).replace("field", "");
-                            const subField = firstError.substr(subFieldIndex + 1, firstError.length);
-                            firstErrorItem = $('#' + 'hf-subfield-container-' + subField + '-' + errorFieldId);
-                        } else {
-                            const errorFieldId = firstError.replace("field", "");
-                            firstErrorItem = $('#' + 'hf-field-container-' + errorFieldId);
-                        }
-
-                        typeof grecaptcha !== "undefined" && grecaptcha?.reset();
-
-                        $('html, body').animate({
-                            scrollTop: firstErrorItem.offset().top - 300
-                        }, 300);
+                        // status:'error' normally carries an object of per-field
+                        // errors, but the spam checks reject a whole submission
+                        // with a plain string. $.each on a string throws, which
+                        // left the visitor looking at a form that appeared to do
+                        // nothing at all.
+                        resetRecaptcha();
+                        form.append('<span class="hf-failed-msg">' + failureText(response.message) + '</span>');
                     }
                 }
             });
-        }, 1000);
-    });
-
-    $(document).find(".hashform-field-type-spinner .hf-quantity .mdi-plus").click(function () {
-        const parent = $(this).closest('.hashform-field-type-spinner');
-        const numberInput = parent.find('input');
-        const max = numberInput.attr('max');
-        const numberInputVal = Number(numberInput.val());
-        numberInput.val(numberInputVal < max ? numberInputVal + 1 : max);
-    });
-
-    $(document).find(".hashform-field-type-spinner .hf-quantity .mdi-minus").click(function () {
-        const parent = $(this).closest('.hashform-field-type-spinner');
-        const numberInput = parent.find('input');
-        const min = numberInput.attr('min');
-        const numberInputVal = Number(numberInput.val());
-        numberInput.val(numberInputVal > min ? numberInputVal - 1 : min);
-    });
-
-    // Range JS
-    $('.hf-range-input-selector').each(function () {
-        var newSlider = $(this);
-        var sliderValue = newSlider.val();
-        var sliderMinValue = parseFloat(newSlider.attr('min'));
-        var sliderMaxValue = parseFloat(newSlider.attr('max'));
-        var sliderStepValue = parseFloat(newSlider.attr('step'));
-
-        newSlider.prev('.hf-range-slider').slider({
-            value: sliderValue,
-            min: sliderMinValue,
-            max: sliderMaxValue,
-            step: sliderStepValue,
-            range: 'min',
-            slide: function (e, ui) {
-                $(this).next().val(ui.value);
-            }
         });
     });
 
-    // Update slider if the input field loses focus as it's most likely changed
-    $('.hf-range-input-selector').blur(function () {
-        var resetValue = isNaN($(this).val()) ? '' : $(this).val();
+    /* -----------------------------------------------------------------------
+     * Spinner field
+     * -------------------------------------------------------------------- */
 
-        if (resetValue) {
-            var sliderMinValue = parseFloat($(this).attr('min'));
-            var sliderMaxValue = parseFloat($(this).attr('max'));
-            // Make sure our manual input value doesn't exceed the minimum & maxmium values
-            if (resetValue < sliderMinValue) {
-                resetValue = sliderMinValue;
-                $(this).val(resetValue);
-            }
-            if (resetValue > sliderMaxValue) {
-                resetValue = sliderMaxValue;
-                $(this).val(resetValue);
-            }
-        }
-        $(this).val(resetValue);
-        $(this).prev('.hf-range-slider').slider('value', resetValue);
+    $('.hashform-field-type-spinner .hf-quantity .mdi-plus').on('click', function () {
+        const input = $(this).closest('.hashform-field-type-spinner').find('input');
+        const max = input.attr('max');
+        const value = Number(input.val());
+        input.val(value < max ? value + 1 : max);
     });
 
-    function hoverStars() {
-        $(this).prevAll('.hf-star-rating').addBack().addClass('hf-star-hovered');
-        $(this).nextAll('.hf-star-rating').addClass('hf-star-non-hovered');
-    }
+    $('.hashform-field-type-spinner .hf-quantity .mdi-minus').on('click', function () {
+        const input = $(this).closest('.hashform-field-type-spinner').find('input');
+        const min = input.attr('min');
+        const value = Number(input.val());
+        input.val(value > min ? value - 1 : min);
+    });
 
-    function unhoverStars() {
-        $(this).closest('.hashform-star-group').find('.hf-star-rating').removeClass('hf-star-hovered hf-star-non-hovered');
-    }
+    /* -----------------------------------------------------------------------
+     * Star rating field
+     * -------------------------------------------------------------------- */
 
-    function loadStars() {
+    $(document).on('click', '.hashform-star-group input', function () {
         $(this).closest('.hashform-star-group').find('.hf-star-rating').removeClass('hf-star-checked');
         $(this).parent('.hf-star-rating').prevAll('.hf-star-rating').addBack().addClass('hf-star-checked');
+    });
+
+    $(document).on('mouseenter', '.hashform-star-group .hf-star-rating:not(.hf-star-rating-readonly)', function () {
+        $(this).prevAll('.hf-star-rating').addBack().addClass('hf-star-hovered');
+        $(this).nextAll('.hf-star-rating').addClass('hf-star-non-hovered');
+    });
+
+    $(document).on('mouseleave', '.hashform-star-group .hf-star-rating:not(.hf-star-rating-readonly)', function () {
+        $(this).closest('.hashform-star-group').find('.hf-star-rating').removeClass('hf-star-hovered hf-star-non-hovered');
+    });
+
+    /* -----------------------------------------------------------------------
+     * Date and time fields
+     * -------------------------------------------------------------------- */
+
+    /**
+     * Carry a form's style tokens onto a picker panel.
+     *
+     * The per form --hf-* properties are declared on #hf-container-{id}, but
+     * both pickers move their panel to <body> as they open, so neither is a
+     * descendant of the form and neither inherits any of them. Copying the few
+     * that matter across on open is what lets a picker match the form that was
+     * clicked, which also keeps two differently styled forms on one page from
+     * sharing a palette. Anything the form leaves unset is skipped so the
+     * stylesheet fallback stays in play.
+     */
+    function bridgePickerStyles(input, panel) {
+        const container = input.closest('[id^="hf-container-"]');
+        if (!container.length || !panel || !panel.length) {
+            return;
+        }
+
+        const from = window.getComputedStyle(container[0]);
+        const accent = from.getPropertyValue('--hf-field-border-color-focus').trim()
+            || from.getPropertyValue('--hf-button-bg-color-normal').trim();
+
+        const tokens = {
+            '--hf-pick-accent': accent,
+            '--hf-pick-text': from.getPropertyValue('--hf-field-color-normal').trim(),
+            '--hf-pick-font': from.getPropertyValue('--hf-field-typo-font-family').trim()
+        };
+
+        Object.keys(tokens).forEach(function (name) {
+            if (tokens[name]) {
+                panel[0].style.setProperty(name, tokens[name]);
+            } else {
+                panel[0].style.removeProperty(name);
+            }
+        });
     }
 
-    $(document).on('click', '.hashform-star-group input', loadStars);
-    $(document).on('mouseenter', '.hashform-star-group .hf-star-rating:not(.hf-star-rating-readonly)', hoverStars);
-    $(document).on('mouseleave', '.hashform-star-group .hf-star-rating:not(.hf-star-rating-readonly)', unhoverStars);
-
     $('.hashform-field-type-date input').each(function () {
-        const $this = $(this);
-        const dtFormat = $this.attr('data-format');
-        const dtVal = $this.val();
-        if (dtVal) {
-            var date = new Date(dtVal);
-            $this.val(date == 'Invalid Date' ? '' : moment(date).format(dtFormat.replace("dd", "DD").replace("MM", "MMMM").replace("mm", "MM")));
+        const input = $(this);
+        const format = input.attr('data-format');
+        const value = input.val();
+
+        if (value) {
+            const date = new Date(value);
+            const momentFormat = format.replace('dd', 'DD').replace('MM', 'MMMM').replace('mm', 'MM');
+            input.val(Number.isNaN(date.getTime()) ? '' : moment(date).format(momentFormat));
         }
-        $this.datepicker({
+
+        input.datepicker({
             changeMonth: true,
-            dateFormat: dtFormat,
+            dateFormat: format,
+            beforeShow: function () {
+                bridgePickerStyles(input, $('#ui-datepicker-div'));
+            }
         });
-    })
+    });
 
-    $('.hashform-field-type-time').each(function () {
-        var timePickerWrap = $(this).find('.hf-timepicker');
-        var timePickerValueInput = $(this).find('.hf-output');
-        timePickerWrap.timepicker({
-            'showDuration': false,
-            'timeFormat': 'g:ia',
+    $('.hashform-field-type-time .hf-timepicker').each(function () {
+        const input = $(this);
+
+        // Step, Min Time and Max Time are set per field in the builder and
+        // printed as data attributes. The library does not read those itself,
+        // so they have to be passed in or the field silently lists every hour
+        // of the day whatever the user configured.
+        const step = parseInt(input.attr('data-step'), 10);
+        const minTime = input.attr('data-min-time');
+        const maxTime = input.attr('data-max-time');
+
+        const options = {
+            showDuration: false,
+            timeFormat: 'g:ia'
+        };
+
+        // The library reads step as minutes, which is the unit the stored
+        // default of 60 already assumes: one slot per hour.
+        if (step > 0) {
+            options.step = step;
+        }
+        if (minTime) {
+            options.minTime = minTime;
+        }
+        if (maxTime) {
+            options.maxTime = maxTime;
+        }
+
+        input.timepicker(options);
+
+        // The library has no beforeShow hook, but it does fire showTimepicker
+        // on the input, and only one list is ever open at a time.
+        input.on('showTimepicker', function () {
+            bridgePickerStyles(input, $('.ui-timepicker-wrapper:visible').first());
         });
-    })
+    });
 
+    /* -----------------------------------------------------------------------
+     * Conditional logic
+     * -------------------------------------------------------------------- */
+
+    // Compare a single configured value against the set of checked values.
     function arrayValsCompare(compareValue, arrayVals, condition) {
-        var retCase = false;
         switch (condition) {
             case 'equal':
-                if ($.inArray(compareValue, arrayVals) !== -1) {
-                    retCase = true;
-                }
-                break;
+                return arrayVals.includes(compareValue);
+            case 'less_than':
+                return arrayVals.length > 0 && arrayVals.every((val) => compareValue > val);
+            case 'less_than_or_equal':
+                return arrayVals.length > 0 && arrayVals.every((val) => compareValue >= val);
+            case 'greater_than':
+                return arrayVals.length > 0 && arrayVals.every((val) => compareValue < val);
+            case 'greater_than_or_equal':
+                return arrayVals.length > 0 && arrayVals.every((val) => compareValue <= val);
+            case 'is_like':
+                return arrayVals.some((val) => val.indexOf(compareValue) >= 0);
+            default:
+                return false;
+        }
+    }
+
+    // Returns whether the condition holds, or null when the condition is unknown.
+    function conditionMatches(condition, value, compareValue, arrayVals, isArrayVals) {
+        switch (condition) {
+            case 'equal':
+            case 'not_equal': {
+                const equal = isArrayVals
+                    ? arrayValsCompare(compareValue, arrayVals, 'equal')
+                    : arrayValsCompare(value, compareValue.split(/\s*,\s*/), 'equal');
+                return condition === 'equal' ? equal : !equal;
+            }
 
             case 'less_than':
-                retCase = arrayVals.length > 0 ? true : false;
-                $.each(arrayVals, function (index, val) {
-                    if (compareValue <= val) {
-                        retCase = false;
-                        return false;
-                    }
-                })
-                break;
-
             case 'less_than_or_equal':
-                retCase = arrayVals.length > 0 ? true : false;
-                $.each(arrayVals, function (index, val) {
-                    if (compareValue < val) {
-                        retCase = false;
-                        return false;
-                    }
-                })
-                break;
-
             case 'greater_than':
-                retCase = arrayVals.length > 0 ? true : false;
-                $.each(arrayVals, function (index, val) {
-                    if (compareValue >= val) {
-                        retCase = false;
-                        return false;
-                    }
-                })
-                break;
-
-            case 'greater_than_or_equal':
-                console.log(arrayVals);
-                console.log(arrayVals.length);
-                retCase = arrayVals.length > 0 ? true : false;
-                $.each(arrayVals, function (index, val) {
-                    if (compareValue > val) {
-                        retCase = false;
-                        return false;
-                    }
-                })
-                break;
+            case 'greater_than_or_equal': {
+                if (isArrayVals) {
+                    return arrayValsCompare(compareValue, arrayVals, condition);
+                }
+                const number = (value == '') ? 0 : parseInt(value, 10);
+                if (condition === 'less_than') {
+                    return number < compareValue;
+                }
+                if (condition === 'less_than_or_equal') {
+                    return number <= compareValue;
+                }
+                if (condition === 'greater_than') {
+                    return number > compareValue;
+                }
+                return number >= compareValue;
+            }
 
             case 'is_like':
-                $.each(arrayVals, function (index, val) {
-                    if (val.indexOf(compareValue) >= 0) {
-                        retCase = true;
-                    }
-                })
-                break;
+            case 'is_not_like': {
+                const like = isArrayVals
+                    ? arrayValsCompare(compareValue, arrayVals, 'is_like')
+                    : value.indexOf(compareValue) >= 0;
+                return condition === 'is_like' ? like : !like;
+            }
+
+            default:
+                return null;
         }
-        return retCase;
     }
 
     $('.hashform-form-conditions').each(function () {
-        const $this = $(this);
-        const parentForm = $this.closest('form');
-        const conditions = JSON.parse($this.val());
-        $.each(conditions, function (index, val) {
-            var conditionTrigger = parentForm.find('[name="item_meta[' + val.compare_to + ']');
-            var isArrayVals = false;
-            const actionField = parentForm.find('#hf-field-container-' + val.compare_from);
-            const compareCondition = val.compare_condition;
-            const compareValue = val.compare_value;
-            const conditionAction = val.condition_action;
+        const parentForm = $(this).closest('form');
 
+        $.each(JSON.parse($(this).val()), function (index, val) {
+            const actionField = parentForm.find('#hf-field-container-' + val.compare_from);
+            const showOnMatch = val.condition_action === 'show';
+
+            // Fields that accept several values post as item_meta[id][].
+            let conditionTrigger = parentForm.find('[name="item_meta[' + val.compare_to + ']');
+            let isArrayVals = false;
             if (!(conditionTrigger.length > 0)) {
                 conditionTrigger = parentForm.find('[name="item_meta[' + val.compare_to + '][]');
                 isArrayVals = true;
             }
 
             conditionTrigger.on('change', function () {
-                var value = $(this).val();
-                var selector = $(this);
-                var arrayVals = [];
+                const trigger = $(this);
+                let value = trigger.val();
+                let arrayVals = [];
+
                 if (isArrayVals) {
                     arrayVals = conditionTrigger.map(function () {
                         return $(this).is(':checked') ? $(this).val() : null;
                     }).toArray();
                 }
 
-                if ($(this).attr('type') && $(this).attr('type') == 'checkbox') {
-                    if (!$(this).is(':checked')) {
-                        value = '';
-                    }
+                // An unchecked checkbox posts nothing, so treat it as empty.
+                if (trigger.attr('type') === 'checkbox' && !trigger.is(':checked')) {
+                    value = '';
                 }
 
-                switch (compareCondition) {
-                    case 'equal':
-                        if (isArrayVals ? arrayValsCompare(compareValue, arrayVals, 'equal') : arrayValsCompare(value, compareValue.split(/\s*,\s*/), 'equal')) {
-                            if (actionField.length) {
-                                if (conditionAction == 'show') {
-                                    actionField.show();
-                                } else {
-                                    actionField.hide();
-                                }
-                            }
+                const matched = conditionMatches(val.compare_condition, value, val.compare_value, arrayVals, isArrayVals);
 
-                        } else {
-                            if (actionField.length) {
-                                if (conditionAction == 'show') {
-                                    actionField.hide();
-                                } else {
-                                    actionField.show();
-                                }
-                            }
-                        }
-                        break;
-
-                    case 'not_equal':
-                        if (!(isArrayVals ? arrayValsCompare(compareValue, arrayVals, 'equal') : arrayValsCompare(value, compareValue.split(/\s*,\s*/), 'equal'))) {
-                            if (actionField.length) {
-                                if (conditionAction == 'show') {
-                                    actionField.show();
-                                } else {
-                                    actionField.hide();
-                                }
-                            }
-
-                        } else {
-                            if (actionField.length) {
-                                if (conditionAction == 'show') {
-                                    actionField.hide();
-                                } else {
-                                    actionField.show();
-                                }
-                            }
-                        }
-                        break;
-
-                    case 'less_than':
-                        value = (value == '') ? 0 : parseInt(value);
-                        if (isArrayVals ? arrayValsCompare(compareValue, arrayVals, 'less_than') : (value < compareValue)) {
-                            if (actionField.length) {
-                                if (conditionAction == 'show') {
-                                    actionField.show();
-                                } else {
-                                    actionField.hide();
-                                }
-                            }
-
-                        } else {
-                            if (actionField.length) {
-                                if (conditionAction == 'show') {
-                                    actionField.hide();
-                                } else {
-                                    actionField.show();
-                                }
-                            }
-                        }
-                        break;
-
-                    case 'less_than_or_equal':
-                        value = (value == '') ? 0 : parseInt(value);
-                        if (isArrayVals ? arrayValsCompare(compareValue, arrayVals, 'less_than_or_equal') : (value <= compareValue)) {
-                            if (actionField.length) {
-                                if (conditionAction == 'show') {
-                                    actionField.show();
-                                } else {
-                                    actionField.hide();
-                                }
-                            }
-
-                        } else {
-                            if (actionField.length) {
-                                if (conditionAction == 'show') {
-                                    actionField.hide();
-                                } else {
-                                    actionField.show();
-                                }
-                            }
-                        }
-                        break;
-
-                    case 'greater_than':
-                        value = (value == '') ? 0 : parseInt(value);
-                        if (isArrayVals ? arrayValsCompare(compareValue, arrayVals, 'greater_than') : (value > compareValue)) {
-                            if (actionField.length) {
-                                if (conditionAction == 'show') {
-                                    actionField.show();
-                                } else {
-                                    actionField.hide();
-                                }
-                            }
-
-                        } else {
-                            if (actionField.length) {
-                                if (conditionAction == 'show') {
-                                    actionField.hide();
-                                } else {
-                                    actionField.show();
-                                }
-                            }
-                        }
-                        break;
-
-                    case 'greater_than_or_equal':
-                        value = (value == '') ? 0 : parseInt(value);
-                        if (isArrayVals ? arrayValsCompare(compareValue, arrayVals, 'greater_than_or_equal') : (value >= compareValue)) {
-                            if (actionField.length) {
-                                if (conditionAction == 'show') {
-                                    actionField.show();
-                                } else {
-                                    actionField.hide();
-                                }
-                            }
-
-                        } else {
-                            if (actionField.length) {
-                                if (conditionAction == 'show') {
-                                    actionField.hide();
-                                } else {
-                                    actionField.show();
-                                }
-                            }
-                        }
-                        break;
-
-                    case 'is_like':
-                        if (isArrayVals ? arrayValsCompare(compareValue, arrayVals, 'is_like') : (value.indexOf(compareValue) >= 0)) {
-                            if (actionField.length) {
-                                if (conditionAction == 'show') {
-                                    actionField.show();
-                                } else {
-                                    actionField.hide();
-                                }
-                            }
-
-                        } else {
-                            if (actionField.length) {
-                                if (conditionAction == 'show') {
-                                    actionField.hide();
-                                } else {
-                                    actionField.show();
-                                }
-                            }
-                        }
-                        break;
-
-                    case 'is_not_like':
-                        if (!(isArrayVals ? arrayValsCompare(compareValue, arrayVals, 'is_like') : (value.indexOf(compareValue) >= 0))) {
-                            if (actionField.length) {
-                                if (conditionAction == 'show') {
-                                    actionField.show();
-                                } else {
-                                    actionField.hide();
-                                }
-                            }
-
-                        } else {
-                            if (actionField.length) {
-                                if (conditionAction == 'show') {
-                                    actionField.hide();
-                                } else {
-                                    actionField.show();
-                                }
-                            }
-                        }
-                        break;
+                if (matched !== null && actionField.length) {
+                    actionField.toggle(matched === showOnMatch);
                 }
             }).trigger('change');
         });
-    })
+    });
 
-    $(".hf-field-content input, .hf-field-content select, .hf-field-content textarea").on('focus', function () {
+    /* -----------------------------------------------------------------------
+     * Field focus styling
+     * -------------------------------------------------------------------- */
+
+    $('.hf-field-content input, .hf-field-content select, .hf-field-content textarea').on('focus', function () {
         $(this).parent().addClass('hf-field-focussed');
     }).on('focusout', function () {
         $(this).parent().removeClass('hf-field-focussed');
-    })
+    });
 
-    var upload_counter = 0;
-    var uploader = {};
+    /* -----------------------------------------------------------------------
+     * File uploads
+     * -------------------------------------------------------------------- */
+
+    // Which uploads get a thumbnail preview rather than just a filename. Kept
+    // in step with the formats the server accepts.
+    const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'bmp'];
+
+    // Drawn with currentColor so it follows whatever the dropzone text is.
+    const UPLOAD_ICON = '<svg class="hf-upload-dropzone-icon" width="28" height="28" viewBox="0 0 24 24" fill="none"'
+        + ' stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"'
+        + ' aria-hidden="true" focusable="false">'
+        + '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>'
+        + '<polyline points="17 8 12 3 7 8"/>'
+        + '<line x1="12" y1="3" x2="12" y2="15"/>'
+        + '</svg>';
+
+    // The label and extension list are author supplied, and they are being
+    // concatenated into a template string rather than set as text.
+    function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, function (char) {
+            return {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[char];
+        });
+    }
+
+    // Bytes to something a person reads. The library has its own _formatSize,
+    // but it is a private method on the instance and this runs before one
+    // exists.
+    function formatUploadSize(bytes) {
+        const size = Number(bytes);
+
+        if (!size || size < 0) {
+            return '';
+        }
+        if (size >= 1024 * 1024 * 1024) {
+            return Math.round(size / (1024 * 1024 * 1024) * 10) / 10 + ' GB';
+        }
+        if (size >= 1024 * 1024) {
+            return Math.round(size / (1024 * 1024)) + ' MB';
+        }
+        return Math.max(1, Math.round(size / 1024)) + ' KB';
+    }
+
+    // Holds each uploader instance for the lifetime of the page.
+    const uploaders = [];
+
     $('.hf-file-uploader').each(function () {
-        upload_counter++;
-        var attr_element_id = $(this).attr('id'),
-            size = $(this).attr('data-max-upload-size'),
-            selector = $(this),
-            uploader_label = $(this).attr('data-upload-label'),
-            multiple_upload = ($(this).attr('data-multiple-uploads') == 'true') ? true : false,
-            upload_limit = $(this).attr('data-multiple-uploads-limit'),
-            upload_limit_message = $(this).attr('data-multiple-uploads-error-message'),
-            extensions = $(this).attr('data-extensions'),
-            extension_error_message = $(this).attr('data-extensions-error-message'),
-            extensions_array = extensions.split(',');
+        const element = $(this);
+        const elementId = element.attr('id');
 
-        upload_limit = upload_limit < 1 ? 1 : upload_limit;
+        /*
+         * The builder canvas and the style preview draw a static copy of the
+         * uploader to show what it looks like, without an id or any of the
+         * settings. There is nothing to start up on one of those — and reading
+         * its extensions threw, which stopped every uploader after it on the
+         * page from being set up at all.
+         */
+        if (!elementId) {
+            return;
+        }
 
-        uploader['uploader' + upload_counter] = new qq.FileUploader({
-            element: document.getElementById(attr_element_id),
+        const sizeLimit = element.attr('data-max-upload-size');
+        const minSizeLimit = Number(element.attr('data-min-upload-size')) || 0;
+        const uploaderLabel = element.attr('data-upload-label');
+        const multipleUpload = element.attr('data-multiple-uploads') === 'true';
+        const extensions = (element.attr('data-extensions') || '').split(',').filter(Boolean);
+        const extensionErrorMessage = element.attr('data-extensions-error-message');
+
+        let uploadLimit = element.attr('data-multiple-uploads-limit');
+        let uploadLimitMessage = element.attr('data-multiple-uploads-error-message');
+        uploadLimit = uploadLimit < 1 ? 1 : uploadLimit;
+
+        const wrapper = () => $('#' + elementId).closest('.hf-file-uploader-wrapper');
+
+        // The constraints are already enforced, but nowhere on the page said
+        // what they were, so the first a visitor heard about a limit was an
+        // alert() after picking a file. Spelling them out on the dropzone is
+        // the whole reason it is worth having one.
+        const constraints = [];
+
+        if (extensions.length && extensions[0] !== '') {
+            constraints.push(extensions.map((ext) => ext.trim().toUpperCase()).join(', '));
+        }
+        if (minSizeLimit > 0) {
+            constraints.push(formatUploadSize(minSizeLimit) + ' to ' + formatUploadSize(sizeLimit));
+        } else if (sizeLimit > 0) {
+            constraints.push('up to ' + formatUploadSize(sizeLimit));
+        }
+        if (multipleUpload && uploadLimit > 0) {
+            constraints.push(uploadLimit + ' files max');
+        }
+
+        // Filters the operating system's own file dialog. Without it a JPG only
+        // field still offers every file on the machine and the rule is only
+        // discovered after picking one.
+        const acceptFiles = extensions
+            .map((ext) => ext.trim())
+            .filter(Boolean)
+            .map((ext) => '.' + ext.toLowerCase())
+            .join(',');
+
+        // One place for every rejection, so a failure reads on the form instead
+        // of in a browser dialog the visitor has to dismiss before continuing.
+        const showUploadError = (message) => {
+            const box = wrapper().find('.hf-upload-error');
+
+            if (!box.length) {
+                window.alert(message);
+                return;
+            }
+
+            box.text(message).addClass('hf-upload-error-visible');
+        };
+
+        const clearUploadError = () => {
+            wrapper().find('.hf-upload-error').text('').removeClass('hf-upload-error-visible');
+        };
+
+        const dropTitle = multipleUpload
+            ? 'Drag and drop your files here'
+            : 'Drag and drop your file here';
+
+        uploaders.push(new qq.FileUploader({
+            element: document.getElementById(elementId),
             action: hashform_vars.ajaxurl,
             params: {
                 action: 'hashform_file_upload_action',
                 file_uploader_nonce: hashform_vars.ajax_nounce,
-                allowedExtensions: extensions_array,
-                sizeLimit: size,
+                allowedExtensions: extensions,
+                sizeLimit: sizeLimit
             },
-            allowedExtensions: extensions_array,
-            sizeLimit: size,
-            minSizeLimit: 50,
-            uploadButtonText: uploader_label,
+            allowedExtensions: extensions,
+            sizeLimit: sizeLimit,
+            // 50 bytes is the old hardcoded floor, kept as the default so a
+            // field with no minimum set behaves exactly as it did.
+            minSizeLimit: minSizeLimit > 0 ? minSizeLimit : 50,
+            acceptFiles: acceptFiles,
+            uploadButtonText: uploaderLabel,
+            multiple: multipleUpload,
+
+            // The stock template was a bare grey button with a 300px drop area
+            // that only existed mid-drag. .qq-upload-button is kept as a real
+            // button inside the card rather than becoming the card itself, so
+            // the --hf-upload-* settings a site has already configured in the
+            // styler keep applying to exactly what they were configured for.
+            template: '<div class="qq-uploader">' +
+                '<div class="hf-upload-dropzone">' +
+                    UPLOAD_ICON +
+                    '<span class="hf-upload-dropzone-title">' + escapeHtml(dropTitle) + '</span>' +
+                    '<span class="hf-upload-dropzone-or">or</span>' +
+                    '<div class="qq-upload-button">{uploadButtonText}</div>' +
+                    (constraints.length
+                        ? '<span class="hf-upload-dropzone-hint">' + escapeHtml(constraints.join('  ·  ')) + '</span>'
+                        : '') +
+                    '<div class="qq-upload-drop-area"><span>{dragText}</span></div>' +
+                '</div>' +
+                '<div class="hf-upload-error" role="alert" aria-live="polite"></div>' +
+                '<ul class="qq-upload-list"></ul>' +
+                '</div>',
+
+            // The progress bar is wrapped in a track so it has something to run
+            // against. _find() resolves by class at any depth, so nesting is
+            // safe and the library still drives the width.
+            fileTemplate: '<li>' +
+                '<span class="hf-file-row">' +
+                    '<span class="qq-upload-file"></span>' +
+                    '<span class="qq-upload-spinner"></span>' +
+                    '<span class="qq-upload-size"></span>' +
+                    '<span class="qq-upload-failed-text">{failUploadtext}</span>' +
+                    '<a class="qq-upload-cancel" href="#">{cancelButtonText}</a>' +
+                '</span>' +
+                '<span class="hf-progress-track"><span class="qq-progress-bar"></span></span>' +
+                '</li>',
 
             onSubmit: function (id, fileName) {
-                if (multiple_upload == true && upload_limit != -1) {
-                    var limit_counter = selector.parent().find('.hf-multiple-upload-limit').val();
-                    limit_counter++;
-                    selector.parent().find('.hf-multiple-upload-limit').val(limit_counter);
-                    if (limit_counter > upload_limit) {
-                        upload_limit_message = (upload_limit_message != '') ? upload_limit_message : 'Maximum number of files allowed is ' + upload_limit;
-                        alert(upload_limit_message);
-                        selector.parent().find('.hf-multiple-upload-limit').val(upload_limit);
-                        return false;
-                    }
+                clearUploadError();
+
+                if (!multipleUpload || uploadLimit == -1) {
+                    return;
+                }
+
+                const counter = element.parent().find('.hf-multiple-upload-limit');
+                const used = Number(counter.val()) + 1;
+                counter.val(used);
+
+                if (used > uploadLimit) {
+                    uploadLimitMessage = uploadLimitMessage !== ''
+                        ? uploadLimitMessage
+                        : 'Maximum number of files allowed is ' + uploadLimit;
+                    showUploadError(uploadLimitMessage);
+                    counter.val(uploadLimit);
+                    return false;
                 }
             },
-
-            onProgress: function (id, fileName, loaded, total) { },
 
             onComplete: function (id, fileName, responseJSON) {
-
-                if (responseJSON.success) {
-
-                    $('#' + attr_element_id).closest('.hf-file-uploader-wrapper').find('.hf-error').html('');
-                    var extension_array = fileName.split('.');
-                    var extension = extension_array.pop();
-
-                    if (extension == 'jpg' || extension == 'jpeg' || extension == 'png' || extension == 'gif' || extension == 'JPG' || extension == 'JPEG' || extension == 'PNG' || extension == 'GIF') {
-                        var preview_img = responseJSON.url;
+                if (!responseJSON.success) {
+                    // The server rejected it. Its own message is surfaced by
+                    // showMessage; this only guards against a silent failure.
+                    if (!responseJSON.error) {
+                        showUploadError('That file could not be uploaded. Please try again.');
                     }
+                    return;
+                }
 
-                    var preview_html = '<div class="hf-prev-holder" id="hf-uploaded-' + id + '">';
-                    if (preview_img) {
-                        preview_html += '<img src="' + preview_img + '" />';
-                    }
-                    preview_html += '<span class="hf-prev-name">' + fileName + '</span></div>';
+                clearUploadError();
 
-                    if (multiple_upload) {
-                        var url = responseJSON.url;
-                        var added_url = $('#' + attr_element_id).closest('.hf-file-uploader-wrapper').find('.hf-uploaded-files').val();
-                        if (added_url == '') {
-                            added_url = url;
-                        } else {
-                            var added_url_array = added_url.split(',');
-                            added_url_array.push(url);
-                            added_url = added_url_array.join();
-                        }
+                const extension = fileName.split('.').pop();
+                const previewImage = IMAGE_EXTENSIONS.includes(extension.toLowerCase()) ? responseJSON.url : '';
 
-                        $('#' + attr_element_id).closest('.hf-file-uploader-wrapper').find('.hf-uploaded-files').val(added_url);
-                        $('#' + attr_element_id).closest('.hf-file-uploader-wrapper').find('.hf-file-preview').append(preview_html);
+                let previewHtml = '<div class="hf-prev-holder" id="hf-uploaded-' + id + '">';
+                if (previewImage) {
+                    previewHtml += '<img src="' + previewImage + '" />';
+                }
+                previewHtml += '<span class="hf-prev-name">' + fileName + '</span></div>';
 
-                    } else {
-                        $('#' + attr_element_id).closest('.hf-file-uploader-wrapper').find('.hf-uploaded-files').val(responseJSON.url);
-                        $('#' + attr_element_id).closest('.hf-file-uploader-wrapper').find('.hf-file-preview').html(preview_html);
-                    }
+                const uploadedFiles = wrapper().find('.hf-uploaded-files');
 
+                if (multipleUpload) {
+                    const existing = uploadedFiles.val();
+                    uploadedFiles.val(existing === '' ? responseJSON.url : existing + ',' + responseJSON.url);
+                    wrapper().find('.hf-file-preview').append(previewHtml);
                 } else {
-                    console.log(responseJSON);
+                    uploadedFiles.val(responseJSON.url);
+                    wrapper().find('.hf-file-preview').html(previewHtml);
                 }
             },
 
-            onCancel: function (id, fileName) { },
-            onError: function (id, fileName, xhr) { },
-
             messages: {
-                typeError: extension_error_message,
-                sizeError: "{file} is too large, maximum file size is {sizeLimit}.",
-                minSizeError: "{file} is too small, minimum file size is {minSizeLimit}.",
-                emptyError: "{file} is empty, please select files again without it.",
-                onLeave: "The files are being uploaded, if you leave now the upload will be cancelled."
+                typeError: extensionErrorMessage,
+                sizeError: '{file} is too large, maximum file size is {sizeLimit}.',
+                minSizeError: '{file} is too small, minimum file size is {minSizeLimit}.',
+                emptyError: '{file} is empty, please select files again without it.',
+                onLeave: 'The files are being uploaded, if you leave now the upload will be cancelled.'
             },
 
             showMessage: function (message) {
-                alert(message);
-            },
-
-            multiple: multiple_upload
-        });
-
+                showUploadError(message);
+            }
+        }));
     });
 
-
     $('body').on('click', '.hf-preview-remove', function () {
-        const selector = $(this);
+        const button = $(this);
+
         $.ajax({
             url: hashform_vars.ajaxurl,
-            data: 'action=hashform_file_delete_action&path=' + selector.data('path') + '&_wpnonce=' + hashform_vars.ajax_nounce,
             type: 'post',
+            data: 'action=hashform_file_delete_action&path=' + button.data('path') + '&_wpnonce=' + hashform_vars.ajax_nounce,
             success: function (res) {
-                if (res == 'success') {
-                    var parent_wrapper = selector.closest('.hf-file-uploader-wrapper')
-                    var prev_url = parent_wrapper.find('.hf-uploaded-files').val();
-                    var new_url = prev_url.replace(selector.data('url'), '');
-                    new_url = new_url.replace(',,', ',');
-                    parent_wrapper.find('.hf-uploaded-files').val(new_url);
-
-                    var limit_counter = parent_wrapper.find('.hf-multiple-upload-limit').val();
-                    limit_counter--;
-                    limit_counter = (limit_counter < 0) ? 0 : limit_counter;
-                    parent_wrapper.find('.hf-multiple-upload-limit').val(limit_counter);
-
-                    selector.parent().fadeOut('1500', function () {
-                        selector.parent().remove();
-                        parent_wrapper.find('#' + selector.attr('data-remove-id')).remove();
-                    });
+                if (res !== 'success') {
+                    return;
                 }
+
+                const wrapper = button.closest('.hf-file-uploader-wrapper');
+                const uploadedFiles = wrapper.find('.hf-uploaded-files');
+                uploadedFiles.val(uploadedFiles.val().replace(button.data('url'), '').replace(',,', ','));
+
+                const counter = wrapper.find('.hf-multiple-upload-limit');
+                counter.val(Math.max(0, Number(counter.val()) - 1));
+
+                button.parent().fadeOut('1500', function () {
+                    button.parent().remove();
+                    wrapper.find('#' + button.attr('data-remove-id')).remove();
+                });
             }
         });
     });

@@ -7,6 +7,7 @@ class HashFormFieldNumber extends HashFormFieldType {
 
     protected function field_settings_for_type() {
         return array(
+            'advanced_validation' => true,
             'clear_on_focus' => true,
             'invalid' => true,
             'range' => true,
@@ -26,7 +27,9 @@ class HashFormFieldNumber extends HashFormFieldType {
         $this->remove_commas_from_number($args);
 
         if (!is_numeric($args['value']) && '' !== $args['value'])
-            $errors['field' . $args['id']] = apply_filters('hashform_translate_string', HashFormFields::get_error_msg($this->field, 'invalid'), 'Hash Form', HashFormBuilder::get_form_title($this->args['form_id']) . ' - ' . $args['id'] . ' - ' . 'Field Validation Message');
+            // $args is the parameter, not a property: $this->args does not
+            // exist, so the form title resolved from null on every failure.
+            $errors['field' . $args['id']] = apply_filters('hashform_translate_string', HashFormFields::get_error_msg($this->field, 'invalid'), 'Hash Form', HashFormBuilder::get_form_title(isset($args['form_id']) ? $args['form_id'] : 0) . ' - ' . $args['id'] . ' - ' . 'Field Validation Message');
 
         if ($args['value'] != '') {
             $minnum = HashFormFields::get_option($this->field, 'minnum');

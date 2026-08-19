@@ -17,16 +17,10 @@ class HashFormBlock {
 
     public function register_block() {
         $asset_file = include(HASHFORM_PATH . 'build/index.asset.php');
-        $all_forms = HashFormHelper::get_all_forms_list_options();
-        unset($all_forms['']);
 
         wp_register_style('hfb-style', HASHFORM_URL . 'css/form-block.css', array(), HASHFORM_VERSION);
         wp_register_style('hfb-editor', HASHFORM_URL . 'css/editor.css', array(), HASHFORM_VERSION);
         wp_register_script('hfb-blocks', HASHFORM_URL . 'build/index.js', $asset_file['dependencies'], $asset_file['version'], false);
-        wp_localize_script('hfb-blocks', 'hash_form_block_data', array(
-            'forms' => $all_forms,
-            'create_form_link' => esc_url(add_query_arg('page', 'hashform', admin_url('admin.php')))
-        ));
 
         register_block_type(
             'hash-form/form-selector', array(
@@ -406,6 +400,15 @@ class HashFormBlock {
     }
 
     public function enqueue_block_editor_assets() {
+        // The forms list is only needed inside the block editor; querying it
+        // on every request (init) was wasted work.
+        $all_forms = HashFormHelper::get_all_forms_list_options();
+        unset($all_forms['']);
+
+        wp_localize_script('hfb-blocks', 'hash_form_block_data', array(
+            'forms' => $all_forms,
+            'create_form_link' => esc_url(add_query_arg('page', 'hashform', admin_url('admin.php')))
+        ));
     }
 
     public function get_form_html($attr) {
@@ -450,7 +453,8 @@ class HashFormBlock {
     }
 
     public function load_textdomain() {
-        load_plugin_textdomain('hash-form', false, HASHFORM_PATH . 'languages');
+        // Relative to the plugins directory, not an absolute path.
+        load_plugin_textdomain('hash-form', false, dirname(plugin_basename(HASHFORM_FILE)) . '/languages');
     }
 
     // Enqueue localization data for our blocks.
@@ -470,7 +474,8 @@ class HashFormBlock {
 
             if (str_contains($attrs, 'Family')) {
                 $family = $value;
-                $weight = $blockAttrs[str_replace('Family', 'Weight', $attrs)];
+                $weight_key = str_replace('Family', 'Weight', $attrs);
+                $weight = isset($blockAttrs[$weight_key]) ? $blockAttrs[$weight_key] : '';
             }
 
             if ($family && $family != 'inherit') {
@@ -478,9 +483,12 @@ class HashFormBlock {
             }
         }
 
-        // Get CSS for the Block.
+        // Get CSS for the Block. The attribute is arbitrary post content and
+        // ends up inside a <style> tag, so make sure no markup can survive —
+        // otherwise a "</style><script>" payload would execute for viewers.
         if (isset($blockAttrs['hfStyle'])) {
-            $block_css_arr[$blockAttrs['id']] = is_array($blockAttrs['hfStyle']) ? '' : $blockAttrs['hfStyle'];
+            $block_style = is_array($blockAttrs['hfStyle']) ? '' : $blockAttrs['hfStyle'];
+            $block_css_arr[$blockAttrs['id']] = str_replace('<', '', wp_strip_all_tags($block_style));
         }
 
         foreach ($block_css_arr as $val) {

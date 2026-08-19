@@ -1,5 +1,12 @@
 (function ($) {
-    "use strict";
+    'use strict';
+
+    const ajaxUrl = hashform_admin_js_obj.ajax_url;
+    const adminNonce = hashform_admin_js_obj.nonce;
+
+    /* -----------------------------------------------------------------------
+     * Shared helpers
+     * -------------------------------------------------------------------- */
 
     function debounce(func, delay) {
         let timer;
@@ -11,36 +18,40 @@
         };
     }
 
-    var ajaxUrl = hashform_admin_js_obj.ajax_url;
-    var adminNonce = hashform_admin_js_obj.nonce;
+    /* -----------------------------------------------------------------------
+     * Color picker
+     * -------------------------------------------------------------------- */
+
+    // The picker updates its input silently; re-fire `change` so the live
+    // preview handlers below see the new value.
+    function triggerPickerChange(event) {
+        const element = $(event.target).closest('.wp-picker-input-wrap').find('.wp-color-picker');
+        if (element.length) {
+            setTimeout(function () {
+                element.trigger('change');
+            }, 100);
+        }
+    }
 
     $('.hf-color-picker').wpColorPicker({
-        change: function (event, ui) {
-            var element = $(event.target).closest('.wp-picker-input-wrap').find('.wp-color-picker');
-            if (element) {
-                setTimeout(function () {
-                    element.trigger('change');
-                }, 100);
-            }
-        },
-        clear: function (event) {
-            var element = $(event.target).closest('.wp-picker-input-wrap').find('.wp-color-picker');
-            if (element) {
-                setTimeout(function () {
-                    element.trigger('change');
-                }, 100);
-            }
-        }
+        change: triggerPickerChange,
+        clear: triggerPickerChange
     });
 
-    // Call all the necessary functions for Icon Picker
+    /* -----------------------------------------------------------------------
+     * Icon picker
+     * -------------------------------------------------------------------- */
+
     $('body').on('click', '.hf-icon-box-wrap .hf-icon-list li', function () {
-        var icon_class = $(this).find('i').attr('class');
-        $(this).closest('.hf-icon-box').find('.hf-icon-list li').removeClass('icon-active');
-        $(this).addClass('icon-active');
-        $(this).closest('.hf-icon-box').prev('.hf-selected-icon').children('i').attr('class', '').addClass(icon_class);
-        $(this).closest('.hf-icon-box').next('input').val(icon_class).trigger('change');
-        $(this).closest('.hf-icon-box').slideUp();
+        const $item = $(this);
+        const $box = $item.closest('.hf-icon-box');
+        const iconClass = $item.find('i').attr('class');
+
+        $box.find('.hf-icon-list li').removeClass('icon-active');
+        $item.addClass('icon-active');
+        $box.prev('.hf-selected-icon').children('i').attr('class', '').addClass(iconClass);
+        $box.next('input').val(iconClass).trigger('change');
+        $box.slideUp();
     });
 
     $('body').on('click', '.hf-icon-box-wrap .hf-selected-icon', function () {
@@ -48,48 +59,34 @@
     });
 
     $('body').on('change', '.hf-icon-box-wrap .hf-icon-search select', function () {
-        var selected = $(this).val();
-        $(this).parents('.hf-icon-box').find('.hf-icon-search-input').val('');
-        $(this).parents('.hf-icon-box').children('.hf-icon-list').hide().removeClass('active');
-        $(this).parents('.hf-icon-box').children('.' + selected).fadeIn().addClass('active');
-        $(this).parents('.hf-icon-box').children('.' + selected).find('li').show();
+        const $box = $(this).closest('.hf-icon-box');
+        const selected = $(this).val();
+
+        $box.find('.hf-icon-search-input').val('');
+        $box.children('.hf-icon-list').hide().removeClass('active');
+        $box.children('.' + selected).fadeIn().addClass('active').find('li').show();
     });
 
-    $('body').on('keyup', '.hf-icon-box-wrap .hf-icon-search input', function (e) {
-        var $input = $(this);
-        var keyword = $input.val().toLowerCase();
-        var search_criteria = $input.closest('.hf-icon-box').find('.hf-icon-list.active i');
-        delay(function () {
-            $(search_criteria).each(function () {
-                if ($(this).attr('class').indexOf(keyword) > -1) {
-                    $(this).parent().show();
-                } else {
-                    $(this).parent().hide();
-                }
-            });
-        }, 500);
-    });
+    $('body').on('keyup', '.hf-icon-box-wrap .hf-icon-search input', debounce(function () {
+        const keyword = $(this).val().toLowerCase();
+        const icons = $(this).closest('.hf-icon-box').find('.hf-icon-list.active i');
 
-    var delay = (function () {
-        var timer = 0;
-        return function (callback, ms) {
-            clearTimeout(timer);
-            timer = setTimeout(callback, ms);
-        };
-    })();
+        icons.each(function () {
+            $(this).parent().toggle($(this).attr('class').indexOf(keyword) > -1);
+        });
+    }, 500));
 
-    // Range JS
+    /* -----------------------------------------------------------------------
+     * Range sliders
+     * -------------------------------------------------------------------- */
+
     $('.hf-range-input-selector').each(function () {
-        var newSlider = $(this);
-        var sliderValue = newSlider.val();
-        var sliderMinValue = parseFloat(newSlider.attr('min'));
-        var sliderMaxValue = parseFloat(newSlider.attr('max'));
-        var sliderStepValue = parseFloat(newSlider.attr('step'));
-        newSlider.prev('.hf-range-slider').slider({
-            value: sliderValue,
-            min: sliderMinValue,
-            max: sliderMaxValue,
-            step: sliderStepValue,
+        const input = $(this);
+        input.prev('.hf-range-slider').slider({
+            value: input.val(),
+            min: parseFloat(input.attr('min')),
+            max: parseFloat(input.attr('max')),
+            step: parseFloat(input.attr('step')),
             range: 'min',
             slide: function (e, ui) {
                 $(this).next().val(ui.value).trigger('change');
@@ -97,147 +94,222 @@
         });
     });
 
-    // Update slider if the input field loses focus as it's most likely changed
-    $('.hf-range-input-selector').blur(function () {
-        var resetValue = isNaN($(this).val()) ? '' : $(this).val();
+    // Update the slider when the input loses focus, as it has most likely changed.
+    $('.hf-range-input-selector').on('blur', function () {
+        const input = $(this);
+        let value = isNaN(input.val()) ? '' : input.val();
 
-        if (resetValue) {
-            var sliderMinValue = parseFloat($(this).attr('min'));
-            var sliderMaxValue = parseFloat($(this).attr('max'));
-            // Make sure our manual input value doesn't exceed the minimum & maxmium values
-            if (resetValue < sliderMinValue) {
-                resetValue = sliderMinValue;
-                $(this).val(resetValue);
+        // Keep a manually typed value within the min/max bounds.
+        if (value) {
+            const min = parseFloat(input.attr('min'));
+            const max = parseFloat(input.attr('max'));
+            if (value < min) {
+                value = min;
             }
-            if (resetValue > sliderMaxValue) {
-                resetValue = sliderMaxValue;
-                $(this).val(resetValue);
+            if (value > max) {
+                value = max;
             }
         }
-        $(this).val(resetValue);
-        $(this).prev('.hf-range-slider').slider('value', resetValue);
+
+        input.val(value);
+        input.prev('.hf-range-slider').slider('value', value);
     });
 
-    // Show/ Hide Single Page Options
-    $(document).on('change', '.hf-typography-font-family', function () {
-        var $this = $(this);
-        var font_family = $(this).val();
-        var standard_fonts = ['inherit', 'Helvetica', 'Verdana', 'Arial', 'Times', 'Georgia', 'Courier', 'Trebuchet', 'Tahoma', 'Palatino'];
-        if (!standard_fonts.includes(font_family)) {
-            var fontId = $this.attr('id');
-            var $fontId = $('link#' + fontId);
+    /* -----------------------------------------------------------------------
+     * Typography
+     * -------------------------------------------------------------------- */
 
-            if ($fontId.length > 0) {
-                $fontId.remove();
-            }
-            $('head').append('<link rel="stylesheet" id="' + fontId + '" href="https://fonts.googleapis.com/css?family=' + font_family + ':100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&subset=latin,latin-ext&display=swap" type="text/css" media="all">');
+    const STANDARD_FONTS = ['inherit', 'Helvetica', 'Verdana', 'Arial', 'Times', 'Georgia', 'Courier', 'Trebuchet', 'Tahoma', 'Palatino'];
+
+    $(document).on('change', '.hf-typography-font-family', function () {
+        const $select = $(this);
+        const fontFamily = $select.val();
+
+        // Anything outside the standard set is a Google font and needs its
+        // stylesheet (re)loaded.
+        if (!STANDARD_FONTS.includes(fontFamily)) {
+            const fontId = $select.attr('id');
+            $('link#' + fontId).remove();
+            $('head').append('<link rel="stylesheet" id="' + fontId + '" href="https://fonts.googleapis.com/css?family=' + fontFamily + ':100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&subset=latin,latin-ext&display=swap" type="text/css" media="all">');
         }
+
+        const $styleField = $select.closest('.hf-typography-font-family-field').next('.hf-typography-font-style-field');
+
         $.ajax({
             url: ajaxUrl,
             data: {
                 action: 'hashform_get_google_font_variants',
-                font_family: font_family,
+                font_family: fontFamily,
                 admin_setting_nonce: adminNonce
             },
             beforeSend: function () {
-                $this.closest('.hf-typography-font-family-field').next('.hf-typography-font-style-field').addClass('hf-typography-loading');
+                $styleField.addClass('hf-typography-loading');
             },
             success: function (response) {
-                $this.closest('.hf-typography-font-family-field').next('.hf-typography-font-style-field').removeClass('hf-typography-loading');
-                $this.closest('.hf-typography-font-family-field').next('.hf-typography-font-style-field').find('select').html(response).trigger("chosen:updated").trigger('change');
+                $styleField.removeClass('hf-typography-loading');
+                $styleField.find('select').html(response).trigger('chosen:updated').trigger('change');
             }
         });
     });
 
-    $('body').find(".hf-typography-fields select").chosen({width: "100%"});
+    $('body').find('.hf-typography-fields select').chosen({width: '100%'});
+
+    /* -----------------------------------------------------------------------
+     * Style template live preview
+     * -------------------------------------------------------------------- */
+
+    // Write one <style> tag per control into the preview iframe so a changed
+    // setting is reflected immediately without a round trip.
+    function hfDynamicCss(control, style, val) {
+        const iframe = $('#hf-template-preview-iframe')[0];
+        let doc = iframe.contentDocument || iframe.contentWindow.document;
+        if (doc.document) {
+            doc = doc.document;
+        }
+
+        const formId = $(document).find('#hf-template-preview-form-id').val() || '00';
+
+        const ctrlEscaped = control.replaceAll('(', '\\(').replaceAll(')', '\\)');
+        $(doc).find('style.' + ctrlEscaped).remove();
+
+        if (val) {
+            $(doc).find('head').append('<style class="' + control + '">body #hf-container-' + formId + '{' + style + '}</style>');
+        }
+    }
 
     $('.hf-style-sidebar [name]').on('change', function () {
-        var id = $(this).attr('id');
-        if (id) {
-            var to = $(this).val();
-            var unit = $(this).attr('data-unit');
-            unit = (unit === undefined) ? '' : unit;
-
-            if ($(this).attr('data-style')) {
-                var weight = to.replace(/\D/g, '');
-                var eid = id.replace('style', 'weight');
-                var css = '--' + eid + ':' + weight + ';';
-
-                var style = to.replace(/\d+/g, '');
-                if ('' == style) {
-                    style = 'normal';
-                }
-                css += '--' + id + ':' + style + '}';
-            } else {
-                var css = '--' + id + ':' + to + unit + '}';
-            }
-            hfDynamicCss(id, css, to);
+        const id = $(this).attr('id');
+        if (!id) {
+            return;
         }
+
+        const to = $(this).val();
+        const unit = $(this).attr('data-unit') || '';
+        let css;
+
+        if ($(this).attr('data-style')) {
+            // Font style selects hold a combined value like `700italic`:
+            // digits are the weight, the rest is the style.
+            const weight = to.replace(/\D/g, '');
+            const style = to.replace(/\d+/g, '') || 'normal';
+            css = '--' + id.replace('style', 'weight') + ':' + weight + ';';
+            css += '--' + id + ':' + style + '}';
+        } else {
+            css = '--' + id + ':' + to + unit + '}';
+        }
+
+        hfDynamicCss(id, css, to);
     });
 
+    $('#hf-template-preview-form-id').on('change', function () {
+        // The canvas header names what is being previewed.
+        $('#hf-style-preview-form').text($(this).find(':selected').text().trim());
+    });
+
+    $('#hf-template-preview-form-id').on('change', debounce(function () {
+        const formData = new FormData($('form#post')[0]);
+        formData.append('action', 'hashform_template_style_preview');
+        formData.append('form_id', $(this).val());
+        formData.append('template_id', $('#post_ID').val());
+        formData.append('admin_setting_nonce', adminNonce);
+
+        $('.hf-form-wrap').addClass('hf-content-loading');
+
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if (!response.success) {
+                    return;
+                }
+
+                $('#hf-template-preview-iframe').remove();
+                const newIframe = $('<iframe>', {
+                    id: 'hf-template-preview-iframe'
+                }).appendTo('.hf-template-preview')[0];
+
+                setTimeout(function () {
+                    const doc = newIframe.contentDocument || newIframe.contentWindow.document;
+                    doc.open();
+                    doc.write(response.data);
+                    doc.close();
+
+                    // The preview is display-only: swallow interactions.
+                    doc.addEventListener('click', (e) => e.preventDefault(), true);
+                    doc.addEventListener('mousedown', (e) => e.preventDefault(), true);
+                    doc.addEventListener('mouseup', (e) => e.preventDefault(), true);
+                }, 0);
+
+                $('.hf-form-wrap').removeClass('hf-content-loading');
+            }
+        });
+    }, 1000)).trigger('change');
+
+    /* -----------------------------------------------------------------------
+     * Tabs and accordions
+     * -------------------------------------------------------------------- */
+
     $('body').on('click', '.hf-setting-tab li', function () {
-        // Add and remove the class for active tab
-        $(this).closest('.hf-tab-container').find('.hf-setting-tab li').removeClass('hf-tab-active');
+        const $container = $(this).closest('.hf-tab-container');
+
+        $container.find('.hf-setting-tab li').removeClass('hf-tab-active');
         $(this).addClass('hf-tab-active');
 
-        var selected_menu = $(this).attr('data-tab');
-
-        $(this).closest('.hf-tab-container').find('.hf-tab-content').hide();
-
-        // Display The Clicked Tab Content
-        $(this).closest('.hf-tab-container').find('.' + selected_menu).show();
-
-
+        $container.find('.hf-tab-content').hide();
+        $container.find('.' + $(this).attr('data-tab')).show();
     });
 
     $('body').on('click', '.hf-settings-heading', function () {
-        if ($(this).hasClass('hf-active'))
+        if ($(this).hasClass('hf-active')) {
             return;
+        }
         $(this).siblings('.hf-form-settings').slideUp();
         $(this).siblings('.hf-settings-heading').removeClass('hf-active');
         $(this).addClass('hf-active');
         $(this).next('.hf-form-settings').slideToggle();
     });
 
-    // Linked button
+    /* -----------------------------------------------------------------------
+     * Linked unit fields (padding/margin style inputs)
+     * -------------------------------------------------------------------- */
+
     $('.hf-linked').on('click', function () {
         $(this).closest('.hf-unit-fields').addClass('hf-not-linked');
     });
 
-    // Unlinked button
     $('.hf-unlinked').on('click', function () {
         $(this).closest('.hf-unit-fields').removeClass('hf-not-linked');
     });
 
-    // Values linked inputs
+    // While linked, typing into one side mirrors the value to all four.
     $('.hf-unit-fields input').on('input', function () {
-        var $val = $(this).val();
-        $(this).closest('.hf-unit-fields:not(.hf-not-linked)').find('input').each(function (key, value) {
-            $(this).val($val).change();
+        const value = $(this).val();
+        $(this).closest('.hf-unit-fields:not(.hf-not-linked)').find('input').each(function () {
+            $(this).val(value).change();
         });
     });
 
+    /* -----------------------------------------------------------------------
+     * Import dropzone
+     * -------------------------------------------------------------------- */
 
-    // Custom File Upload
-    $(".hf-dropzone").change(function () {
-        var $input = $(this);
-        var input = this;
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                var htmlPreview = '<p>' + input.files[0].name + '</p>';
-                var wrapperZone = $input.parent();
-                var previewZone = $input.parent().parent().find('.hf-preview-zone');
-                var boxZone = $input.closest('form').find('.hf-box-body');
-
-                wrapperZone.removeClass('dragover');
-                previewZone.removeClass('hidden');
-                boxZone.empty();
-                boxZone.append(htmlPreview);
-            };
-
-            reader.readAsDataURL(input.files[0]);
+    $('.hf-dropzone').on('change', function () {
+        const $input = $(this);
+        const input = this;
+        if (!input.files || !input.files[0]) {
+            return;
         }
+
+        const reader = new FileReader();
+        reader.onload = function () {
+            $input.parent().removeClass('dragover');
+            $input.parent().parent().find('.hf-preview-zone').removeClass('hidden');
+            $input.closest('form').find('.hf-box-body').empty().append('<p>' + input.files[0].name + '</p>');
+        };
+        reader.readAsDataURL(input.files[0]);
     });
 
     $('.hf-dropzone-wrapper').on('dragover', function (e) {
@@ -254,41 +326,31 @@
 
     $('.hf-remove-preview').on('click', function () {
         try {
-            var boxZone = $(this).parents('.hf-preview-zone').find('.box-body');
-            var previewZone = $(this).parents('.hf-preview-zone');
-            var dropzone = $(this).parents('.hf-preview-zone').siblings('.hf-dropzone-wrapper').find('.hf-dropzone');
-            boxZone.empty();
+            const previewZone = $(this).parents('.hf-preview-zone');
+            const dropzone = previewZone.siblings('.hf-dropzone-wrapper').find('.hf-dropzone');
+
+            previewZone.find('.hf-box-body').empty();
             previewZone.addClass('hidden');
+
+            // A file input can only be cleared through a form reset.
             dropzone.wrap('<form>').closest('form').get(0).reset();
             dropzone.unwrap();
         } catch (err) {
-            console.log(err)
+            console.log(err);
         }
-
     });
 
-    $('body').on('click', '#hf-copy-shortcode', function () {
-        if ($(this).closest('#hf-add-template').hasClass('hf-success')) {
-            return false;
-        }
-        var textToCopy = $(this).prev('input').val();
-        var tempTextarea = $('<textarea>');
-        var successDiv = $(this).closest('#hf-add-template');
-        $('body').append(tempTextarea);
-        tempTextarea.val(textToCopy).select();
-        document.execCommand('copy');
-        tempTextarea.remove();
-        successDiv.addClass('hf-success');
-        setTimeout(function () {
-            successDiv.removeClass('hf-success');
-        }, 3000)
-    });
+    /* The embed dialog's copy buttons now go through the shared
+       [data-hf-clipboard] handler in backend.js, which already handles the
+       insecure-context fallback and the copied confirmation. The bespoke
+       #hf-copy-shortcode handler and its copyToClipboard helper that used to
+       live here were the only users of either. */
 
-    $('.hf-activate-wp-mail-smtp-plugin').on('click', function (e) {
-        e.preventDefault();
-        var button = $(this);
-        button.addClass('updating-message').html(hashform_admin_js_obj.activating_text);
+    /* -----------------------------------------------------------------------
+     * WP Mail SMTP install/activate
+     * -------------------------------------------------------------------- */
 
+    function activateSmtpPlugin(button) {
         $.ajax({
             url: ajaxurl,
             type: 'POST',
@@ -297,115 +359,98 @@
                 slug: 'wp-mail-smtp',
                 file: 'wp_mail_smtp',
                 admin_setting_nonce: adminNonce
-            },
-        }).done(function (result) {
-            var result = JSON.parse(result)
+            }
+        }).done(function (response) {
+            const result = JSON.parse(response);
             if (result.success) {
                 location.reload();
             } else {
                 button.removeClass('updating-message').html(hashform_admin_js_obj.error);
             }
-
         });
+    }
+
+    $('.hf-activate-wp-mail-smtp-plugin').on('click', function (e) {
+        e.preventDefault();
+        const button = $(this);
+        button.addClass('updating-message').html(hashform_admin_js_obj.activating_text);
+        activateSmtpPlugin(button);
     });
 
     $('.hf-install-wp-mail-smtp-plugin').on('click', function (e) {
         e.preventDefault();
-        var button = $(this);
-
+        const button = $(this);
         button.addClass('updating-message').html(hashform_admin_js_obj.installing_text);
 
         wp.updates.installPlugin({
             slug: 'wp-mail-smtp'
         }).done(function () {
             button.html(hashform_admin_js_obj.activating_text);
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'hashform_activate_plugin',
-                    slug: 'wp-mail-smtp',
-                    file: 'wp_mail_smtp',
-                    admin_setting_nonce: adminNonce
-                },
-            }).done(function (result) {
-                var result = JSON.parse(result)
-                if (result.success) {
-                    location.reload();
-                } else {
-                    button.removeClass('updating-message').html(hashform_admin_js_obj.error);
-                }
-
-            });
+            activateSmtpPlugin(button);
         });
     });
 
-    $(document).ready(function () {
-        setTimeout(function () {
-            jQuery('.hf-settings-updated').fadeOut('slow', function () {
-                this.parentNode.removeChild(this);
-            });
-        }, 3000);
-    });
+    /* -----------------------------------------------------------------------
+     * Misc
+     * -------------------------------------------------------------------- */
 
-    $(".hf-field-content input, .hf-field-content select, .hf-field-content textarea").on('focus', function () {
+    setTimeout(function () {
+        $('.hf-updated-info').fadeOut('slow', function () {
+            this.parentNode.removeChild(this);
+        });
+    }, 3000);
+
+    $('.hf-field-content input, .hf-field-content select, .hf-field-content textarea').on('focus', function () {
         $(this).parent().addClass('hf-field-focussed');
     }).on('focusout', function () {
         $(this).parent().removeClass('hf-field-focussed');
-    })
+    });
 
-    $('#hf-template-preview-form-id').on('change', debounce(function () {
-        const formId = $(this).val();
-        const templateId = $('#post_ID').val();
-        var formData = new FormData($('form#post')[0]);
-        formData.append('action', 'hashform_template_style_preview');
-        formData.append('form_id', formId);
-        formData.append('template_id', templateId);
-        formData.append('admin_setting_nonce', adminNonce);
-        $('.hf-form-wrap').addClass('hf-content-loading');
+    /* -----------------------------------------------------------------------
+     * Import/Export panel: import over AJAX
+     *
+     * Was a plain POST, so a rejected file replaced the whole screen with a
+     * bare wp_die() page and the panel was lost. The request is reported back
+     * here instead: spinner while it runs, message in place if it fails, and
+     * a reload only once the form has actually been written.
+     * -------------------------------------------------------------------- */
+
+    $(document).on('submit', '.hf-settings-import-form', function (e) {
+        e.preventDefault();
+
+        const $form = $(this);
+        const $error = $form.closest('.hf-form-row').find('.hf-import-error');
+
+        if ($form.hasClass('is-importing')) {
+            return;
+        }
+
+        $error.text('').removeClass('is-visible');
+        $form.addClass('is-importing');
+
+        const data = new FormData(this);
+        data.append('action', 'hashform_import_form_settings');
+
         $.ajax({
-            url: ajaxurl,
+            url: ajaxUrl,
             type: 'POST',
-            data: formData,
+            data: data,
+            // FormData supplies its own multipart boundary.
             processData: false,
-            contentType: false,
-            beforeSend: function (xhr) {
-                console.log('Starting AJAX...');
-            },
-            success: function (response) {
-                if (response.success) {
-                    $('#hf-template-preview-iframe').remove();
-                    var newIframe = $('<iframe>', {
-                        id: 'hf-template-preview-iframe'
-                    }).appendTo('.hf-template-preview')[0];
-                    setTimeout(function () {
-                        var doc = newIframe.contentDocument || newIframe.contentWindow.document;
-                        doc.open();
-                        doc.write(response.data);
-                        doc.close();
-                        doc.addEventListener('click', e => e.preventDefault(), true);
-                        doc.addEventListener('mousedown', e => e.preventDefault(), true);
-                        doc.addEventListener('mouseup', e => e.preventDefault(), true);
-                    }, 0);
-                    $('.hf-form-wrap').removeClass('hf-content-loading');
-                }
+            contentType: false
+        }).done(function (res) {
+            if (res && res.success) {
+                // The imported fields only show once the page is rebuilt, so
+                // the spinner is left running into the reload.
+                window.location.reload();
+                return;
             }
+
+            $form.removeClass('is-importing');
+            $error.text((res && res.data && res.data.message) || hashform_admin_js_obj.error).addClass('is-visible');
+        }).fail(function () {
+            $form.removeClass('is-importing');
+            $error.text(hashform_admin_js_obj.error).addClass('is-visible');
         });
-    }, 1000)).trigger('change');
+    });
 })(jQuery);
-
-function hfDynamicCss(control, style, val) {
-    var iframe = jQuery('#hf-template-preview-iframe')[0];
-    var doc = iframe.contentDocument || iframe.contentWindow.document;
-    if (doc.document) doc = doc.document;
-    var formid = jQuery(document).find('#hf-template-preview-form-id').val();
-    formid = formid ? formid : '00';
-
-    const ctrlEscaped = control.replaceAll('(', '\\(').replaceAll(')', '\\)');
-    jQuery(doc).find('style.' + ctrlEscaped).remove();
-
-    if (val) {
-        //console.log(style);
-        jQuery(doc).find('head').append('<style class="' + control + '">body #hf-container-' + formid + '{' + style + '}</style>');
-    }
-}

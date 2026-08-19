@@ -116,7 +116,7 @@ defined('ABSPATH') || die();
             <div id="hf-field-container-426" class="hf-form-field  hashform-field-type-separator hf-field-alignment-left">
                 <div class="hf-field-container">
                     <div class="hf-field-content">
-                        <div class="hf-separator-border" style="border-bottom-style:solid; border-bottom-width:2px;" id="field_change_style_426"></div>
+                        <hr class="hf-separator-border" style="border-bottom-style:solid; border-bottom-width:2px;" id="field_change_style_426" />
                     </div>
                 </div>
             </div>

@@ -1,7 +1,36 @@
+/* -----------------------------------------------------------------------------
+ * File upload field
+ *
+ * Unlike the date and time pickers, everything here renders inside
+ * #hf-container-{id}, so the per form --hf-* properties are inherited normally
+ * and no bridging is needed. The locals below read from the form's own field
+ * tokens where there is a sensible source and fall back otherwise.
+ * -------------------------------------------------------------------------- */
+.hf-file-uploader-wrapper {
+    --hf-up-accent: var(--hf-field-border-color-focus, #2271b1);
+    --hf-up-text: var(--hf-field-color-normal, #1e2327);
+    --hf-up-surface: #fff;
+    --hf-up-sunken: #f7f8f9;
+    --hf-up-border: #e2e5ea;
+    --hf-up-muted: #646970;
+    --hf-up-success: #2e9e5b;
+    --hf-up-danger: #d3383c;
+    --hf-up-radius: 8px;
+
+    --hf-up-soft: rgba(34, 113, 177, .08);
+    --hf-up-soft: color-mix(in srgb, var(--hf-up-accent) 10%, transparent);
+
+    --hf-up-danger-soft: rgba(211, 56, 60, .08);
+    --hf-up-danger-soft: color-mix(in srgb, var(--hf-up-danger) 10%, transparent);
+}
+
 .hf-file-uploader .qq-uploader {
     position: relative;
     width: 100%;
 }
+
+/* ---------- Upload button ----------
+   Already fully tokenised through the form styler; left as it was. */
 
 .hf-file-uploader .qq-upload-button {
     display: inline-block;
@@ -50,52 +79,188 @@
     font-size: 0 !important;
 }
 
-.hf-file-uploader .qq-upload-drop-area {
-    width: 100%;
-    max-width: 300px;
-    min-height: 80px;
-    z-index: 2;
-    background: none;
-    text-align: center;
-    border: 2px dashed #EEE;
-    display: flex;
-    justify-content: center;
+/* ---------- Dropzone ----------
+   The card is a wrapper around the real .qq-upload-button, not a replacement
+   for it, so a site's existing --hf-upload-* button styling still lands on a
+   button. The drop area is an overlay across the card rather than a second box
+   below it. */
+
+.hf-file-uploader .hf-upload-dropzone {
     align-items: center;
+    background: var(--hf-up-sunken);
+    border: 2px dashed var(--hf-up-border);
+    border-radius: calc(var(--hf-up-radius) + 4px);
+    color: var(--hf-up-muted);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 28px 20px;
+    position: relative;
+    text-align: center;
+    transition: background-color .15s ease, border-color .15s ease;
+}
+
+.hf-file-uploader .hf-upload-dropzone:hover {
+    border-color: var(--hf-up-accent);
+}
+
+.hf-file-uploader .hf-upload-dropzone-icon {
+    color: var(--hf-up-accent);
+    display: block;
+    margin-bottom: 2px;
+}
+
+.hf-file-uploader .hf-upload-dropzone-title {
+    color: var(--hf-up-text);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.hf-file-uploader .hf-upload-dropzone-or {
+    font-size: 12px;
+    line-height: 1;
+    opacity: .75;
+}
+
+.hf-file-uploader .hf-upload-dropzone-hint {
+    font-size: 12px;
+    line-height: 1.5;
+    margin-top: 4px;
+    opacity: .85;
+}
+
+/* The library toggles this with an inline display, so the overlay is centred
+   with absolute positioning rather than flex, which that inline style would
+   override. */
+.hf-file-uploader .qq-upload-drop-area {
+    background: var(--hf-up-soft);
+    border-radius: calc(var(--hf-up-radius) + 2px);
+    bottom: 0;
+    color: var(--hf-up-accent);
+    font-size: 14px;
+    font-weight: 600;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 2;
+}
+
+.hf-file-uploader .qq-upload-drop-area span {
+    left: 50%;
+    padding: 0 16px;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
 }
 
 .hf-file-uploader .qq-upload-drop-area-active {
-    background: #EEE;
+    background: var(--hf-up-soft);
+    box-shadow: inset 0 0 0 2px var(--hf-up-accent);
 }
 
-.hf-file-uploader .qq-upload-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
+/* ---------- Errors ----------
+   Rejections used to arrive as a browser alert(), which had to be dismissed
+   before the visitor could try again and said nothing once gone. */
 
-.hf-file-uploader .qq-upload-list li {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin: 0 0 8px;
-    padding: 10px;
-    font-size: 14px;
-    line-height: 1;
-    background-color: #FFF0BD;
-}
-
-.hf-file-uploader .qq-progress-bar {
+.hf-file-uploader .hf-upload-error {
     display: none;
 }
 
+.hf-file-uploader .hf-upload-error-visible {
+    background: var(--hf-up-danger-soft, rgba(211, 56, 60, .08));
+    border-left: 3px solid var(--hf-up-danger);
+    border-radius: var(--hf-up-radius);
+    color: var(--hf-up-danger);
+    display: block;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-top: 10px;
+    padding: 9px 12px;
+}
+
+/* ---------- File list ---------- */
+
+.hf-file-uploader .qq-upload-list {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+}
+
+.hf-file-uploader .qq-upload-list:empty {
+    margin: 0;
+}
+
+.hf-file-uploader .hf-file-row {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+}
+
+/* Was a flat #FFF0BD mustard. A file that is still uploading is not a warning,
+   so it now reads as a neutral row and the state is carried by the left edge. */
+.hf-file-uploader .qq-upload-list li {
+    background-color: var(--hf-up-surface);
+    border: 1px solid var(--hf-up-border);
+    border-left: 3px solid var(--hf-up-border);
+    border-radius: var(--hf-up-radius);
+    color: var(--hf-up-text);
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    gap: 8px;
+    line-height: 1.4;
+    margin: 0 0 8px;
+    padding: 10px 12px;
+    transition: border-color .15s ease;
+}
+
+.hf-file-uploader .qq-upload-list li:last-child {
+    margin-bottom: 0;
+}
+
+/* ---------- Progress ----------
+   The library has always driven this bar's width from _onProgress; the old
+   sheet simply hid it, so a large upload showed a spinner and nothing else. */
+
+.hf-file-uploader .hf-progress-track {
+    background: var(--hf-up-border);
+    border-radius: 999px;
+    display: block;
+    height: 4px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.hf-file-uploader .qq-progress-bar {
+    background: var(--hf-up-accent);
+    border-radius: 999px;
+    display: block;
+    height: 100%;
+    transition: width .2s ease;
+    width: 0;
+}
+
+/* Once an upload settles the bar has nothing left to say. */
+.hf-file-uploader .qq-upload-success .hf-progress-track,
+.hf-file-uploader .qq-upload-fail .hf-progress-track {
+    display: none;
+}
+
+.hf-file-uploader .qq-upload-file {
+    overflow-wrap: anywhere;
+}
+
 .hf-file-uploader .qq-upload-spinner {
-    display: inline-block;
     background: url("loading.gif");
-    width: 15px;
+    display: inline-block;
     height: 15px;
     vertical-align: text-bottom;
+    width: 15px;
 }
 
 .hf-file-uploader .qq-upload-size,
@@ -105,6 +270,7 @@
 }
 
 .hf-file-uploader .qq-upload-size {
+    color: var(--hf-up-muted);
     margin-right: auto;
 }
 
@@ -112,50 +278,130 @@
     content: " - ";
 }
 
+.hf-file-uploader .qq-upload-cancel {
+    border-radius: 4px;
+    color: var(--hf-up-muted);
+    padding: 2px 6px;
+    text-decoration: none;
+}
+
+.hf-file-uploader .qq-upload-cancel:hover,
+.hf-file-uploader .qq-upload-cancel:focus-visible {
+    background: var(--hf-up-soft);
+    color: var(--hf-up-accent);
+}
+
 .hf-file-uploader .qq-upload-failed-text {
     display: none;
 }
 
 .hf-file-uploader .qq-upload-fail .qq-upload-failed-text {
+    color: var(--hf-up-danger);
     display: inline;
+    font-size: 12px;
+    font-weight: 600;
 }
 
+/* Outcome is carried by the edge stripe and a glyph rather than flooding the
+   row, so a long file name stays readable and the row stops competing with the
+   rest of the form. The library's own failure text is still shown, so the
+   state is never signalled by colour alone. */
 .hf-file-uploader .qq-upload-list li.qq-upload-success {
-    background-color: #5DA30C;
-    color: #FFFFFF;
+    border-left-color: var(--hf-up-success);
 }
 
 .hf-file-uploader .qq-upload-list li.qq-upload-fail {
-    background-color: #D60000;
-    color: #FFFFFF;
+    border-left-color: var(--hf-up-danger);
+}
+
+/* On .hf-file-row rather than the li, which is a column now, so the glyph sits
+   at the end of the file line instead of dropping onto one of its own. */
+.hf-file-uploader .qq-upload-success .hf-file-row:after,
+.hf-file-uploader .qq-upload-fail .hf-file-row:after {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    order: 99;
+}
+
+.hf-file-uploader .qq-upload-success .hf-file-row:after {
+    color: var(--hf-up-success);
+    content: "\2713";
+}
+
+.hf-file-uploader .qq-upload-fail .hf-file-row:after {
+    color: var(--hf-up-danger);
+    content: "\2715";
+}
+
+/* ---------- Previews ---------- */
+
+.hf-file-preview:not(:empty) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
 }
 
 .hf-prev-holder {
-    border: 1px solid #EEE;
+    border: 1px solid var(--hf-up-border);
+    border-radius: var(--hf-up-radius);
+    margin-bottom: 0;
+    max-width: 220px;
+    overflow: hidden;
     padding: 10px;
-    margin-bottom: 10px;
 }
 
 .hf-prev-holder img {
+    border-radius: calc(var(--hf-up-radius) - 4px);
+    display: block;
+    height: auto;
     max-width: 200px !important;
 }
 
 .hf-prev-holder .hf-prev-name {
+    color: var(--hf-up-muted);
     display: block;
-    margin: 6px 0;
     font-size: 12px;
+    line-height: 1.4;
+    margin: 6px 0 0;
+    overflow-wrap: anywhere;
 }
 
+/* Was solid #FF0000 going black on hover. Destructive, but it should not be the
+   brightest thing in the form until the pointer is actually on it. */
 .hf-preview-remove {
-    background: #FF0000;
-    font-size: 12px;
+    background: transparent;
+    border: 1px solid var(--hf-up-border);
+    border-radius: 4px;
+    color: var(--hf-up-muted);
     cursor: pointer;
-    color: #FFF;
-    padding: 6px 10px;
+    display: inline-block;
+    font-size: 12px;
     line-height: 1;
-    border-radius: 5px;
+    padding: 5px 10px;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
 }
 
-.hf-preview-remove:hover {
-    background: #000;
+.hf-preview-remove:hover,
+.hf-preview-remove:focus-visible {
+    background: var(--hf-up-danger);
+    border-color: var(--hf-up-danger);
+    color: #fff;
+}
+
+/* Keeps its natural width if it lands directly on the list item, which stretches
+   its children. */
+.hf-file-uploader .qq-upload-list li > .hf-preview-remove {
+    align-self: flex-start;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .hf-file-uploader .qq-upload-drop-area,
+    .hf-file-uploader .qq-upload-list li,
+    .hf-file-uploader .qq-upload-cancel,
+    .hf-preview-remove {
+        transition-duration: .001ms;
+    }
 }

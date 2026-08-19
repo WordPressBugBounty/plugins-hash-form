@@ -3,12 +3,133 @@ defined('ABSPATH') || die();
 
 class HashFormEntry {
 
+    use HashFormListActions;
+
     public function __construct() {
         add_action('admin_menu', array($this, 'add_menu'), 10);
         add_filter('set-screen-option', array($this, 'set_screen_option'), 15, 3);
 
         add_action('wp_ajax_hashform_process_entry', array($this, 'process_entry'));
         add_action('wp_ajax_nopriv_hashform_process_entry', array($this, 'process_entry'));
+
+        add_action('wp_ajax_hashform_toggle_star', array($this, 'toggle_star'));
+        add_action('wp_ajax_hashform_save_entry_note', array($this, 'save_entry_note'));
+        add_action('wp_ajax_hashform_resend_notification', array($this, 'resend_notification'));
+    }
+
+    /* ===== Entry workflow ===== */
+
+    public static function set_flag($id, $column, $value) {
+        global $wpdb;
+
+        if (!in_array($column, array('is_read', 'is_starred'), true)) {
+            return false;
+        }
+
+        return $wpdb->update($wpdb->prefix . 'hashform_entries', array($column => (int) $value), array('id' => absint($id)));
+    }
+
+    public static function mark_read($id) {
+        return self::set_flag($id, 'is_read', 1);
+    }
+
+    public static function get_unread_count() {
+        global $wpdb;
+        return (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}hashform_entries WHERE status='published' AND is_read = 0");
+    }
+
+    /**
+     * Star and unstar from the entries list without a page load.
+     */
+    public function toggle_star() {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error();
+        }
+
+        check_ajax_referer('hashform_entry_action', 'nonce');
+
+        $id = HashFormHelper::get_post('entry_id', 'absint');
+        $starred = HashFormHelper::get_post('starred', 'absint') ? 1 : 0;
+
+        if (!$id || !self::entry_exists($id)) {
+            wp_send_json_error();
+        }
+
+        self::set_flag($id, 'is_starred', $starred);
+
+        wp_send_json_success(array('starred' => $starred));
+    }
+
+    /**
+     * A private note on an entry, for whoever picks it up next.
+     */
+    public function save_entry_note() {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error();
+        }
+
+        check_ajax_referer('hashform_entry_action', 'nonce');
+
+        global $wpdb;
+        $id = HashFormHelper::get_post('entry_id', 'absint');
+        $note = HashFormHelper::get_post('note', 'sanitize_textarea_field');
+
+        if (!$id || !self::entry_exists($id)) {
+            wp_send_json_error();
+        }
+
+        $wpdb->update($wpdb->prefix . 'hashform_entries', array('notes' => $note), array('id' => $id));
+
+        wp_send_json_success(array('note' => $note));
+    }
+
+    /**
+     * Sends the notification emails for an entry again, for when the original
+     * bounced or the address was wrong at the time.
+     */
+    public function resend_notification() {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error();
+        }
+
+        check_ajax_referer('hashform_entry_action', 'nonce');
+
+        global $wpdb;
+        $id = HashFormHelper::get_post('entry_id', 'absint');
+        $entry = self::get_entry_vars($id);
+
+        if (!$entry) {
+            wp_send_json_error(array('message' => esc_html__('That entry no longer exists.', 'hash-form')));
+        }
+
+        $form = HashFormBuilder::get_form_vars($entry->form_id);
+
+        if (!$form) {
+            wp_send_json_error(array('message' => esc_html__('The form for this entry no longer exists.', 'hash-form')));
+        }
+
+        // Resending must only send the mail. Without this the post submission
+        // actions would run again, which for a payment form means dispatching
+        // a second charge.
+        HashFormEmail::$sending_deferred = true;
+
+        $send_mail = new HashFormEmail($form, $id, '');
+        $sent = $send_mail->send_email();
+
+        HashFormEmail::$sending_deferred = false;
+
+        $wpdb->update($wpdb->prefix . 'hashform_entries', array('delivery_status' => $sent ? 1 : 0), array('id' => $id));
+
+        if (!$sent) {
+            wp_send_json_error(array('message' => esc_html__('The notification could not be sent. Check your email settings.', 'hash-form')));
+        }
+
+        wp_send_json_success(array('message' => esc_html__('Notification sent.', 'hash-form')));
+    }
+
+    private static function entry_exists($id) {
+        global $wpdb;
+        return (bool) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$wpdb->prefix}hashform_entries WHERE id = %d", absint($id)));
     }
 
     public function add_menu() {
@@ -17,31 +138,47 @@ class HashFormEntry {
         add_action("load-$hash_entry_listing_page", array($this, 'listing_page_screen_options'));
     }
 
-    public static function route() {
-        $action = htmlspecialchars_decode(HashFormHelper::get_var('hashform_action', 'sanitize_text_field', HashFormHelper::get_var('action')));
+    protected static function list_config() {
+        return array(
+            'page' => 'hashform-entries',
+            'table' => 'hashform_entries',
+            'id_key' => 'entry_id',
+            'nonce_item' => 'entry',
+            'bulk_nonce' => 'bulk-entries',
+            'actions' => array('view', 'destroy', 'untrash', 'trash', 'delete_all'),
+        );
+    }
 
-        if (HashFormHelper::get_var('delete_all')) {
-            $action = 'delete_all';
-        }
+    protected static function destroy_item($id) {
+        return self::destroy_entry($id);
+    }
 
-        switch ($action) {
-            case 'view':
-            case 'destroy':
-            case 'untrash':
-            case 'trash':
-            case 'delete_all':
-                return self::$action();
-            default:
+    protected static function render_list($message = '', $class = 'updated') {
+        self::display_entry_list($message, $class);
+    }
 
-                if (strpos($action, 'bulk_') === 0) {
-                    self::bulk_actions();
-                    return;
-                }
+    protected static function message_trashed($count, $undo_open, $undo_close) {
+        /* translators: 1: entry count singular & plural, 2: link open, 3: link close */
+        return sprintf(_n('%1$s entry moved to the Trash. %2$sUndo%3$s', '%1$s entries moved to the Trash. %2$sUndo%3$s', $count, 'hash-form'), $count, $undo_open, $undo_close);
+    }
 
-                self::display_entry_list();
+    protected static function message_untrashed($count) {
+        /* translators: 1: entry count singular & plural */
+        return sprintf(_n('%1$s entry restored from the Trash.', '%1$s entries restored from the Trash.', $count, 'hash-form'), $count);
+    }
 
-                return;
-        }
+    protected static function message_destroyed($count) {
+        /* translators: 1: entry count singular & plural */
+        return sprintf(_n('%1$s Entry Permanently Deleted', '%1$s Entries Permanently Deleted', $count, 'hash-form'), $count);
+    }
+
+    protected static function message_deleted($count) {
+        /* translators: 1: entry count singular & plural */
+        return sprintf(_n('%1$s entry permanently deleted.', '%1$s entries permanently deleted.', $count, 'hash-form'), $count);
+    }
+
+    protected static function message_none_specified() {
+        return esc_html__('No Entries were specified', 'hash-form');
     }
 
     public static function view($id = 0) {
@@ -59,37 +196,47 @@ class HashFormEntry {
             return;
         }
 
-        include(HASHFORM_PATH . 'admin/entries/entry-detail.php');
-    }
-
-    public static function display_message($message, $class) {
-        if ('' !== $message) {
-            echo '<div id="message" class="' . esc_attr($class) . ' notice is-dismissible">';
-            echo '<p>' . wp_kses_post($message) . '</p>';
-            echo '</div>';
+        // Opening an entry is what marks it read.
+        if (empty($entry->is_read)) {
+            self::mark_read($id);
+            $entry->is_read = 1;
         }
+
+        include(HASHFORM_PATH . 'admin/entries/entry-detail.php');
     }
 
     public static function display_entry_list($message = '', $class = 'updated') {
         ?>
-        <div class="hf-content">
+        <div class="hf-content hf-list-screen">
+
+            <div class="hf-list-header">
+                <div class="hf-list-header-inner">
+                    <h2 class="hf-list-title"><?php esc_html_e('Entries', 'hash-form'); ?></h2>
+                </div>
+            </div>
+
             <div class="hf-entry-list-wrap wrap">
                 <h1></h1>
+
                 <div id="hf-entry-list">
                     <?php
                     self::display_message($message, $class);
                     $entry_table = new HashFormEntryListing();
                     $entry_status = HashFormHelper::get_var('status', 'sanitize_title', 'published');
-                    $entry_table->views();
+                    $entry_table->prepare_items();
                     ?>
                     <form id="posts-filter" method="get">
                         <input type="hidden" name="page" value="<?php echo esc_attr(HashFormHelper::get_var('page', 'sanitize_title')); ?>" />
                         <input type="hidden" name="status" value="<?php echo esc_attr($entry_status); ?>" />
-                        <?php
-                        $entry_table->prepare_items();
-                        $entry_table->search_box('Search', 'search');
-                        $entry_table->display();
-                        ?>
+
+                        <div class="hf-list-toolbar">
+                            <?php
+                            $entry_table->views();
+                            $entry_table->search_box(esc_html__('Search', 'hash-form'), 'search');
+                            ?>
+                        </div>
+
+                        <?php $entry_table->display(); ?>
                     </form>
                 </div>
             </div>
@@ -120,100 +267,7 @@ class HashFormEntry {
     }
 
     public function set_screen_option($status, $option, $value) {
-        if ('entries_per_page' == $option)
-            return $value;
-    }
-
-    public static function trash() {
-        self::change_form_status('trash');
-    }
-
-    public static function untrash() {
-        self::change_form_status('untrash');
-    }
-
-    public static function change_form_status($status) {
-        $available_status = array(
-            'untrash' => array('new_status' => 'published'),
-            'trash' => array('new_status' => 'trash'),
-        );
-
-        if (!isset($available_status[$status])) {
-            return;
-        }
-
-        $id = HashFormHelper::get_var('id', 'absint');
-
-        check_admin_referer($status . '_entry_' . $id);
-
-        $count = 0;
-        if (self::set_status($id, $available_status[$status]['new_status'])) {
-            $count++;
-        }
-
-        /* translators: 1: form count singular & plural */
-        $available_status['untrash']['message'] = sprintf(_n('%1$s form restored from the Trash.', '%1$s forms restored from the Trash.', $count, 'hash-form'), $count);
-        /* translators: 1: form count singular & plural */
-        $available_status['trash']['message'] = sprintf(_n('%1$s form moved to the Trash. %2$sUndo%3$s', '%1$s forms moved to the Trash. %2$sUndo%3$s', $count, 'hash-form'), $count, '<a href="' . esc_url(wp_nonce_url('?page=hashform-entries&hashform_action=untrash&id=' . $id, 'untrash_entry_' . $id)) . '">', '</a>');
-        $message = $available_status[$status]['message'];
-
-        self::display_entry_list($message);
-    }
-
-    public static function set_status($id, $status) {
-        $statuses = array('published', 'trash');
-        if (!in_array($status, $statuses)) {
-            return false;
-        }
-
-        global $wpdb;
-
-        $id = is_array($id) ? $id : array($id);
-        $placeholders = implode(',', array_map(function($v) {
-            return '%d';
-        }, $id));
-        $prepare_args = array_merge([$status], $id);
-
-        if (is_array($id)) {
-            $query_results = $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}hashform_entries SET status=%s WHERE id IN ({$placeholders})", $prepare_args));
-        } else {
-            $query_results = $wpdb->update($wpdb->prefix . 'hashform_entries', array('status' => $status), array('id' => $id));
-        }
-
-        return $query_results;
-    }
-
-    public static function delete_all() {
-        $count = self::delete();
-        /* translators: 1: form count singular & plural */
-        $message = sprintf(_n('%1$s form permanently deleted.', '%1$s forms permanently deleted.', $count, 'hash-form'), $count);
-        self::display_entry_list($message);
-    }
-
-    public static function delete() {
-        global $wpdb;
-        $trash_entries = $wpdb->get_results($wpdb->prepare("SELECT id FROM {$wpdb->prefix}hashform_entries WHERE status=%s", 'trash'));
-        if (!$trash_entries) {
-            return 0;
-        }
-        $count = 0;
-        foreach ($trash_entries as $entry) {
-            self::destroy_entry($entry->id);
-            $count++;
-        }
-        return $count;
-    }
-
-    public static function destroy() {
-        $id = HashFormHelper::get_var('id', 'absint');
-        check_admin_referer('destroy_entry_' . $id);
-        $count = 0;
-        if (self::destroy_entry($id)) {
-            $count++;
-        }
-        /* translators: 1: form count singular & plural */
-        $message = sprintf(_n('%1$s Entry Permanently Deleted', '%1$s Entries Permanently Deleted', $count, 'hash-form'), $count);
-        self::display_entry_list($message);
+        return ('entries_per_page' === $option) ? $value : $status;
     }
 
     public static function destroy_entry($id) {
@@ -226,84 +280,6 @@ class HashFormEntry {
         $wpdb->query($wpdb->prepare('DELETE FROM ' . $wpdb->prefix . 'hashform_entry_meta WHERE item_id=%d', $id));
         $result = $wpdb->query($wpdb->prepare('DELETE FROM ' . $wpdb->prefix . 'hashform_entries WHERE id=%d', $id));
         return $result;
-    }
-
-    public static function bulk_actions() {
-        $message = self::process_bulk_actions();
-        self::display_entry_list($message);
-    }
-
-    public static function process_bulk_actions() {
-        if (!$_REQUEST)
-            return;
-
-        $bulkaction = HashFormHelper::get_var('action', 'sanitize_text_field');
-
-
-        if ($bulkaction == -1) {
-            $bulkaction = HashFormHelper::get_var('action2', 'sanitize_title');
-        }
-
-        if (!empty($bulkaction) && strpos($bulkaction, 'bulk_') === 0) {
-            $bulkaction = str_replace('bulk_', '', $bulkaction);
-        }
-
-        $ids = HashFormHelper::get_var('entry_id', 'sanitize_text_field');
-
-        if (empty($ids)) {
-            $error = esc_html__('No Entries were specified', 'hash-form');
-            return $error;
-        }
-
-        if (!is_array($ids)) {
-            $ids = explode(',', $ids);
-        }
-
-        switch ($bulkaction) {
-            case 'delete':
-                $message = self::bulk_destroy($ids);
-                break;
-            case 'trash':
-                $message = self::bulk_trash($ids);
-                break;
-            case 'untrash':
-                $message = self::bulk_untrash($ids);
-        }
-
-        if (isset($message) && !empty($message)) {
-            return $message;
-        }
-    }
-
-    public static function bulk_trash($ids) {
-        $count = self::set_status($ids, 'trash');
-        if (!$count) {
-            return '';
-        }
-        /* translators: 1: form count singular & plural */
-        return sprintf(_n('%1$s form moved to the Trash. %2$sUndo%3$s', '%1$s forms moved to the Trash. %2$sUndo%3$s', $count, 'hash-form'), $count, '<a href="' . esc_url(wp_nonce_url('?page=hashform-entries&action=bulk_untrash&status=published&entry_id=' . implode(',', $ids), 'bulk-toplevel_page_hashform')) . '">', '</a>');
-    }
-
-    public static function bulk_untrash($ids) {
-        $count = self::set_status($ids, 'published');
-        if (!$count) {
-            return '';
-        }
-        /* translators: 1: form count singular & plural */
-        return sprintf(_n('%1$s form restored from the Trash.', '%1$s forms restored from the Trash.', $count, 'hash-form'), $count);
-    }
-
-    public static function bulk_destroy($ids) {
-        $count = 0;
-        foreach ($ids as $id) {
-            $entry = self::destroy_entry($id);
-            if ($entry) {
-                $count++;
-            }
-        }
-        /* translators: 1: form count singular & plural */
-        $message = sprintf(_n('%1$s form permanently deleted.', '%1$s forms permanently deleted.', $count, 'hash-form'), $count);
-        return $message;
     }
 
     public static function get_entry_vars($id) {
@@ -322,25 +298,18 @@ class HashFormEntry {
         }
 
         global $wpdb;
-        $metas = $wpdb->get_results($wpdb->prepare("SELECT m.*, f.type AS field_type, f.field_key, f.name FROM {$wpdb->prefix}hashform_entry_meta AS m LEFT JOIN {$wpdb->prefix}hashform_fields AS f ON m.field_id = f.id WHERE m.item_id = %d AND m.field_id != %d ORDER BY m.id ASC", $entry->id, 0));
+        $metas = $wpdb->get_results($wpdb->prepare("SELECT m.*, f.type AS field_type, f.field_key, f.name, f.field_options FROM {$wpdb->prefix}hashform_entry_meta AS m LEFT JOIN {$wpdb->prefix}hashform_fields AS f ON m.field_id = f.id WHERE m.item_id = %d AND m.field_id != %d ORDER BY m.id ASC", $entry->id, 0));
         $entry->metas = array();
 
         foreach ($metas as $meta_val) {
-            if ($meta_val->item_id == $entry->id) {
-                $entry->metas[$meta_val->field_id] = array(
-                    'name' => $meta_val->name,
-                    'value' => $meta_val->meta_value,
-                    'type' => $meta_val->field_type
-                );
-                continue;
-            }
-
-            // include sub entries in an array
-            if (!isset($entry->metas[$meta_val->field_id])) {
-                $entry->metas[$meta_val->field_id] = array();
-            }
-
-            $entry->metas[$meta_val->field_id][] = $meta_val->meta_value;
+            $entry->metas[$meta_val->field_id] = array(
+                'name' => $meta_val->name,
+                'value' => $meta_val->meta_value,
+                'type' => $meta_val->field_type,
+                // Carried through so a value can be rendered the way its field
+                // was configured, rather than every display path re-querying.
+                'options' => maybe_unserialize($meta_val->field_options)
+            );
         }
 
         return $entry;
@@ -363,6 +332,18 @@ class HashFormEntry {
         if (!$form) {
             return;
         }
+
+        // Checked again here: the form may have closed, filled up or already
+        // been submitted since the page was loaded.
+        $restriction = HashFormRestrictions::check($form);
+
+        if (empty($restriction['allowed'])) {
+            return wp_send_json(array(
+                'status' => 'failed',
+                'message' => esc_html($restriction['message'])
+            ));
+        }
+
         $errors = '';
         $errors = HashFormValidate::validate(wp_unslash($data));
 
@@ -374,7 +355,7 @@ class HashFormEntry {
             $check_mail = $send_mail->send_email();
 
             if (!$check_mail) {
-                $wpdb->update($wpdb->prefix . 'hashform_entries', array('delivery_status' => false), array('id' => $entry_id));
+                $wpdb->update($wpdb->prefix . 'hashform_entries', array('delivery_status' => 0), array('id' => $entry_id));
                 return wp_send_json(array(
                     'status' => 'failed',
                     'message' => esc_html(apply_filters('hashform_translate_string', $form_settings['error_message'], 'Hash Form', $form->name . ' - ' . 'Error Message'))
@@ -411,9 +392,7 @@ class HashFormEntry {
         if (isset($values['item_meta'])) {
             foreach ($values['item_meta'] as $field_id => $meta_value) {
                 if (!empty($meta_value)) {
-                    if (is_array($meta_value)) {
-                        $meta_value = serialize($meta_value);
-                    } else {
+                    if (!is_array($meta_value)) {
                         $meta_value = sanitize_textarea_field($meta_value);
                     }
 
@@ -424,7 +403,18 @@ class HashFormEntry {
                         'created_at' => sanitize_text_field(current_time('mysql')),
                     );
 
+                    /*
+                     * The field gets the value in the shape it was posted. It
+                     * used to be serialized first, so a field that posts more
+                     * than one value — a repeater's rows, an address, a set of
+                     * boxes — only ever saw a string and could not put its own
+                     * shape on what got stored.
+                     */
                     self::sanitize_meta_value($meta_values);
+
+                    if (is_array($meta_values['meta_value'])) {
+                        $meta_values['meta_value'] = serialize($meta_values['meta_value']);
+                    }
 
                     $query_results = $wpdb->insert($wpdb->prefix . 'hashform_entry_meta', $meta_values);
                 }
@@ -444,34 +434,48 @@ class HashFormEntry {
 
     public static function get_count() {
         global $wpdb;
-        $results = $wpdb->get_results($wpdb->prepare("SELECT status FROM {$wpdb->prefix}hashform_entries WHERE id!=%d", 0));
-        $statuses = array('published', 'trash');
-        $counts = array_fill_keys($statuses, 0);
+        $results = $wpdb->get_results("SELECT status, COUNT(*) AS count FROM {$wpdb->prefix}hashform_entries GROUP BY status");
+        $counts = array('published' => 0, 'trash' => 0, 'unread' => 0, 'starred' => 0);
         foreach ($results as $row) {
             if ('published' == $row->status) {
-                $counts['published']++;
+                $counts['published'] += $row->count;
             } else {
-                $counts['trash']++;
+                $counts['trash'] += $row->count;
             }
         }
+
+        $counts['unread'] = self::get_unread_count();
+        $counts['starred'] = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}hashform_entries WHERE status='published' AND is_starred = 1");
+
         return $counts;
     }
 
     public static function get_entry_count($form_id) {
         global $wpdb;
-        $count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}hashform_entries e LEFT OUTER JOIN {$wpdb->prefix}hashform_forms f ON e.form_id=f.id WHERE e.form_id=%d AND e.status='published'", $form_id));
+        $count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}hashform_entries WHERE form_id=%d AND status='published'", $form_id));
         return $count;
+    }
+
+    // Published-entry counts for every form in one query, keyed by form id.
+    public static function get_entry_counts() {
+        global $wpdb;
+        $results = $wpdb->get_results("SELECT form_id, COUNT(*) AS count FROM {$wpdb->prefix}hashform_entries WHERE status='published' GROUP BY form_id");
+        $counts = array();
+        foreach ($results as $row) {
+            $counts[$row->form_id] = (int) $row->count;
+        }
+        return $counts;
     }
 
     public static function get_prev_entry($entry_id) {
         global $wpdb;
-        $results = $wpdb->get_results($wpdb->prepare("select id from {$wpdb->prefix}hashform_entries WHERE id < %d ORDER BY id DESC LIMIT 1", $entry_id));
+        $results = $wpdb->get_results($wpdb->prepare("SELECT id FROM {$wpdb->prefix}hashform_entries WHERE id < %d AND status='published' ORDER BY id DESC LIMIT 1", $entry_id));
         return $results;
     }
 
     public static function get_next_entry($entry_id) {
         global $wpdb;
-        $results = $wpdb->get_results($wpdb->prepare("select id from {$wpdb->prefix}hashform_entries WHERE id > %d ORDER BY id ASC LIMIT 1", $entry_id));
+        $results = $wpdb->get_results($wpdb->prepare("SELECT id FROM {$wpdb->prefix}hashform_entries WHERE id > %d AND status='published' ORDER BY id ASC LIMIT 1", $entry_id));
         return $results;
     }
 

@@ -9,7 +9,7 @@ if (isset($settings['header_image'])) {
     $image = isset($image[0]) ? esc_attr($image[0]) : '';
 }
 ?>
-<div class="hf-form-container hf-grid-container">
+<div class="hf-form-container">
     <div class="hf-settings-row hf-grid-container">
         <label class="hf-setting-label"><?php esc_html_e('Header Image', 'hash-form'); ?></label>
         <div class="hf-grid-3">
@@ -18,17 +18,26 @@ if (isset($settings['header_image'])) {
 
                 <div class="hf-image-preview-wrap<?php echo ($image ? '' : ' hf-hidden'); ?>">
                     <div class="hf-image-preview-box">
-                        <img id="hf-image-preview-header-image" src="<?php echo esc_attr($image); ?>" />
+                        <?php // esc_url, not esc_attr, and omitted entirely when empty. ?>
+                        <img id="hf-image-preview-header-image" alt="" <?php echo $image ? 'src="' . esc_url($image) . '"' : ''; ?> />
                     </div>
-                    <button type="button" class="button hf-remove-image">
-                        <span class="mdi mdi-trash-can-outline"></span>
-                        <?php esc_html_e('Delete', 'hash-form'); ?>
-                    </button>
+
+                    <div class="hf-image-actions">
+                        <button type="button" class="button hf-replace-image">
+                            <span class="mdi mdi-image-sync-outline" aria-hidden="true"></span>
+                            <?php esc_html_e('Replace', 'hash-form'); ?>
+                        </button>
+                        <button type="button" class="button hf-remove-image">
+                            <span class="mdi mdi-trash-can-outline" aria-hidden="true"></span>
+                            <?php esc_html_e('Remove', 'hash-form'); ?>
+                        </button>
+                    </div>
                 </div>
 
                 <button type="button" class="button hf-choose-image<?php echo ($image ? ' hf-hidden' : ''); ?>">
-                    <span class="mdi mdi-tray-arrow-up"></span>
-                    <?php esc_attr_e('Upload image', 'hash-form'); ?>
+                    <span class="mdi mdi-image-plus-outline" aria-hidden="true"></span>
+                    <span class="hf-choose-image-label"><?php esc_html_e('Choose image', 'hash-form'); ?></span>
+                    <span class="hf-choose-image-hint"><?php esc_html_e('From your media library', 'hash-form'); ?></span>
                 </button>
             </div>
         </div>

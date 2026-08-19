@@ -1,0 +1,297 @@
+/**
+ * Hash Form design tokens.
+ *
+ * The single source of truth for the admin UI. Every screen draws its colour,
+ * spacing, radius, shadow and type scale from here, so a change lands
+ * everywhere at once instead of being retyped per stylesheet.
+ *
+ * Scoped to the plugin's own wrappers so nothing leaks into the rest of
+ * wp-admin. The accent follows the user's admin colour scheme.
+ */
+
+.hf-content,
+.hf-wrap,
+#hf-wrap,
+.hf-entry-list-wrap,
+.hf-form-entry-details-wrap,
+.hashform-settings-wrap,
+/* Printed into admin_footer, so they sit outside every wrapper above and
+   have to declare the tokens themselves. */
+#hf-add-form-modal,
+#hf-shortcode-form-modal,
+/* jQuery UI moves a dialog to <body> when it opens, which detaches it from
+   the builder wrapper, so these need the tokens declared on them too. */
+.hf-dialog,
+#hf-bulk-edit-modal {
+    /*
+     * Brand + state.
+     *
+     * The accent used to follow the admin colour scheme, which left the
+     * plugin showing two of them: the header, the Save button and the active
+     * nav tab are the brand orange, while everything token-driven — switches,
+     * buttons, focus rings — came out in whatever the user's WordPress theme
+     * colour happened to be. They are one colour now.
+     *
+     * --hf-accent-text is the same hue taken far enough down to be legible as
+     * text: #dd823b on white is 2.9:1, which fails, so it is used for fills,
+     * borders and rings, and the darker one wherever the accent is the text.
+     */
+    --hf-accent: #dd823b;
+    --hf-accent-hover: #c26f2e;
+    --hf-accent-text: #a3591b;
+    --hf-accent-soft: color-mix(in srgb, var(--hf-accent) 8%, #fff);
+    --hf-success: #2e9e5b;
+    --hf-warning: #d98500;
+    --hf-danger: #d3383c;
+
+    /* Surfaces */
+    --hf-page: #f5f6f8;
+    --hf-surface: #fff;
+    --hf-surface-sunken: #fafbfc;
+    --hf-surface-raised: #fff;
+
+    /* Lines */
+    --hf-border: #e2e5ea;
+    --hf-border-strong: #d3d8e0;
+
+    /* Ink */
+    --hf-text: #1e2327;
+    --hf-text-muted: #646970;
+    --hf-text-faint: #8c9196;
+    --hf-text-inverse: #fff;
+
+    /* Spacing scale */
+    --hf-space-1: 4px;
+    --hf-space-2: 8px;
+    --hf-space-3: 12px;
+    --hf-space-4: 16px;
+    --hf-space-5: 24px;
+    --hf-space-6: 32px;
+    --hf-space-7: 48px;
+
+    /* Radii */
+    --hf-radius-sm: 4px;
+    --hf-radius: 8px;
+    --hf-radius-lg: 12px;
+    --hf-radius-pill: 999px;
+
+    /* Elevation */
+    --hf-shadow-sm: 0 1px 2px rgba(16, 24, 40, .05);
+    --hf-shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 1px 3px rgba(16, 24, 40, .06);
+    --hf-shadow-md: 0 4px 10px -2px rgba(16, 24, 40, .1), 0 2px 6px -2px rgba(16, 24, 40, .06);
+    --hf-shadow-lg: 0 12px 28px -8px rgba(16, 24, 40, .18), 0 4px 10px -4px rgba(16, 24, 40, .1);
+
+    /* Type scale */
+    --hf-font-xs: 11px;
+    --hf-font-sm: 12px;
+    --hf-font-base: 13px;
+    --hf-font-md: 14px;
+    --hf-font-lg: 16px;
+    --hf-font-xl: 20px;
+
+    /* Motion. Kept short: admin UI should feel immediate. */
+    --hf-transition: .15s ease;
+    --hf-transition-slow: .25s ease;
+
+    /* Layout */
+    --hf-sidebar-width: 300px;
+    --hf-header-height: 60px;
+}
+
+/* ---------- Primitives ---------- */
+
+.hf-content *,
+.hf-wrap * {
+    box-sizing: border-box;
+}
+
+/* Surface: the standard panel every screen composes from. */
+.hf-surface {
+    background: var(--hf-surface);
+    border: 1px solid var(--hf-border);
+    border-radius: var(--hf-radius);
+    box-shadow: var(--hf-shadow);
+}
+
+/* Buttons. Scoped tightly so WP's own .button styling is not disturbed
+   elsewhere in the admin. */
+.hf-content .hf-btn,
+.hf-wrap .hf-btn {
+    align-items: center;
+    background: var(--hf-surface);
+    border: 1px solid var(--hf-border-strong);
+    border-radius: var(--hf-radius-sm);
+    color: var(--hf-text);
+    cursor: pointer;
+    display: inline-flex;
+    font-size: var(--hf-font-base);
+    font-weight: 500;
+    gap: var(--hf-space-2);
+    line-height: 1.4;
+    min-height: 34px;
+    padding: 0 var(--hf-space-4);
+    text-decoration: none;
+    transition: background-color var(--hf-transition), border-color var(--hf-transition), color var(--hf-transition);
+    white-space: nowrap;
+}
+
+.hf-content .hf-btn:hover,
+.hf-wrap .hf-btn:hover {
+    background: var(--hf-surface-sunken);
+    border-color: var(--hf-text-faint);
+    color: var(--hf-text);
+}
+
+.hf-content .hf-btn:focus-visible,
+.hf-wrap .hf-btn:focus-visible {
+    outline: 2px solid var(--hf-accent);
+    outline-offset: 1px;
+}
+
+.hf-content .hf-btn-primary,
+.hf-wrap .hf-btn-primary {
+    background: var(--hf-accent);
+    border-color: var(--hf-accent);
+    color: var(--hf-text-inverse);
+}
+
+.hf-content .hf-btn-primary:hover,
+.hf-wrap .hf-btn-primary:hover {
+    background: var(--hf-accent-hover);
+    border-color: var(--hf-accent-hover);
+    color: var(--hf-text-inverse);
+}
+
+.hf-content .hf-btn-ghost,
+.hf-wrap .hf-btn-ghost {
+    background: none;
+    border-color: transparent;
+    color: var(--hf-text-muted);
+}
+
+.hf-content .hf-btn-ghost:hover,
+.hf-wrap .hf-btn-ghost:hover {
+    background: rgba(16, 24, 40, .05);
+    border-color: transparent;
+}
+
+.hf-content .hf-btn-danger,
+.hf-wrap .hf-btn-danger {
+    color: var(--hf-danger);
+}
+
+.hf-content .hf-btn-danger:hover,
+.hf-wrap .hf-btn-danger:hover {
+    background: #fdf2f2;
+    border-color: var(--hf-danger);
+}
+
+/* Status pills */
+.hf-pill {
+    border-radius: var(--hf-radius-sm);
+    display: inline-block;
+    font-size: var(--hf-font-sm);
+    font-weight: 600;
+    line-height: 1.6;
+    padding: 1px var(--hf-space-2);
+}
+
+.hf-pill-success {
+    background: #edfaef;
+    color: #1d6b38;
+}
+
+.hf-pill-warning {
+    background: #fcf5e6;
+    color: #8a6116;
+}
+
+.hf-pill-danger {
+    background: #fcebeb;
+    color: #a02628;
+}
+
+.hf-pill-neutral {
+    background: #f0f1f3;
+    color: var(--hf-text-muted);
+}
+
+/* Form controls */
+.hf-content input[type="text"],
+.hf-content input[type="email"],
+.hf-content input[type="url"],
+.hf-content input[type="number"],
+.hf-content input[type="search"],
+.hf-content input[type="password"],
+.hf-content select,
+.hf-content textarea {
+    border: 1px solid var(--hf-border-strong);
+    border-radius: var(--hf-radius-sm);
+    box-shadow: none;
+    color: var(--hf-text);
+    font-size: var(--hf-font-base);
+    min-height: 34px;
+    padding: 4px var(--hf-space-3);
+    transition: border-color var(--hf-transition), box-shadow var(--hf-transition);
+    width: 100%;
+    line-height: 26px;
+}
+
+.hf-content select {
+    padding-right: 30px;
+}
+
+.hf-content textarea {
+    min-height: 84px;
+    padding-top: var(--hf-space-2);
+}
+
+.hf-content input:focus,
+.hf-content select:focus,
+.hf-content textarea:focus {
+    border-color: var(--hf-accent);
+    box-shadow: 0 0 0 1px var(--hf-accent);
+    outline: 0;
+}
+
+/* Section heading used across panels */
+.hf-section-title {
+    color: var(--hf-text);
+    font-size: var(--hf-font-md);
+    font-weight: 600;
+    margin: 0 0 var(--hf-space-2);
+}
+
+.hf-section-help {
+    color: var(--hf-text-muted);
+    font-size: var(--hf-font-sm);
+    line-height: 1.5;
+    margin: 0 0 var(--hf-space-3);
+}
+
+/* Scrollbars inside panels, so they do not dominate the design */
+.hf-scroll {
+    scrollbar-width: thin;
+}
+
+.hf-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.hf-scroll::-webkit-scrollbar-thumb {
+    background: var(--hf-border-strong);
+    border-radius: var(--hf-radius-pill);
+}
+
+.hf-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .hf-content *,
+    .hf-wrap * {
+        animation-duration: .001ms !important;
+        transition-duration: .001ms !important;
+    }
+}

@@ -48,7 +48,9 @@ class HashFormHelper {
                     $value[$k] = self::sanitize_value($sanitize, $value[$k]);
                 }
             } else {
-                $value = call_user_func($sanitize, ($value ? htmlspecialchars_decode($value) : ''));
+                // A strict check keeps legitimate "0" values from collapsing
+                // to an empty string.
+                $value = call_user_func($sanitize, ($value !== '' && $value !== null && $value !== false ? htmlspecialchars_decode($value) : ''));
             }
         }
 
@@ -56,30 +58,29 @@ class HashFormHelper {
     }
 
     public static function get_unique_key($table_name, $column_name, $limit = 6) {
-        $values = 'ABCDEFGHIJKLMOPQRSTUVXWYZ0123456789';
-        $count = strlen($values);
-        $count--;
+        $values = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        $count = strlen($values) - 1;
         $key = '';
         for ($x = 1; $x <= $limit; $x++) {
-            $rand_var = wp_rand(0, $count);
-            $key .= substr($values, $rand_var, 1);
+            $key .= substr($values, wp_rand(0, $count), 1);
         }
 
-        $key = strtolower($key);
-        $existing_keys = self::check_table_keys($table_name, $column_name);
-
-        if (in_array($key, $existing_keys)) {
-            self::get_unique_key($table_name, $column_name, $limit = 6);
+        if (self::table_key_exists($table_name, $column_name, $key)) {
+            return self::get_unique_key($table_name, $column_name, $limit);
         }
 
         return $key;
     }
 
-    public static function check_table_keys($table_name, $column_name) {
+    private static function table_key_exists($table_name, $column_name, $key) {
         global $wpdb;
-        $tbl_name = $wpdb->prefix . $table_name;
-        $results = $wpdb->get_results($wpdb->prepare("SELECT {$column_name} FROM {$tbl_name} WHERE id!=%d", 0), ARRAY_A);
-        return array_column($results, $column_name);
+
+        // Both identifiers only ever come from internal call sites, but keep
+        // them constrained to identifier characters anyway.
+        $tbl_name = $wpdb->prefix . preg_replace('/[^a-z0-9_]/i', '', $table_name);
+        $column_name = preg_replace('/[^a-z0-9_]/i', '', $column_name);
+
+        return (bool) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$tbl_name} WHERE {$column_name}=%s", $key));
     }
 
     public static function is_admin_page($page = 'hashform') {
@@ -162,6 +163,9 @@ class HashFormHelper {
     public static function parse_json_array($array = array()) {
         $array = json_decode($array, true);
         $fields = array();
+        if (!is_array($array)) {
+            return $fields;
+        }
         foreach ($array as $val) {
             $name = $val['name'];
             $value = $val['value'];
@@ -241,6 +245,9 @@ class HashFormHelper {
     public static function get_form_settings_checkbox_settings() {
         return array(
             'enable_ar' => 'off',
+            // Unchecked boxes are absent from the post, so they need a default
+            // to fall back to or they would keep their previous value.
+            'one_entry_per_user' => 'off',
         );
     }
 
@@ -276,6 +283,11 @@ class HashFormHelper {
             'error_message' => esc_html__('Sorry, An error Occurred! Your form cannot be submitted.', 'hash-form'),
             'show_page_id' => '',
             'redirect_url_page' => '',
+            // Restrictions. Scheduling, entry limits and login requirements
+            // are provided by the Pro plugin, which registers them through the
+            // hashform_form_restrictions filter.
+            'one_entry_per_user' => 'off',
+            'duplicate_message' => esc_html__('You have already submitted this form.', 'hash-form'),
         );
         return apply_filters('hashform_form_settings_default', $return);
     }
@@ -318,6 +330,8 @@ class HashFormHelper {
             'error_message' => 'sanitize_text_field',
             'show_page_id' => 'sanitize_text_field',
             'redirect_url_page' => 'sanitize_url',
+            'one_entry_per_user' => 'hashform_sanitize_checkbox',
+            'duplicate_message' => 'sanitize_text_field',
             'condition_action' => array(
                 'sanitize_text_field'
             ),
@@ -729,21 +743,22 @@ class HashFormHelper {
 
     public static function get_ip_address() {
         $ip_options = array('REMOTE_ADDR');
-        $ip = '';
+        $fallback = '';
 
         foreach ($ip_options as $key) {
             if (!isset($_SERVER[$key])) {
                 continue;
             }
-            $key = self::get_server_value($key);
-            foreach (explode(',', $key) as $ip) {
-                $ip = trim($ip); // Just to be safe.
-                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
-                    return sanitize_text_field($ip);
+            foreach (explode(',', self::get_server_value($key)) as $candidate) {
+                $candidate = trim($candidate);
+                if (filter_var($candidate, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
+                    return sanitize_text_field($candidate);
                 }
+                // Keep e.g. the LAN address of a local install as a fallback.
+                $fallback = $candidate;
             }
         }
-        return sanitize_text_field($ip);
+        return sanitize_text_field($fallback);
     }
 
     public static function get_server_value($value) {
@@ -762,18 +777,68 @@ class HashFormHelper {
         return strlen($parts[count($parts) - 1]);
     }
 
+    // PHP sessions are never started in WP; a short per-user transient
+    // carries the one-shot notice across the redirect instead.
+    public static function set_message($message) {
+        set_transient('hashform_message_' . get_current_user_id(), $message, MINUTE_IN_SECONDS * 5);
+    }
+
     public static function print_message() {
-        if (isset($_SESSION['hashform_message'])) {
+        $key = 'hashform_message_' . get_current_user_id();
+        $message = get_transient($key);
+        if ($message) {
+            delete_transient($key);
             ?>
-            <div class="hf-settings-updated">
+            <?php
+            /*
+             * The same toast the builder shows after an AJAX save. It used to
+             * be its own component — a plain `green` bar in ALL CAPS — so the
+             * one action looked like two different products depending on
+             * whether the screen saved over AJAX or through a redirect.
+             */
+            ?>
+            <div class="hf-updated-info" role="status">
                 <span class="mdi mdi-check-circle"></span>
-                <?php
-                echo esc_html(sanitize_text_field($_SESSION['hashform_message']));
-                unset($_SESSION['hashform_message']);
-                ?>
+                <?php echo esc_html(sanitize_text_field($message)); ?>
             </div>
             <?php
         }
+    }
+
+    /**
+     * One status tab for a list screen. Shared by the Forms and Entries
+     * tables so a single count keeps looking the same on both.
+     */
+    public static function view_tab($url, $label, $count, $is_current) {
+        $classes = 'hf-view-tab' . ($is_current ? ' current' : '');
+
+        return '<a class="' . esc_attr($classes) . '" href="' . esc_url($url) . '">'
+                . esc_html($label)
+                . '<span class="count">' . esc_html(number_format_i18n($count)) . '</span>'
+                . '</a>';
+    }
+
+    /**
+     * Renders the tabs built by view_tab(). The subsubsub class is kept so
+     * anything hooked to the usual list-screen markup still finds it, but the
+     * ul/li and the pipe separators are gone: these read as a segmented
+     * control now, not a sentence.
+     */
+    public static function render_view_tabs($views) {
+        if (empty($views)) {
+            return;
+        }
+
+        $allowed = array(
+            'a' => array('class' => array(), 'href' => array()),
+            'span' => array('class' => array()),
+        );
+
+        echo '<div class="hf-view-tabs subsubsub">';
+        foreach ($views as $view) {
+            echo wp_kses($view, $allowed);
+        }
+        echo '</div>';
     }
 
     public static function sanitize_array($array = array(), $sanitize_rule = array()) {
@@ -795,19 +860,54 @@ class HashFormHelper {
         return $new_args;
     }
 
+    /**
+     * A field description, sanitized for the kind of field it belongs to.
+     *
+     * The HTML field keeps its markup in this column, so the plain-text
+     * sanitizer every new row used to get emptied every tag out of it.
+     */
+    public static function sanitize_field_description($description, $type) {
+        return 'html' === $type ? self::sanitize_html_field_content($description) : sanitize_text_field($description);
+    }
+
+    /**
+     * Markup for the HTML field.
+     *
+     * wp_kses_post() takes the tags off a script but keeps what was between
+     * them, so a pasted tracking snippet ended up printed on the page as text.
+     * The whole element goes first, then everything else goes through kses.
+     */
+    public static function sanitize_html_field_content($html) {
+        $html = (string) $html;
+        $html = preg_replace('#<(script|style)\b[^>]*>.*?</\1\s*>#is', '', $html);
+        $html = preg_replace('#</?(script|style)\b[^>]*>#i', '', $html);
+
+        return wp_kses_post($html);
+    }
+
     public static function get_field_options_sanitize_rules() {
         return array(
             'grid_id' => 'sanitize_text_field',
+            'column_group' => 'sanitize_key',
+            'column_row' => 'sanitize_text_field',
             'name' => 'sanitize_text_field',
             'label' => 'sanitize_text_field',
             'label_position' => 'sanitize_text_field',
             'label_alignment' => 'sanitize_text_field',
             'hide_label' => 'hashform_sanitize_checkbox_boolean',
-            'heading_type' => 'sanitize_text_field',
+            'heading_type' => 'hashform_sanitize_heading_type',
             'text_alignment' => 'sanitize_text_field',
-            'content' => 'sanitize_text_field',
+            'content' => 'wp_kses_post',
             'select_option_type' => 'sanitize_text_field',
             'image_size' => 'sanitize_text_field',
+            'image_alt' => 'sanitize_text_field',
+            'captcha_size' => 'sanitize_key',
+            'captcha_theme' => 'sanitize_key',
+            'payment_gateways' => 'sanitize_key',
+            'step_description' => 'sanitize_text_field',
+            'next_text' => 'sanitize_text_field',
+            'progress_style' => 'sanitize_key',
+            'step_scroll' => 'hashform_sanitize_checkbox',
             'image_id' => 'hashform_sanitize_number',
             'spacer_height' => 'hashform_sanitize_number',
             'step' => 'hashform_sanitize_float',
@@ -815,6 +915,21 @@ class HashFormHelper {
             'max_time' => 'sanitize_text_field',
             'upload_label' => 'sanitize_text_field',
             'max_upload_size' => 'hashform_sanitize_number',
+            'min_upload_size' => 'hashform_sanitize_number',
+            'capture' => 'sanitize_key',
+            'value_source' => 'sanitize_key',
+            'value_param' => 'sanitize_key',
+            'color_format' => 'sanitize_key',
+            'button_text' => 'sanitize_text_field',
+            'button_link' => 'esc_url_raw',
+            'button_new_tab' => 'hashform_sanitize_checkbox',
+            'shortcode' => 'sanitize_text_field',
+            'min_rows' => 'hashform_sanitize_number',
+            'max_rows' => 'hashform_sanitize_number',
+            'datetime_default' => 'sanitize_text_field',
+            'datetime_min' => 'sanitize_text_field',
+            'datetime_max' => 'sanitize_text_field',
+            'datetime_step' => 'hashform_sanitize_number',
             'extensions' => 'hashform_sanitize_allowed_file_extensions',
             'extensions_error_message' => 'sanitize_text_field',
             'multiple_uploads' => 'sanitize_text_field',
@@ -823,6 +938,7 @@ class HashFormHelper {
             'date_format' => 'sanitize_text_field',
             'border_style' => 'sanitize_text_field',
             'border_width' => 'hashform_sanitize_number',
+            'separator_spacing' => 'hashform_sanitize_number',
             'minnum' => 'hashform_sanitize_float',
             'maxnum' => 'hashform_sanitize_float',
             'classes' => 'sanitize_text_field',
@@ -893,6 +1009,64 @@ class HashFormHelper {
         if (hash_equals($hmac, $calcmac)) {
             return $original_plaintext;
         }
+
+        // A tampered or truncated payload must not fall through as null.
+        return false;
+    }
+
+    /**
+     * A repeater's rows as a table.
+     *
+     * Entries saved before the field kept its own column labels hold the cells
+     * grouped by column, so those are turned back into rows here; newer ones
+     * already carry 'columns' and 'rows'. Three copies of this used to sit in
+     * the entry screen, the email and here, each transposing by hand and each
+     * emitting a row's closing tag without its opening one.
+     */
+    public static function render_repeater_table($value) {
+        if (!is_array($value)) {
+            return '';
+        }
+
+        if (isset($value['rows']) && is_array($value['rows'])) {
+            $columns = isset($value['columns']) && is_array($value['columns']) ? $value['columns'] : array();
+            $rows = $value['rows'];
+        } else {
+            $columns = array_keys($value);
+            $rows = array();
+
+            foreach ($value as $cells) {
+                foreach ((array) $cells as $row_key => $cell) {
+                    $rows[$row_key][] = $cell;
+                }
+            }
+        }
+
+        if (!$rows) {
+            return '';
+        }
+
+        $cell = function ($content) {
+            return esc_html(is_scalar($content) ? $content : '');
+        };
+
+        $html = '<table class="hf-entry-repeater"><thead><tr>';
+
+        foreach ($columns as $column) {
+            $html .= '<th>' . $cell($column) . '</th>';
+        }
+
+        $html .= '</tr></thead><tbody>';
+
+        foreach ($rows as $row) {
+            $html .= '<tr>';
+            foreach ((array) $row as $content) {
+                $html .= '<td>' . $cell($content) . '</td>';
+            }
+            $html .= '</tr>';
+        }
+
+        return $html . '</tbody></table>';
     }
 
     public static function get_field_input_value($value) {
@@ -903,25 +1077,7 @@ class HashFormHelper {
             if ($entry_type == 'name') {
                 $entry_value = implode(' ', array_filter($entry_value));
             } elseif ($entry_type == 'repeater_field') {
-                $entry_val = '<table><thead><tr>';
-                foreach (array_keys($entry_value) as $key) {
-                    $entry_val .= '<th>' . $key . '</th>';
-                }
-                $entry_val .= '</tr></thead><tbody>';
-                $out = array();
-                foreach ($entry_value as $rowkey => $row) {
-                    foreach ($row as $colkey => $col) {
-                        $out[$colkey][$rowkey] = $col;
-                    }
-                }
-                foreach ($out as $key => $val) {
-                    foreach ($val as $eval) {
-                        $entry_val .= '<td>' . $eval . '</td>';
-                    }
-                    $entry_val .= '</tr>';
-                }
-                $entry_val .= '</tbody></table>';
-                $entry_value = $entry_val;
+                $entry_value = self::render_repeater_table($entry_value);
             } else {
                 $entry_value = implode(',', array_filter($entry_value));
             }

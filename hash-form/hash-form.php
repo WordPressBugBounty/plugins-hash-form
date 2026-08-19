@@ -3,7 +3,7 @@
 /*
  * Plugin Name: Hash Form - Drag & Drop Form Builder
  * Description: Design, Embed, Connect: Your Ultimate Form Companion for WordPress
- * Version: 1.4.0
+ * Version: 1.4.1
  * Author: HashThemes
  * Author URI: https://hashthemes.com/
  * Text Domain: hash-form
@@ -15,7 +15,7 @@
 
 defined('ABSPATH') || die();
 
-define('HASHFORM_VERSION', '1.4.0');
+define('HASHFORM_VERSION', '1.4.1');
 define('HASHFORM_FILE', __FILE__);
 define('HASHFORM_PATH', plugin_dir_path(HASHFORM_FILE));
 define('HASHFORM_URL', plugin_dir_url(HASHFORM_FILE));
@@ -26,9 +26,12 @@ require HASHFORM_PATH . 'admin/classes/HashFormStrReader.php';
 require HASHFORM_PATH . 'admin/classes/HashFormBlock.php';
 require HASHFORM_PATH . 'admin/classes/HashFormUploader.php';
 require HASHFORM_PATH . 'admin/classes/HashFormCreateTable.php';
+// Must load before the classes that compose it.
+require HASHFORM_PATH . 'admin/classes/HashFormListActions.php';
 require HASHFORM_PATH . 'admin/classes/HashFormBuilder.php';
 require HASHFORM_PATH . 'admin/classes/HashFormHelper.php';
 require HASHFORM_PATH . 'admin/classes/HashFormFields.php';
+require HASHFORM_PATH . 'admin/classes/HashFormFieldIcons.php';
 require HASHFORM_PATH . 'admin/classes/HashFormLoader.php';
 require HASHFORM_PATH . 'admin/classes/HashFormSmtp.php';
 require HASHFORM_PATH . 'admin/classes/HashFormEntry.php';
@@ -36,12 +39,18 @@ require HASHFORM_PATH . 'admin/classes/HashFormImportExport.php';
 require HASHFORM_PATH . 'admin/classes/HashFormListing.php';
 require HASHFORM_PATH . 'admin/classes/HashFormEntryListing.php';
 require HASHFORM_PATH . 'admin/classes/HashFormValidate.php';
+require HASHFORM_PATH . 'admin/classes/HashFormRestrictions.php';
 require HASHFORM_PATH . 'admin/classes/HashFormPreview.php';
 require HASHFORM_PATH . 'admin/classes/HashFormShortcode.php';
 require HASHFORM_PATH . 'admin/classes/HashFormSettings.php';
 require HASHFORM_PATH . 'admin/classes/HashFormStyles.php';
 require HASHFORM_PATH . 'admin/classes/HashFormGridHelper.php';
 require HASHFORM_PATH . 'admin/classes/HashFormEmail.php';
+
+/**
+ * Bring the schema up to date after a plugin update, not just on activation.
+ */
+add_action('plugins_loaded', array('HashFormCreateTable', 'maybe_upgrade'));
 
 /**
  * Register widget.

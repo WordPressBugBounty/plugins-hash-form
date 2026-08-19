@@ -38,23 +38,40 @@ class HashFormFieldHTML extends HashFormFieldType {
                 wp_editor($field['description'], $html_id, $args);
                 ?>
             </div>
+            <p class="description">
+                <?php esc_html_e('Scripts and styles are removed when this is saved. Use the theme or a plugin for anything that has to run.', 'hash-form'); ?>
+            </p>
         </div>
         <?php
     }
 
     public function input_html() {
         $field = $this->get_field();
+        $content = isset($field['description']) ? $field['description'] : '';
+        $content = apply_filters('hashform_translate_string', $content, 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Description');
+
+        /*
+         * Sanitized again on the way out, not only on the way in: rows saved
+         * before that was done still hold whatever was pasted into them.
+         */
+        $content = HashFormHelper::sanitize_html_field_content($content);
         ?>
         <div class="hf-custom-html-field">
             <?php
-            if (is_admin() && !HashFormHelper::is_preview_page()) {
+            if ('' === trim(wp_strip_all_tags($content)) && is_admin()) {
+                /*
+                 * The canvas used to show this whatever the field held, so
+                 * there was no way to see what you had written without saving
+                 * and looking at the page. What is drawn now is what the page
+                 * will draw, having been through the same sanitizer.
+                 */
                 ?>
                 <div class="hf-custom-html-preview">
-                    <?php esc_html_e('Custom HTML - No Preview Available', 'hash-form'); ?>
+                    <?php esc_html_e('Custom HTML - nothing added yet', 'hash-form'); ?>
                 </div>
                 <?php
             } else {
-                echo wp_kses_post(apply_filters('hashform_translate_string', $field['description'], 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Description'));
+                echo wp_kses_post($content);
             }
             ?>
         </div>

@@ -1,5 +1,7 @@
 <?php
 
+defined('ABSPATH') || die();
+
 /**
  * Handle file uploads via XMLHttpRequest
  */
@@ -60,11 +62,9 @@ class HashFormUploadedFileXhr {
     }
 
     function getSize() {
-        if (isset($_SERVER["CONTENT_LENGTH"])) {
-            return (int) $_SERVER["CONTENT_LENGTH"];
-        } else {
-            throw new Exception(esc_html__('Getting content length is not supported.', 'hash-form'));
-        }
+        // Callers treat 0 as an empty upload and report it; throwing here would
+        // surface as an uncaught fatal on the AJAX endpoint.
+        return isset($_SERVER['CONTENT_LENGTH']) ? (int) $_SERVER['CONTENT_LENGTH'] : 0;
     }
 
 }
@@ -74,6 +74,7 @@ class HashFormFileUploader {
     private $allowedExtensions = array();
     private $sizeLimit = 10485760;
     private $file;
+    private $error = '';
 
     function __construct(array $allowedExtensions = array(), $sizeLimit = 10485760) {
         $allowedExtensions = array_map('strtolower', $allowedExtensions);
@@ -88,15 +89,7 @@ class HashFormFileUploader {
             }
         }
 
-        $count = 0;
-        foreach ($allowedExtensions as $ext) {
-            if (!in_array($ext, $available_exts)) {
-                unset($allowedExtensions[$count]);
-            }
-            $count++;
-        }
-
-        $this->allowedExtensions = $allowedExtensions;
+        $this->allowedExtensions = array_values(array_intersect($allowedExtensions, $available_exts));
         $this->sizeLimit = $sizeLimit;
         $this->checkServerSettings();
 
@@ -113,27 +106,41 @@ class HashFormFileUploader {
 
         if ($postSize < $this->sizeLimit || $uploadSize < $this->sizeLimit) {
             $size = max(1, $this->sizeLimit / 1024 / 1024) . 'M';
-            die(esc_html("{'error':'increase post_max_size and upload_max_filesize to $size'}"));
+            /* translators: 1: required size in megabytes, e.g. 10M */
+            $this->error = sprintf(esc_html__('Server error. Increase post_max_size and upload_max_filesize to %s.', 'hash-form'), $size);
         }
     }
 
     private function toBytes($str) {
         $val = trim($str);
-        $last = strtolower($str[strlen($str) - 1]);
+
+        // An unset ini directive returns an empty string.
+        if ('' === $val) {
+            return 0;
+        }
+
+        $last = strtolower($val[strlen($val) - 1]);
         $val = floatval($val);
         switch ($last) {
             case 'g':
                 $val *= 1024 * 1024 * 1024;
+                break;
             case 'm':
                 $val *= 1024 * 1024;
+                break;
             case 'k':
                 $val *= 1024;
+                break;
         }
 
         return $val;
     }
 
     function handleUpload($uploadDirectory, $replaceOldFile = false, $upload_url = '') {
+        if ($this->error) {
+            return array('error' => $this->error);
+        }
+
         $this->ensureUploadDirectory($uploadDirectory);
         $uploadDirectory = trailingslashit($uploadDirectory . '/temp');
         $upload_url = $upload_url . '/temp';
@@ -150,7 +157,7 @@ class HashFormFileUploader {
             WP_Filesystem();
         }
 
-        if (!$wp_filesystem->is_writable($uploadDirectory)) {
+        if (!$wp_filesystem || !$wp_filesystem->is_writable($uploadDirectory)) {
             return array('error' => esc_html__('Server error. Upload directory isn\'t writable.', 'hash-form'));
         }
 
@@ -170,7 +177,7 @@ class HashFormFileUploader {
 
         $pathinfo = pathinfo($this->file->getName());
         $filename = $pathinfo['filename'];
-        $ext = @$pathinfo['extension'];  // hide notices if extension is empty
+        $ext = isset($pathinfo['extension']) ? $pathinfo['extension'] : '';
 
         if (in_array(strtolower($ext), $unallowed_extensions)) {
             return array('error' => esc_html__('This type of file is not allowed.', 'hash-form'));
@@ -213,22 +220,33 @@ class HashFormFileUploader {
             WP_Filesystem();
         }
 
+        // WP_Filesystem() returns false when it cannot connect, leaving the
+        // global unset; handleUpload() reports the unwritable directory.
+        if (!$wp_filesystem) {
+            return;
+        }
+
+        $htaccess = $wp_filesystem->get_contents(HASHFORM_PATH . 'admin/stubs/htaccess.stub');
+        $index = $wp_filesystem->get_contents(HASHFORM_PATH . 'admin/stubs/index.stub');
+
+        // Omitting the mode lets WP_Filesystem apply FS_CHMOD_FILE itself; the
+        // constant is only defined once WP_Filesystem() has run.
         if (!is_dir($path)) {
             $wp_filesystem->mkdir($path, 0755);
-            file_put_contents($path . '/.htaccess', file_get_contents(HASHFORM_PATH . 'admin/stubs/htaccess.stub'));
+            $wp_filesystem->put_contents($path . '/.htaccess', $htaccess);
         }
 
         if (!is_dir($path . '/temp')) {
             $wp_filesystem->mkdir($path . '/temp', 0755);
-            file_put_contents($path . '/temp/.htaccess', file_get_contents(HASHFORM_PATH . 'admin/stubs/htaccess.stub'));
+            $wp_filesystem->put_contents($path . '/temp/.htaccess', $htaccess);
         }
 
         if (!file_exists($path . '/index.php')) {
-            file_put_contents($path . '/index.php', file_get_contents(HASHFORM_PATH . 'admin/stubs/index.stub'));
+            $wp_filesystem->put_contents($path . '/index.php', $index);
         }
 
         if (!file_exists($path . '/temp/index.php')) {
-            file_put_contents($path . '/temp/index.php', file_get_contents(HASHFORM_PATH . 'admin/stubs/index.stub'));
+            $wp_filesystem->put_contents($path . '/temp/index.php', $index);
         }
     }
 
