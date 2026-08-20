@@ -133,7 +133,16 @@ class HashFormEntryListing extends \WP_List_Table {
                 continue;
             }
 
-            $value = maybe_unserialize($row['meta_value']);
+            /*
+             * unserialize_or_decode, not maybe_unserialize: meta_value is
+             * visitor-supplied, and maybe_unserialize() would instantiate any
+             * class named in a crafted 'O:'/'C:' payload the moment an admin
+             * opened this list. This path only ever wants an array or a string
+             * for the preview, so object serialization is decoded with native
+             * unserialize disabled (see entry-detail.php and HashFormEmail.php,
+             * which already read this column the same way).
+             */
+            $value = HashFormHelper::unserialize_or_decode($row['meta_value']);
 
             if (is_array($value)) {
                 $value = implode(', ', array_filter(array_map('strval', $value)));

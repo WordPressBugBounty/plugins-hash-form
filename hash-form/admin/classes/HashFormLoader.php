@@ -70,6 +70,7 @@ class HashFormLoader {
                 'search_fields' => esc_html__('Search fields', 'hash-form'),
                 'no_tag_fields' => esc_html__('This form has no field to insert here yet.', 'hash-form'),
                 'no_tag_matches' => esc_html__('No field matches that.', 'hash-form'),
+                'invalid_email' => esc_html__('Enter a valid email address.', 'hash-form'),
             ));
 
             wp_localize_script('hashform-builder', 'hashform_backend_js', array(

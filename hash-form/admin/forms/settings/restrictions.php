@@ -12,7 +12,7 @@ $settings = array_merge(HashFormHelper::get_form_settings_default(), (array) $se
             <input type="hidden" name="one_entry_per_user" value="off">
             <input type="checkbox" name="one_entry_per_user" value="on" data-condition="toggle" id="hf-one-entry" <?php checked($settings['one_entry_per_user'], 'on', true); ?>>
         </div>
-        <p class="hf-setting-description"><?php esc_html_e('Logged in visitors are matched by their account, guests by IP address.', 'hash-form'); ?></p>
+        <p class="hf-desc"><?php esc_html_e('Logged in visitors are matched by their account, guests by IP address.', 'hash-form'); ?></p>
     </div>
 
     <div class="hf-form-row" data-condition-toggle="hf-one-entry" data-condition-val="on">
@@ -26,7 +26,7 @@ $settings = array_merge(HashFormHelper::get_form_settings_default(), (array) $se
     if (!defined('HASH_FORM_PRO_VERSION')) {
         ?>
         <div class="hf-form-row">
-            <p class="hf-setting-description">
+            <p class="hf-desc">
                 <?php esc_html_e('Looking to schedule this form, cap the number of entries or require visitors to log in?', 'hash-form'); ?>
                 <a href="https://hashthemes.com/plugin/hash-form-pro/" target="_blank" rel="noopener"><?php esc_html_e('Hash Form Pro', 'hash-form'); ?></a>
                 <?php esc_html_e('adds those under Schedule &amp; Restriction.', 'hash-form'); ?>

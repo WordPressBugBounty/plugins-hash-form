@@ -9,37 +9,67 @@ $next_entry = HashFormEntry::get_next_entry($entry->id);
 $next_entry = isset($next_entry[0]) ? $next_entry[0] : '';
 $next_entry_id = isset($next_entry->id) ? $next_entry->id : '';
 $next_url = $next_entry_id ? admin_url('admin.php?page=hashform-entries&hashform_action=view&id=' . $next_entry_id) : '#';
+
+$entries_url = admin_url('admin.php?page=hashform-entries');
+$delivery_failed = isset($entry->delivery_status) && !$entry->delivery_status;
 ?>
 
 <div class="hf-form-entry-details-wrap wrap">
     <h1></h1>
     <div id="hf-form-entry-details">
-        <div class="hf-page-title">
-            <h3>
-                <span><?php esc_html_e('Entry', 'hash-form'); ?></span>
-                <span class="hf-sub-label">
-                    <?php echo '(' . esc_html__('ID', 'hash-form') . ' ' . absint($entry->id) . ')'; ?>
-                </span>
-                 - 
-                <span class="hf-form-entry-date"><?php echo HashFormEntry::get_entry_date($entry->id) ?></span>
-            </h3>
-            <div class="hf-form-entry-navigation">
-                <button type="button" class="hf-entry-star hf-entry-star-large<?php echo empty($entry->is_starred) ? '' : ' hf-starred'; ?>"
-                        data-entry="<?php echo absint($entry->id); ?>"
-                        data-starred="<?php echo empty($entry->is_starred) ? '0' : '1'; ?>"
-                        aria-pressed="<?php echo empty($entry->is_starred) ? 'false' : 'true'; ?>"
-                        aria-label="<?php esc_attr_e('Star this entry', 'hash-form'); ?>">
-                    <span class="dashicons dashicons-star-<?php echo empty($entry->is_starred) ? 'empty' : 'filled'; ?>"></span>
-                </button>
-                <a class="hf-form-entry-prev<?php echo $prev_url == '#' ? ' hf-disabled' : ''; ?>" href="<?php echo esc_url($prev_url); ?>">
-                    <i class="mdi mdi-chevron-left"></i><?php echo esc_html__('Previous', 'hash-form') ?>
+        <div class="hf-entry-header">
+            <div class="hf-entry-toolbar">
+                <a class="hf-btn hf-entry-back" href="<?php echo esc_url($entries_url); ?>">
+                    <i class="mdi mdi-chevron-left" aria-hidden="true"></i><?php esc_html_e('All Entries', 'hash-form'); ?>
                 </a>
-                <a class="hf-form-entry-next<?php echo $next_url == '#' ? ' hf-disabled' : ''; ?>" href="<?php echo esc_url($next_url); ?>">
-                    <?php echo esc_html__('Next', 'hash-form') ?><i class="mdi mdi-chevron-right"></i>
-                </a>
+
+                <div class="hf-entry-header-actions">
+                    <button type="button" class="hf-entry-star hf-entry-star-large<?php echo empty($entry->is_starred) ? '' : ' hf-starred'; ?>"
+                            data-entry="<?php echo absint($entry->id); ?>"
+                            data-starred="<?php echo empty($entry->is_starred) ? '0' : '1'; ?>"
+                            aria-pressed="<?php echo empty($entry->is_starred) ? 'false' : 'true'; ?>"
+                            aria-label="<?php esc_attr_e('Star this entry', 'hash-form'); ?>">
+                        <span class="dashicons dashicons-star-<?php echo empty($entry->is_starred) ? 'empty' : 'filled'; ?>"></span>
+                    </button>
+
+                    <div class="hf-form-entry-navigation">
+                        <?php if ($prev_url == '#') { ?>
+                            <span class="hf-btn hf-form-entry-prev hf-disabled" aria-disabled="true">
+                                <i class="mdi mdi-chevron-left" aria-hidden="true"></i><?php echo esc_html__('Previous', 'hash-form') ?>
+                            </span>
+                        <?php } else { ?>
+                            <a class="hf-btn hf-form-entry-prev" href="<?php echo esc_url($prev_url); ?>">
+                                <i class="mdi mdi-chevron-left" aria-hidden="true"></i><?php echo esc_html__('Previous', 'hash-form') ?>
+                            </a>
+                        <?php } ?>
+
+                        <?php if ($next_url == '#') { ?>
+                            <span class="hf-btn hf-form-entry-next hf-disabled" aria-disabled="true">
+                                <?php echo esc_html__('Next', 'hash-form') ?><i class="mdi mdi-chevron-right" aria-hidden="true"></i>
+                            </span>
+                        <?php } else { ?>
+                            <a class="hf-btn hf-form-entry-next" href="<?php echo esc_url($next_url); ?>">
+                                <?php echo esc_html__('Next', 'hash-form') ?><i class="mdi mdi-chevron-right" aria-hidden="true"></i>
+                            </a>
+                        <?php } ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hf-entry-identity">
+                <h2 class="hf-entry-title">
+                    <?php
+                    /* translators: %s: numeric entry id. */
+                    printf(esc_html__('Entry #%s', 'hash-form'), absint($entry->id));
+                    ?>
+                </h2>
+                <p class="hf-entry-submitted">
+                    <?php echo esc_html(HashFormEntry::get_entry_date($entry->id)); ?>
+                </p>
             </div>
         </div>
-        <table>
+
+        <table class="hf-entry-fields">
             <tbody>
                 <?php
                 $file_img_placeholder = HASHFORM_URL . 'img/attachment.png';
@@ -57,6 +87,16 @@ $next_url = $next_entry_id ? admin_url('admin.php?page=hashform-entries&hashform
                         } else {
                             $entry_value = implode(',<br>', $entry_value);
                         }
+                    }
+
+                    // Shared with the notification email, so both read alike.
+                    $entry_value = HashFormHelper::format_date_value($entry_value, $entry_type);
+
+                    // A hex code says very little on its own, so the colour is
+                    // shown alongside it.
+                    if ('color_picker' === $entry_type && $entry_value && is_string($entry_value)) {
+                        $entry_value = '<span class="hf-entry-swatch" style="background-color:' . esc_attr($entry_value) . ';"></span>'
+                                . '<span class="hf-entry-swatch-value">' . esc_html($entry_value) . '</span>';
                     }
 
                     // Stored as a bare account id, which says nothing on its own.
@@ -103,16 +143,39 @@ $next_url = $next_entry_id ? admin_url('admin.php?page=hashform-entries&hashform
                      */
                     $entry_value = apply_filters('hashform_entry_display_value', $entry_value, $entry_type, $value, 'detail');
 
+                    /*
+                     * A field that was left blank used to leave the cell
+                     * completely empty, which reads as a rendering fault rather
+                     * than as an answer nobody gave. The dash is marked up so it
+                     * can be told apart from a value that happens to be one.
+                     */
+                    $is_blank = !is_string($entry_value) ? empty($entry_value) : ('' === trim($entry_value));
+
                     echo '<tr>';
-                    echo '<th>' . esc_html($title) . '</th>';
-                    echo '<td>' . wpautop(wp_kses_post($entry_value)) . '</td>';
+                    echo '<th scope="row">' . esc_html($title) . '</th>';
+
+                    if ($is_blank) {
+                        echo '<td><span class="hf-entry-blank" aria-label="' . esc_attr__('No answer', 'hash-form') . '">&mdash;</span></td>';
+                    } else {
+                        echo '<td>' . wpautop(wp_kses_post($entry_value)) . '</td>';
+                    }
+
                     echo '</tr>';
                 }
-
-                do_action('hf_after_entry_detail_view', $entry);
                 ?>
             </tbody>
         </table>
+
+        <?php
+        /*
+         * Fires after the entry's own table has been closed, so anything hooked
+         * here is a sibling of it. Pro answers with complete tables of its own,
+         * and a table is not legal inside a tbody: printing this from within the
+         * loop left the browser to pull them back out, which it did at a
+         * position of its own choosing.
+         */
+        do_action('hf_after_entry_detail_view', $entry);
+        ?>
 
         <div class="hf-entry-tools">
             <div class="hf-entry-notes" data-entry="<?php echo absint($entry->id); ?>">
@@ -120,7 +183,7 @@ $next_url = $next_entry_id ? admin_url('admin.php?page=hashform-entries&hashform
                 <p class="hf-entry-note-desc"><?php esc_html_e('Only visible here in the admin. Never sent to the person who submitted the form.', 'hash-form'); ?></p>
                 <textarea rows="4" class="hf-entry-note-field" placeholder="<?php esc_attr_e('Add a note about this entry...', 'hash-form'); ?>"><?php echo esc_textarea(isset($entry->notes) ? $entry->notes : ''); ?></textarea>
                 <p class="hf-entry-note-actions">
-                    <button type="button" class="button hf-entry-note-save"><?php esc_html_e('Save Note', 'hash-form'); ?></button>
+                    <button type="button" class="hf-btn hf-btn-primary hf-entry-note-save"><?php esc_html_e('Save Note', 'hash-form'); ?></button>
                     <span class="hf-entry-note-status" role="status"></span>
                 </p>
             </div>
@@ -129,15 +192,15 @@ $next_url = $next_entry_id ? admin_url('admin.php?page=hashform-entries&hashform
                 <h4><?php esc_html_e('Notification', 'hash-form'); ?></h4>
                 <p>
                     <?php
-                    if (isset($entry->delivery_status) && !$entry->delivery_status) {
+                    if ($delivery_failed) {
                         echo '<span class="hf-entry-delivery-failed">' . esc_html__('The notification for this entry failed to send.', 'hash-form') . '</span>';
                     } else {
                         esc_html_e('Send the notification emails for this entry again.', 'hash-form');
                     }
                     ?>
                 </p>
-                <p>
-                    <button type="button" class="button hf-entry-resend" data-entry="<?php echo absint($entry->id); ?>">
+                <p class="hf-entry-resend-actions">
+                    <button type="button" class="hf-btn hf-entry-resend" data-entry="<?php echo absint($entry->id); ?>">
                         <?php esc_html_e('Resend Notification', 'hash-form'); ?>
                     </button>
                     <span class="hf-entry-resend-status" role="status"></span>

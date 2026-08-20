@@ -3,7 +3,7 @@ Contributors: hashthemes
 Tags: form, form builder, drag and drop, contact form
 Requires at least: 6.3
 Tested up to: 7.0
-Stable tag: 1.4.1
+Stable tag: 1.4.2
 Requires PHP: 7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -12,31 +12,29 @@ Create any kind of forms effortlessly with Hash Form – the ultimate drag & dro
 
 == Description ==
 
-Unleash the power of creativity and interaction with Hash Form. With its user friendly interface and robust features, you can effortlessly design custom forms that cater to your specific needs. Whether you're looking to gather user feedback, conduct surveys, or enable easy contact options, this plugin offers an intuitive drag and drop interface that lets you craft visually appealing forms without any coding expertise. This plugin is your all in one solution for seamlessly embedding forms that resonate with your brand's aesthetics. Every aspect of form design is customizable, from choosing color schemes to selecting field types, ensuring a cohesive and professional look that aligns with your website's design. Whether you're a beginner or an experienced developer, Form's versatility empowers you to experiment, iterate, and create forms that not only serve their functional purpose but also elevate the overall user experience.
+Hash Form is a free drag and drop form builder for WordPress. Build a form, style it to match your site, and embed it anywhere, with no code and no paywall on the features you actually need.
 
-This plugin is built with beginners in mind. Even if you're not a tech wizard, you can effortlessly create fantastic forms without dealing with complicated code!
+Use it for contact, feedback, survey, registration and quote forms. Drag fields onto a row and column canvas, set the styling, add conditional logic, and publish. The full field set, entry storage, styling and email tools are all in the free plugin, not held back for a paid tier.
 
-But wait, there's more – once your form is set, the power is in your hands to customize every detail. Adjust the font size, letter spacing, and line height. Choose the color scheme that suits your taste, and set the spacing for rows and columns with ease. Our customization options allow you to make your form uniquely yours in a breeze! No need for generic designs, tailor your form to your liking effortlessly.
+<h3>What You Get</h3>
+<ul>
+<li><strong>Free, and not limited: </strong>27 field types, unlimited forms and unlimited entries, with no upgrade wall on everyday features.</li>
+<li><strong>A real canvas: </strong>arrange fields in rows and columns, not a fixed single column.</li>
+<li><strong>Full design control: </strong>set typography, colour and spacing, then save it as a style template you reuse across forms.</li>
+<li><strong>Entries kept on your site: </strong>every submission is stored and searchable, so a missed email never loses a lead.</li>
+<li><strong>Embed anywhere: </strong>a shortcode, the Gutenberg block, or the Elementor widget.</li>
+<li><strong>Privacy option: </strong>turn off Google font requests so forms do not share visitor data by default.</li>
+</ul>
 
-<h3>Test Dashboard</h3>
-Explore a test dashboard to get a hands on experience with our features and functionalities. Visit <a href="https://tastewp.com/plugins/hash-form/" target="_blank">Test Dashboard</a> to access the test environment.
-
-Feel free to experiment, and if you have any feedback or encounter issues, please let us know through our support tickets.
-
-<h3>Documentation</h3>
-For detailed information and instructions, please refer to our official documentation at <a href="https://hashthemes.com/documentation/hash-form-drag-and-drop-form-builder-documentation/">Hash Form Documentation</a>.
-
-If you have any questions or need further assistance, feel free to reach out to our support team through support tickets.
-
-<h3>Available Fields Types</h3>
-
-Customize your contact forms effortlessly with our drag and drop field types. Let's explore the various field types and understand their functionalities.
+<h3>Available Field Types</h3>
+Assemble any form from a full set of drag and drop, fully styleable fields.
 
 <ul>
 <li><strong>Name: </strong>The Name field provides flexibility for collecting names in various formats, such as Full Name, First Last, Last First, and First Middle Last.</li>
 <li><strong>Email: </strong>The email field type serves the purpose of collecting users' email addresses, enabling communication for notifications about upcoming events or responding to any inquiries they may have. </li>
 <li><strong>Website/URL: </strong>Add a 'Website/URL' field in your contact form for users to share their website addresses, providing context for inquiries and networking.</li>
 <li><strong>Address: </strong>Users can provide their complete address by filling in these fields, offering a comprehensive way to collect location information. This can be particularly useful for various purposes such as event planning, shipping, or personalized communication.</li>
+<li><strong>Text: </strong>The single line text field collects short, free form answers that fit on one line, such as a name, a subject, or a reference number.</li>
 <li><strong>Text Area: </strong>The textarea element is commonly employed in forms to gather user inputs such as comments or reviews. Unlike single line input fields, a text area can accommodate an unlimited number of characters. </li>
 <li><strong>Checkbox: </strong>Checkboxes provide users with the flexibility to choose from a range of options, enabling the easy selection of preferences. This feature helps in distinctly capturing user choices, streamlining the data collection process for enhanced efficiency.</li>
 <li><strong>Dropdown: </strong>In a contact form, a dropdown appears as a compact menu with a default option. Users can click or tap to reveal and choose from a list of options.</li>
@@ -60,33 +58,44 @@ Customize your contact forms effortlessly with our drag and drop field types. Le
 <li><strong>Upload: </strong>This feature allows respondents to effortlessly submit diverse files, enriching data collection with images, documents, or other relevant attachments. Seamlessly integrated into the form, the upload field ensures an intuitive experience, and submitted files can be securely managed for further analysis or processing.</li>
 </ul>
 
+<h3>Drag and Drop Builder</h3>
+Arrange fields on a row and column canvas, reorder them by dragging, and get a responsive layout without writing code.
 
-<h3>Drag and Drop Elements to Create Contact Forms</h3>
-Effortlessly design forms in a snap with our user friendly drag and drop feature. No design skills are required – our easy row and column alignment ensures a polished and professional look for your forms. Creating stunning forms has never been this simple!
-
-<h3>Beginner Friendly</h3>
-This plugin is a breeze for everyone, even if you're not a tech pro. No coding is needed! Design awesome forms effortlessly, and with our friendly support team, you're never alone. Whether it's a tiny question or a bigger issue, we're here to guide you through building your forms with ease! 
-
-<h3>Missed Out on Email Replies? Don’t Worry!</h3>
-Ever get lost in the daily hustle and miss replying to emails? We've got your back! Introducing Auto Responder – a friendly feature to shoot back a quick message, letting your customers know you've got their queries in your sights and will get back to them soon. 
-
-<h3>Confirmation Messages</h3>
-As users send in their queries and tap the Submit button, our contact form swiftly responds with a reassuring confirmation message. It's a way of letting them know their message is on its way and will be responded to in no time
+<h3>Design and Style Templates</h3>
+Control typography, colour and spacing down to the detail, then save the result as a style template and apply it to any form so your forms stay consistent across the site.
 
 <h3>Conditional Logic</h3>
-Conditional logic allows you to show or hide certain form fields or sections based on specific conditions or criteria. It adds a dynamic aspect to the form, allowing it to adapt and display different content depending on the user's input.    
+Show or hide fields based on earlier answers, so each form stays short and relevant to the person filling it in.
 
-<h3>Multiple Email Templates</h3>
-The Multiple Email Templates feature in a contact form allows users to create and use various pre designed email templates for different purposes. Each template is associated with specific criteria, ensuring personalized and efficient responses to diverse inquiries. This feature streamlines communication enhances user experience, and may include automation and analytics for better performance tracking.         
+<h3>Entry Management</h3>
+Every submission is saved and listed on an Entries screen. Read answers, star the ones worth following up, search, and trash entries from one place.
 
-<h3>Email Entries</h3>
-Our contact form is designed with a streamlined Email Entries feature, ensuring that email addresses and other essential information are effortlessly captured. This functionality allows you to seamlessly gather important details in one centralized location. Additionally, you'll be notified in case email delivery encounters any issues, ensuring you stay informed and connected with your audience effortlessly.
+<h3>Email Notifications and Auto Responder</h3>
+Get notified on every submission, and send an automatic reply so visitors know their message arrived.
 
-<h3>Design Your Form Exactly to Your Liking</h3>
-Once your form is created, the power is in your hands to customize every detail. From typography adjustments like font size, letter spacing, and line height to choosing the color scheme, and even specifying the spacing for rows and columns – make it uniquely yours with complete freedom! This custom feature gives you the liberty to make your own unique form in no time.
+<h3>Email Templates</h3>
+Choose from several email templates, add a header image, and send a test email before you go live.
 
-<h3>Import/ Export Forms</h3>
-Take control of your forms by exporting and importing settings seamlessly. Whether you're moving within the same site or venturing into a new one, it's a breeze – export your settings and import them hassle free.
+<h3>Confirmation Messages</h3>
+Show a confirmation message after a submission, or redirect the visitor to any page you choose.
+
+<h3>Embed Anywhere</h3>
+Add a form with a shortcode, the Gutenberg block, or the Elementor widget, whichever suits how you build.
+
+<h3>Spam Protection</h3>
+Built in Google reCAPTCHA v2 and v3, with language and, for v3, score threshold settings.
+
+<h3>Reliable Email Delivery</h3>
+Works with WP Mail SMTP so notifications send over a configured SMTP connection rather than the server's default mailer.
+
+<h3>Import and Export</h3>
+Export a form to a file and import it on another site, without rebuilding it.
+
+<h3>Test It First</h3>
+Try every feature in a live sandbox at <a href="https://tastewp.com/plugins/hash-form/" target="_blank">the Hash Form test dashboard</a> before you install.
+
+<h3>Documentation and Support</h3>
+Step by step guides and reference are in the <a href="https://hashthemes.com/documentation/hash-form-drag-and-drop-form-builder-documentation/">Hash Form documentation</a>. For anything else, our support team is available through support tickets.
 
 == Installation ==
 The easy way to install the plugin is via WordPress.org plugin directory.
@@ -111,6 +120,16 @@ The easy way to install the plugin is via WordPress.org plugin directory.
 11. Global Email Settings Page
 
 == Changelog ==
+= 1.4.2 - 20 Aug, 2026 =
+* PHP object injection: a crafted entry value was deserialized when an administrator opened the Entries list - Fixed (Security)
+* Form submissions are now rejected unless the per-form nonce verifies and the submitted form key matches the stored one - Fixed (Security)
+* Serialized strings are no longer accepted into an entry field's stored value - Fixed (Security)
+* Entry values passed to integrations are now decoded without instantiating objects - Fixed (Security)
+* Settings screen redesigned to match the rest of the admin - shared header bar, and the navigation and panel rebuilt on the plugin's design tokens
+* Saving from any section other than Captcha returned to Captcha instead of the section in use - Fixed
+* Send Test Email showed no message at all when the address was invalid - Fixed
+* Help text under One Entry Per Person never rendered, and the row below it was nested inside that paragraph - Fixed
+
 = 1.4.1 - 19 Aug, 2026 =
 * Missing nonce verification in bulk actions and Empty Trash on the Forms and Entries screens (CSRF) - Fixed
 * Forms and Entries list screens refactored onto a shared action handler

@@ -624,6 +624,11 @@ var hashFormAdmin = hashFormAdmin || {};
             });
         },
 
+        invalidEmailText: function () {
+            return (typeof hashform_backend_js !== 'undefined' && hashform_backend_js.invalid_email)
+                || 'Enter a valid email address.';
+        },
+
         initOtherSettings: function () {
             $(document).on('click', '#hf-test-email-button', function (e) {
                 e.preventDefault();
@@ -631,14 +636,17 @@ var hashFormAdmin = hashFormAdmin || {};
                 const testEmailButton = $(this);
                 const testEmail = $(document).find('#hf-test-email').val();
 
-                $(document).find('.hf-error').remove();
+                const $notice = testEmailButton.closest('.hf-settings-row').find('.hf-test-email-notice');
+
+                $notice.html('');
                 if (!hashFormAdmin.isEmail(testEmail)) {
-                    testEmailButton.closest('.hf-grid-3').append('<div class="hf-error">Invalid Email</div>');
+                    // Was appended to .hf-grid-3, which this row has never
+                    // contained, so an invalid address reported nothing at all.
+                    $notice.html('<div class="hf-error">' + hashFormAdmin.invalidEmailText() + '</div>');
                     return;
                 }
 
                 testEmailButton.addClass('hf-loading-button');
-                $('.hf-test-email-notice').html('');
 
                 $.ajax({
                     type: 'POST',
@@ -2059,6 +2067,30 @@ HTMLSelectElement.prototype.contains = function (value) {
         }, data));
     }
 
+    /*
+     * The export lives inside the settings form in the markup, because HTML
+     * will not nest one form in another. Rather than submit the settings form,
+     * the fields are copied into a form of the export's own, attached to the
+     * document just long enough to post, so the settings on screen are left
+     * exactly as they were.
+     */
+    $(document).on('click', '#hashform_export', function (e) {
+        e.preventDefault();
+
+        const $trigger = $(this);
+        const $form = $('<form>', { method: 'post', action: window.location.href })
+                .css('display', 'none');
+
+        $trigger.closest('.hf-imex-export, .hf-box, div')
+                .find('input[type="hidden"]')
+                .each(function () {
+                    $form.append($('<input>', { type: 'hidden', name: this.name, value: this.value }));
+                });
+
+        $form.appendTo('body').trigger('submit');
+        $form.remove();
+    });
+
     $(document).on('click', '.hf-entry-star', function (e) {
         e.preventDefault();
 
@@ -2078,18 +2110,31 @@ HTMLSelectElement.prototype.contains = function (value) {
                 .toggleClass('dashicons-star-filled', starred === 1)
                 .toggleClass('dashicons-star-empty', starred === 0);
 
-        post('hashform_toggle_star', {
-            entry_id: $button.attr('data-entry'),
-            starred: starred
-        }).fail(function () {
-            // Put it back the way it was.
+        // Put it back the way it was.
+        var revert = function () {
             var reverted = starred ? 0 : 1;
             $button.toggleClass('hf-starred', reverted === 1)
                     .attr({'data-starred': reverted, 'aria-pressed': reverted ? 'true' : 'false'})
                     .find('.dashicons')
                     .toggleClass('dashicons-star-filled', reverted === 1)
                     .toggleClass('dashicons-star-empty', reverted === 0);
-        }).always(function () {
+        };
+
+        post('hashform_toggle_star', {
+            entry_id: $button.attr('data-entry'),
+            starred: starred
+        }).done(function (response) {
+            /*
+             * A refusal from the server still arrives as a successful request:
+             * wp_send_json_error() answers 200, so it lands here rather than in
+             * fail(). Only the transport was being checked, which left a star
+             * the server had declined — a missing entry, a capability check, a
+             * stale nonce — sitting there looking saved.
+             */
+            if (!response || !response.success) {
+                revert();
+            }
+        }).fail(revert).always(function () {
             $button.removeClass('hf-star-busy');
         });
     });
@@ -2107,14 +2152,22 @@ HTMLSelectElement.prototype.contains = function (value) {
             entry_id: $wrap.attr('data-entry'),
             note: $wrap.find('textarea').val()
         }).done(function (response) {
-            $status.text(response && response.success ? vars().note_saved : vars().note_error);
+            // The failure message used to be written into the same element
+            // without this class, so a note that had not saved was reported in
+            // the colour reserved for one that had.
+            var saved = !!(response && response.success);
+            $status.toggleClass('hf-entry-status-error', !saved).text(saved ? vars().note_saved : vars().note_error);
         }).fail(function () {
-            $status.text(vars().note_error);
+            $status.addClass('hf-entry-status-error').text(vars().note_error);
         }).always(function () {
             $button.prop('disabled', false);
-            setTimeout(function () {
-                $status.text('');
-            }, 4000);
+            // Each save clears the previous countdown. Without this a second
+            // save shortly after the first inherited the first one's timer and
+            // had its message wiped almost immediately.
+            window.clearTimeout($status.data('hf-clear-timer'));
+            $status.data('hf-clear-timer', window.setTimeout(function () {
+                $status.text('').removeClass('hf-entry-status-error');
+            }, 4000));
         });
     });
 
@@ -2146,55 +2199,6 @@ HTMLSelectElement.prototype.contains = function (value) {
 })(jQuery);
 
 
-/**
- * List screens: reserve room for WP's Screen Options tab.
- *
- * The tab is pulled out of the flow so the header bar can start at the very
- * top, which leaves it hanging over the bar's right end where Add New sits.
- * The width it needs was a hardcoded guess before, tuned to the English
- * label; measuring it covers translations and admin font sizes too.
- */
-(function ($) {
-    'use strict';
-
-    function reserveScreenMetaWidth() {
-        var $header = $('.hf-list-screen .hf-list-header');
-        var $inner = $header.find('.hf-list-header-inner');
-        var $meta = $('#screen-meta-links');
-
-        if (!$header.length || !$inner.length) {
-            return;
-        }
-
-        var header = $header.get(0);
-
-        // Cleared first so the measurement below is taken against the bar's
-        // natural width rather than against a reservation already in place.
-        header.style.setProperty('--hf-screen-meta-w', '0px');
-
-        // Below the breakpoint the tab is back in the flow on its own row,
-        // so there is nothing to reserve around.
-        if (!$meta.length || 'absolute' !== $meta.css('position')) {
-            return;
-        }
-
-        var innerRect = $inner.get(0).getBoundingClientRect();
-        var padRight = parseFloat($inner.css('padding-right')) || 0;
-
-        // Where Add New currently ends, versus where the tab begins. On a wide
-        // screen the 1400px box stops well short of the tab and nothing is
-        // reserved, so no gap opens up beside the button.
-        var contentEdge = innerRect.right - padRight;
-        var overlap = contentEdge - ($meta.get(0).getBoundingClientRect().left - 12);
-
-        if (overlap > 0) {
-            header.style.setProperty('--hf-screen-meta-w', Math.ceil(overlap) + 'px');
-        }
-    }
-
-    $(reserveScreenMetaWidth);
-    $(window).on('resize', reserveScreenMetaWidth);
-})(jQuery);
 
 
 /**

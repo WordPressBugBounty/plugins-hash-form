@@ -118,6 +118,10 @@ class HashFormEmail {
                 }
                 $entry_value = $upload_value;
             }
+            // Shared with the entry screen; the email was still sending the
+            // raw stored string, so the same submission read two ways.
+            $entry_value = HashFormHelper::format_date_value($entry_value, $entry_type);
+
             /** This filter is documented in admin/entries/entry-detail.php */
             $entry_value = apply_filters('hashform_entry_display_value', $entry_value, $entry_type, $value, 'email');
 

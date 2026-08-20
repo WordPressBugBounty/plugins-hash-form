@@ -44,28 +44,72 @@ class HashFormSmtp {
         <?php
     }
 
+    /**
+     * The plugin this screen exists to switch on, free edition or Pro.
+     *
+     * @return string Plugin file of whichever edition is installed, or ''.
+     */
+    public static function smtp_plugin_file() {
+        $installed = get_plugins();
+
+        foreach (array('wp-mail-smtp/wp_mail_smtp.php', 'wp-mail-smtp-pro/wp_mail_smtp.php') as $candidate) {
+            if (array_key_exists($candidate, $installed)) {
+                return $candidate;
+            }
+        }
+
+        return '';
+    }
+
     public static function activate_plugin() {
-        if (!current_user_can('manage_options'))
-            return;
+        /*
+         * activate_plugins, not manage_options. They are the same person on a
+         * single site, and a different one on multisite, where a site
+         * administrator has the second and not the first.
+         */
+        if (!current_user_can('activate_plugins')) {
+            wp_send_json(array('success' => false));
+        }
 
         check_ajax_referer('hashform_admin_settings_ajax', 'admin_setting_nonce');
 
-        $slug = HashFormHelper::get_post('slug');
-        $file = HashFormHelper::get_post('file');
+        /*
+         * The plugin to switch on is decided here, not taken from the request.
+         * The slug and file used to arrive by POST and were joined into a path
+         * and activated, so anyone who could reach this endpoint could switch
+         * on any plugin already sitting on the site by naming it. The script
+         * only ever sent the one value, so nothing is lost by looking it up.
+         */
+        $plugin_file = self::smtp_plugin_file();
         $success = false;
 
-        if (!empty($slug) && !empty($file)) {
-            $result = activate_plugin($slug . '/' . $file . '.php');
+        if ($plugin_file) {
+            $result = activate_plugin($plugin_file);
+
             if (!is_wp_error($result)) {
                 $success = true;
             }
         }
-        echo wp_json_encode(array('success' => ($success ? true : false)));
-        die();
+
+        wp_send_json(array('success' => $success));
     }
 
     public static function redirect_to_smtp_settings() {
-        if (HashFormHelper::is_admin_page('hashform-smtp') && function_exists('wp_mail_smtp') && (is_plugin_active('wp-mail-smtp/wp_mail_smtp.php'))) {
+        /*
+         * Either edition counts. Only the free plugin's folder was named here
+         * and in the markup, so a site running WP Mail SMTP Pro — a different
+         * folder, same settings page — was told to install the free one it
+         * already had a paid version of.
+         *
+         * function_exists() stays alongside is_plugin_active(): the plugin
+         * only defines it once its own requirement checks have passed, and
+         * without that a site where it is active but has bailed would be sent
+         * to a settings page that was never registered.
+         */
+        $plugin_file = self::smtp_plugin_file();
+        $is_active = $plugin_file && is_plugin_active($plugin_file);
+
+        if (HashFormHelper::is_admin_page('hashform-smtp') && function_exists('wp_mail_smtp') && $is_active) {
             wp_safe_redirect(admin_url('admin.php?page=wp-mail-smtp'));
             exit;
         }

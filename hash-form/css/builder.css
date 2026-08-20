@@ -394,7 +394,7 @@
     color: var(--hf-text);
     font-size: var(--hf-font-base);
     font-weight: 500;
-    line-height: 1;
+    line-height: 34px;
     margin: 0;
     min-height: 34px;
     padding: 0 var(--hf-space-3);
@@ -437,6 +437,7 @@
    misrepresenting anything. */
 .hf-content .hf-style-form-panel .hf-template-preview {
     padding: var(--hf-space-5, 24px);
+    height: calc(100% - 55px);
 }
 
 /* ---------- Payment field preview ---------- */
@@ -714,6 +715,7 @@
     color: var(--hf-accent-text, #a3591b);
     font-weight: 600;
 }
+
 /* ---------- Canvas header ---------- */
 
 .hf-content .hf-canvas-header {
@@ -1230,5 +1232,35 @@
     .hf-content .hf-fields-sidebar {
         flex-basis: 330px;
         width: 330px;
+    }
+}
+
+/*
+ * builder.js marks a field as newly added and clears the mark a second later,
+ * which only makes sense as a flash telling you where the field you just
+ * dropped has landed. No rule had ever answered it, so the mark came and went
+ * with nothing to show for it. The timing here matches that one second.
+ */
+.hf-newly-added {
+    animation: hf-field-flash 1s ease-out;
+}
+
+@keyframes hf-field-flash {
+    from {
+        background-color: var(--hf-accent-soft, #fdf4ed);
+        box-shadow: 0 0 0 2px var(--hf-accent, #dd823b);
+    }
+
+    to {
+        background-color: transparent;
+        box-shadow: 0 0 0 2px transparent;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .hf-newly-added {
+        animation: none;
+        box-shadow: 0 0 0 2px var(--hf-accent, #dd823b);
     }
 }

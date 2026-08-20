@@ -32,7 +32,7 @@ $captcha_lang = array('en' => 'English', 'af' => 'Afrikaans', 'am' => 'Amharic',
 
     <div class="hf-settings-row" data-condition-toggle="hf-re-type" data-condition-val="v2">
         <label class="hf-setting-label"><?php esc_html_e('v2 Secret Key', 'hash-form'); ?></label>
-        <input type="text" name="hashform_settings[privkey_v2]" value="<?php echo esc_attr($settings['privkey_v2']); ?>" />
+        <input type="password" name="hashform_settings[privkey_v2]" value="<?php echo esc_attr($settings['privkey_v2']); ?>" />
     </div>
 
     <div class="hf-settings-row" data-condition-toggle="hf-re-type" data-condition-val="v3">
@@ -42,7 +42,7 @@ $captcha_lang = array('en' => 'English', 'af' => 'Afrikaans', 'am' => 'Amharic',
 
     <div class="hf-settings-row" data-condition-toggle="hf-re-type" data-condition-val="v3">
         <label class="hf-setting-label"><?php esc_html_e('v3 Secret Key', 'hash-form'); ?></label>
-        <input type="text" name="hashform_settings[privkey_v3]" value="<?php echo esc_attr($settings['privkey_v3']); ?>" />
+        <input type="password" name="hashform_settings[privkey_v3]" value="<?php echo esc_attr($settings['privkey_v3']); ?>" />
     </div>
 
     <div class="hf-settings-row">
@@ -57,7 +57,7 @@ $captcha_lang = array('en' => 'English', 'af' => 'Afrikaans', 'am' => 'Amharic',
 
     <div id="hf-captcha-threshold-container" class="hf-settings-row" data-condition-toggle="hf-re-type" data-condition-val="v3">
         <label class="hf-setting-label"><?php esc_html_e('reCAPTCHA Threshold', 'hash-form'); ?></label>
-        <p class="hf-description"><?php esc_html_e('A score of 0 is likely to be a bot and a score of 1 is likely not a bot. Setting a lower threshold will allow more bots, but it will also stop fewer real users.', 'hash-form'); ?></p>
+        <p class="hf-desc"><?php esc_html_e('A score of 0 is likely to be a bot and a score of 1 is likely not a bot. Setting a lower threshold will allow more bots, but it will also stop fewer real users.', 'hash-form'); ?></p>
         <div class="hf-grid-container">
             <div class="hf-setting-fields hf-range-slider-wrap hf-grid-3">
                 <div class="hf-range-slider"></div>

@@ -17,7 +17,7 @@ defined('ABSPATH') || die();
         </div>
         <button type="button" class="button button-primary hf-add-email"><?php esc_html_e('Add More Email', 'hash-form'); ?></button>
         <p></p>
-        <p class="description"><?php esc_html_e('Use [admin_email] for admin email. Settings > General > Administration Email Address', 'hash-form'); ?></p>
+        <p class="hf-desc"><?php esc_html_e('Use [admin_email] for admin email. Settings > General > Administration Email Address', 'hash-form'); ?></p>
     </div>
 
     <div class="hf-form-row">
@@ -43,13 +43,13 @@ defined('ABSPATH') || die();
             </div>
         </label>
         <input type="text" name="reply_to_email" autocomplete="off" value="<?php echo esc_attr($settings['reply_to_email']); ?>" />
-        <p class="description"><?php esc_html_e('Choose the email field by clicking on the TAGS above.', 'hash-form'); ?></p>
+        <p class="hf-desc"><?php esc_html_e('Choose the email field by clicking on the TAGS above.', 'hash-form'); ?></p>
     </div>
 
     <div class="hf-form-row">
         <label><?php esc_html_e('From Email', 'hash-form'); ?></label>
         <input type="text" name="email_from" value="<?php echo esc_attr($settings['email_from']); ?>" />
-        <p class="description"><?php esc_html_e('Use [admin_email] for admin email. Settings > General > Administration Email Address', 'hash-form'); ?></p>
+        <p class="hf-desc"><?php esc_html_e('Use [admin_email] for admin email. Settings > General > Administration Email Address', 'hash-form'); ?></p>
         <p class="hf-settings-note"><?php esc_html_e('The address should be on your own domain for reliable delivery — for example admin@yourwebsite.com.', 'hash-form'); ?></p>
     </div>
 
@@ -107,6 +107,6 @@ defined('ABSPATH') || die();
             </div>
         </label>
         <textarea name="email_message" rows="5"><?php echo esc_textarea($settings['email_message']); ?></textarea>
-        <p class="description"><?php esc_html_e('Use #form_title for form title, #form_details for form inputs', 'hash-form'); ?></p>
+        <p class="hf-desc"><?php esc_html_e('Use #form_title for form title, #form_details for form inputs', 'hash-form'); ?></p>
     </div>
 </div>

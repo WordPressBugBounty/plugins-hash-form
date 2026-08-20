@@ -6,6 +6,13 @@ class HashFormEntry {
     use HashFormListActions;
 
     public function __construct() {
+        // Printed above #wpbody so the bar sits flush under the admin bar and
+        // clear of the Screen Options tab, as on the style templates list.
+        add_action('in_admin_header', array($this, 'list_header'));
+
+        // Notices are moved inside the screen wrapper; see buffer_notices().
+        add_action('admin_notices', array($this, 'buffer_notices'), -PHP_INT_MAX);
+        add_action('all_admin_notices', array($this, 'capture_notices'), PHP_INT_MAX);
         add_action('admin_menu', array($this, 'add_menu'), 10);
         add_filter('set-screen-option', array($this, 'set_screen_option'), 15, 3);
 
@@ -205,18 +212,30 @@ class HashFormEntry {
         include(HASHFORM_PATH . 'admin/entries/entry-detail.php');
     }
 
+    /**
+     * The bar across the top of the Entries list. Same placement as the Forms
+     * and style template lists — see HashFormBuilder::list_header().
+     */
+    public function list_header() {
+        if (!self::is_list_view()) {
+            return;
+        }
+
+        HashFormHelper::render_list_header(array(
+            'title' => esc_html__('Entries', 'hash-form'),
+            'docs' => 'https://hashthemes.com/documentation/hash-form-drag-and-drop-form-builder-documentation/',
+        ));
+    }
+
     public static function display_entry_list($message = '', $class = 'updated') {
         ?>
         <div class="hf-content hf-list-screen">
 
-            <div class="hf-list-header">
-                <div class="hf-list-header-inner">
-                    <h2 class="hf-list-title"><?php esc_html_e('Entries', 'hash-form'); ?></h2>
-                </div>
-            </div>
-
-            <div class="hf-entry-list-wrap wrap">
+            <?php // The header bar is printed on in_admin_header; see list_header(). ?>
+            <div class="hf-list-wrap wrap">
                 <h1></h1>
+
+                <?php self::print_notices(); ?>
 
                 <div id="hf-entry-list">
                     <?php
@@ -333,6 +352,16 @@ class HashFormEntry {
             return;
         }
 
+        /*
+         * The submitted form_key must match the one stored for this form.
+         * Presence alone was checked before (isset), which let a request name
+         * one form's id with any key at all. A mismatch means the field was
+         * tampered with, so the submission is dropped.
+         */
+        if (!hash_equals((string) $form->form_key, (string) $data['form_key'])) {
+            return;
+        }
+
         // Checked again here: the form may have closed, filled up or already
         // been submitted since the page was loaded.
         $restriction = HashFormRestrictions::check($form);
@@ -394,6 +423,19 @@ class HashFormEntry {
                 if (!empty($meta_value)) {
                     if (!is_array($meta_value)) {
                         $meta_value = sanitize_textarea_field($meta_value);
+
+                        /*
+                         * A scalar answer must never be a PHP-serialized
+                         * string. sanitize_*_field() leaves such a string
+                         * intact, so without this it would reach the database
+                         * and be unserialized on the Entries screen. Multi
+                         * value fields (arrays) are serialized by us further
+                         * down and are unaffected. The value is stored inert
+                         * rather than instantiated later.
+                         */
+                        if (is_serialized($meta_value)) {
+                            $meta_value = '';
+                        }
                     }
 
                     $meta_values = array(

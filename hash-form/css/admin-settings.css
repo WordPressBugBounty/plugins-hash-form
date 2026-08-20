@@ -18,7 +18,7 @@
     float: none;
 }
 
-.post-type-hashform-styles #submitpost{
+.post-type-hashform-styles #submitpost {
     min-width: 0;
 }
 
@@ -60,6 +60,14 @@
 
 .post-type-hashform-styles .hf-body {
     height: calc(100vh - 190px);
+    padding: 0;
+    background: none;
+}
+
+.post-type-hashform-styles .hf-content,
+.post-type-hashform-styles .hf-fields-sidebar,
+.post-type-hashform-styles #hf-form-panel {
+    background: none;
 }
 
 .post-type-hashform-styles .hf-footer {
@@ -68,6 +76,9 @@
     z-index: 99;
     gap: 20px;
     align-items: center;
+    border: 1px solid var(--hf-border, #e2e5ea);
+    border-radius: var(--hf-radius-lg);
+    margin-top: 10px;
 }
 
 .post-type-hashform-styles.post-new-php #message,
@@ -83,10 +94,6 @@
 }
 
 /* Settings Metabox */
-#hashform-styles-metabox {
-    border: 1px solid #c3c4c7;
-}
-
 #hashform-styles-metabox .postbox-header {
     display: none;
 }
@@ -212,7 +219,7 @@
     width: 80px;
 }
 
-.hf-style-form-panel .hf-form-wrap{
+.hf-style-form-panel .hf-form-wrap {
     padding: 0;
     width: 100%;
     max-width: none;
@@ -784,7 +791,7 @@
     color: #555;
 }
 
-.hf-settings-row .hf-range-slider-wrap .hf-range-input-unit{
+.hf-settings-row .hf-range-slider-wrap .hf-range-input-unit {
     position: absolute;
     left: 100%;
     top: 50%;

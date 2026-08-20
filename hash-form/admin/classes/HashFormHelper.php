@@ -160,6 +160,43 @@ class HashFormHelper {
         return $new_date . ' ' . esc_html__('at', 'hash-form') . ' ' . $new_time;
     }
 
+    /**
+     * A stored date, time or date-and-time as a person should read it.
+     *
+     * These fields keep whatever the browser submitted, and for a date and time
+     * control that is an ISO string with a T wedged in the middle. That is a
+     * storage format, not something to show someone, and it was reaching both
+     * the entry screen and the notification email untouched.
+     *
+     * A value that cannot be read is handed back exactly as it came in rather
+     * than guessed at, so nothing is ever lost to a format this does not know.
+     *
+     * @param mixed  $value Stored value.
+     * @param string $type  Field type.
+     * @return mixed Formatted value, or the original.
+     */
+    public static function format_date_value($value, $type) {
+        if (!in_array($type, array('date', 'time', 'date_time'), true) || !$value || !is_string($value)) {
+            return $value;
+        }
+
+        $timestamp = strtotime($value);
+
+        if (!$timestamp) {
+            return $value;
+        }
+
+        if ('date' === $type) {
+            $format = get_option('date_format');
+        } elseif ('time' === $type) {
+            $format = get_option('time_format');
+        } else {
+            $format = get_option('date_format') . ' ' . get_option('time_format');
+        }
+
+        return date_i18n($format, $timestamp);
+    }
+
     public static function parse_json_array($array = array()) {
         $array = json_decode($array, true);
         $fields = array();
@@ -806,6 +843,83 @@ class HashFormHelper {
     }
 
     /**
+     * The bar across the top of a list screen.
+     *
+     * Shared by the Forms, Entries and style template lists here and by the
+     * Pro screens, so all of them are one component rather than four copies
+     * that drift. Print it on in_admin_header: that lands it in #wpcontent,
+     * above #wpbody, flush under the admin bar and clear of the Screen
+     * Options tab.
+     *
+     * The screen body then goes in:
+     *   <div class="hf-content hf-list-screen">
+     *       <div class="hf-list-wrap wrap"> … </div>
+     *   </div>
+     *
+     * @param array $args {
+     *     @type string $title  Screen name.
+     *     @type array  $action Optional button: label, url, class.
+     *     @type array  $stats  Optional chips: value, label, url.
+     *     @type string $docs   Optional documentation URL, shown as a link.
+     * }
+     */
+    public static function render_list_header($args) {
+        $args = wp_parse_args($args, array(
+            'title' => '',
+            'action' => array(),
+            'stats' => array(),
+            'docs' => '',
+        ));
+        ?>
+        <div class="hf-list-header">
+            <div class="hf-list-header-inner">
+                <h2 class="hf-list-title"><?php echo esc_html($args['title']); ?></h2>
+
+                <?php if (!empty($args['stats'])) { ?>
+                    <div class="hf-list-stats">
+                        <?php
+                        foreach ($args['stats'] as $stat) {
+                            $tag = empty($stat['url']) ? 'div' : 'a';
+                            ?>
+                            <<?php echo esc_attr($tag); ?> class="hf-stat"<?php echo empty($stat['url']) ? '' : ' href="' . esc_url($stat['url']) . '"'; ?>>
+                                <span class="hf-stat-value"><?php echo esc_html($stat['value']); ?></span>
+                                <span class="hf-stat-label"><?php echo esc_html($stat['label']); ?></span>
+                            </<?php echo esc_attr($tag); ?>>
+                            <?php
+                        }
+                        ?>
+                    </div>
+                <?php } ?>
+
+                <?php
+                /*
+                 * The way to the manual, in the same place on every screen that
+                 * offers one. The Modules screen has had this since it was
+                 * built, out on the right of its own header; the screens that
+                 * use this shared bar had nowhere to put it.
+                 */
+                if (!empty($args['docs'])) {
+                    ?>
+                    <div class="hf-list-docs">
+                        <a href="<?php echo esc_url($args['docs']); ?>" target="_blank" rel="noopener">
+                            <span class="mdi mdi-text-box-multiple-outline" aria-hidden="true"></span><?php esc_html_e('Documentation', 'hash-form'); ?>
+                        </a>
+                    </div>
+                    <?php
+                }
+                ?>
+
+                <?php if (!empty($args['action']['label'])) { ?>
+                    <div class="hf-add-new-form">
+                        <a href="<?php echo esc_url(isset($args['action']['url']) ? $args['action']['url'] : '#'); ?>" class="button <?php echo esc_attr(isset($args['action']['class']) ? $args['action']['class'] : ''); ?>"><?php echo esc_html($args['action']['label']); ?></a>
+                    </div>
+                <?php } ?>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
      * One status tab for a list screen. Shared by the Forms and Entries
      * tables so a single count keeps looking the same on both.
      */
@@ -1071,8 +1185,17 @@ class HashFormHelper {
 
     public static function get_field_input_value($value) {
         $entry_val = '';
-        $entry_value = maybe_unserialize($value['value']);
-        $entry_type = maybe_unserialize($value['type']);
+        /*
+         * unserialize_or_decode, not maybe_unserialize: $value['value'] is the
+         * visitor-supplied entry value, and this helper feeds it into the Pro
+         * integrations (WooCommerce orders, mailing-list signups, Google
+         * Sheets rows, Trello cards, post creation). maybe_unserialize() would
+         * instantiate any class named in a crafted payload; this decodes the
+         * multi-value arrays it needs without native object unserialization,
+         * matching how HashFormEmail reads the same column.
+         */
+        $entry_value = self::unserialize_or_decode($value['value']);
+        $entry_type = self::unserialize_or_decode($value['type']);
         if (is_array($entry_value)) {
             if ($entry_type == 'name') {
                 $entry_value = implode(' ', array_filter($entry_value));

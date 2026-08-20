@@ -10,10 +10,10 @@
  */
 
 .hf-list-screen {
-    background: var(--hf-page, #f5f6f8);
     margin: 0 0 0 -20px;
     min-height: calc(100vh - 32px);
     padding: 0 0 var(--hf-space-6, 32px);
+    background: none;
 }
 
 .hf-list-screen * {
@@ -21,7 +21,7 @@
 }
 
 .hf-list-screen .wrap {
-    margin: 0 auto;
+    margin: 40px auto 0;
     max-width: 1400px;
     padding: 0 var(--hf-space-6, 32px);
 }
@@ -32,119 +32,38 @@
     display: none;
 }
 
-/* ---------- Core CPT list (style templates) ----------
- *
- * The plugin's own list pages print .hf-list-screen around their markup. A
- * core list table owns its wrapper, so the class goes on <body> instead —
- * which means the container rules above would apply to the page itself.
- * They are neutralised here and put on the admin content column, where the
- * injected header and the table both live.
- */
-
-body.hf-list-screen {
-    margin: 0;
-    min-height: 0;
-    padding: 0;
-}
-
-body.hf-list-screen #wpcontent {
-    background: var(--hf-page, #f5f6f8);
-    min-height: calc(100vh - 32px);
-    padding-bottom: var(--hf-space-6, 32px);
-}
-
-body.hf-list-screen #wpbody-content {
-    padding-bottom: 0;
-}
-
-/* Edge to edge across the content column: cancels the 20px #wpcontent keeps
-   clear of the admin menu, the same way the other lists cancel it on their
-   own wrapper. */
-/* clear:both is right where the bar sits inside #wpbody-content, but here it
-   is a direct child of #wpcontent and would clear the floated admin menu —
-   pushing the whole screen a thousand pixels down. */
-body.hf-list-screen .hf-list-header {
+/* All three lists print the bar on in_admin_header, so it lands as a direct
+   child of #wpcontent. clear:both would clear the floated admin menu and push
+   the screen a thousand pixels down; the negative margin cancels the 20px
+   #wpcontent keeps clear of that menu so the bar spans the column. */
+#wpcontent > .hf-list-header {
     clear: none;
     margin-left: -20px;
     width: calc(100% + 20px);
 }
 
-/* The tiles sit outside .wrap here, so they need its measure themselves. */
-body.hf-list-screen .hf-list-stats-wrap {
-    margin: 0 auto;
-    max-width: 1400px;
-    padding: 0 var(--hf-space-6, 32px);
-}
+/* ---------- Core CPT list (style templates) ----------
+ *
+ * The style templates list is a core list table, but it is re-emitted inside
+ * .hf-content.hf-list-screen (HashFormStyles::wrap_list_body()), so it gets
+ * the same shell as the plugin's own lists and needs almost nothing of its
+ * own. Core prints its H1 and Add New above the table; the bar already
+ * carries both.
+ */
 
-/* Core prints its own H1 and Add New button above the table; the bar above
-   already carries both. */
-body.hf-list-screen .wrap > h1.wp-heading-inline,
-body.hf-list-screen .wrap > a.page-title-action,
-body.hf-list-screen .wrap > .wp-header-end {
-    display: none;
-}
-
-/* Core's status links are a plain "All (1) | Published (1)" list. The
-   plugin's own lists render pills, so the same treatment is mapped onto the
-   core markup rather than the two sitting side by side looking unrelated. */
-/* Kept floated, as core has it: the search box that follows floats right and
-   wraps alongside, which is the only thing putting the two on one line —
-   they are printed into different parents, so no flex container can hold
-   both. */
-body.hf-list-screen .subsubsub {
-    display: flex;
-    flex-wrap: wrap;
-    float: left;
-    gap: 2px;
+/* On the style templates list core prints its own .wrap inside ours, so it is
+   flattened — one measure for the notices and the table. Matches nothing on
+   the other two lists, which have no nested wrap. */
+.hf-list-wrap .wrap {
     margin: 0;
+    max-width: none;
     padding: 0;
 }
 
-body.hf-list-screen .subsubsub li {
-    color: transparent;
-    margin: 0;
-}
-
-body.hf-list-screen .subsubsub li a {
-    align-items: center;
-    border-radius: 3px;
-    color: var(--hf-text-muted, #646970);
-    display: inline-flex;
-    font-size: var(--hf-font-base, 13px);
-    font-weight: 500;
-    gap: var(--hf-space-2, 8px);
-    line-height: 1;
-    padding: var(--hf-space-2, 8px) var(--hf-space-3, 12px);
-    text-decoration: none;
-    transition: background-color var(--hf-transition, .15s ease), color var(--hf-transition, .15s ease);
-}
-
-body.hf-list-screen .subsubsub li a:hover {
-    background: var(--hf-surface-sunken, #fafbfc);
-    color: var(--hf-text, #1e2327);
-}
-
-body.hf-list-screen .subsubsub li a.current {
-    background: var(--hf-accent-soft, #f0f6fc);
-    color: var(--hf-accent-text, #a3591b);
-    font-weight: 500;
-}
-
-body.hf-list-screen .subsubsub .count {
-    background: #f0f1f3;
-    border-radius: var(--hf-radius-pill, 999px);
-    color: var(--hf-text-faint, #8c9196);
-    font-size: var(--hf-font-xs, 11px);
-    font-weight: 600;
-    line-height: 1.6;
-    min-width: 20px;
-    padding: 0 5px;
-    text-align: center;
-}
-
-body.hf-list-screen .subsubsub li a.current .count {
-    background: var(--hf-accent, #2271b1);
-    color: var(--hf-text-inverse, #fff);
+body.hf-styles-list .wrap > h1.wp-heading-inline,
+body.hf-styles-list .wrap > a.page-title-action,
+body.hf-styles-list .wrap > .wp-header-end {
+    display: none;
 }
 
 /* ---------- Header ---------- */
@@ -181,12 +100,14 @@ body.hf-list-screen .subsubsub li a.current .count {
     background: var(--hf-surface, #fff);
     border-bottom: 1px solid var(--hf-border, #e2e5ea);
     clear: both;
-    margin: 0 0 var(--hf-space-5, 24px);
     padding: 0;
 }
 
 /* The padding lives here so the title and the Add New button line up with
    the table below rather than with the far edges of a wide screen. */
+/* Everything inside the bar is scoped to .hf-list-header rather than to
+   .hf-list-screen: the bar is printed on in_admin_header, so it sits outside
+   the wrapper that carries that class. */
 .hf-list-header-inner {
     align-items: center;
     display: flex;
@@ -194,19 +115,12 @@ body.hf-list-screen .subsubsub li a.current .count {
     gap: var(--hf-space-3, 12px);
     justify-content: space-between;
     margin: 0 auto;
-    max-width: 1400px;
     min-height: 34px;
     padding: var(--hf-space-4, 16px) var(--hf-space-6, 32px);
-    /* Extra room on the right for the Screen Options tab, which now overlaps
-       this end of the bar. backend.js measures the actual overlap and sets
-       the custom property; a hardcoded guess only ever fitted the English
-       label. Falls back to 0 wherever the script has not run, or where the
-       tab is back in the flow and needs no room. */
-    padding-right: calc(var(--hf-space-6, 32px) + var(--hf-screen-meta-w, 0px));
     width: 100%;
 }
 
-.hf-list-screen .hf-list-title {
+.hf-list-header .hf-list-title {
     color: var(--hf-text, #1e2327);
     font-size: var(--hf-font-xl, 20px);
     font-weight: 600;
@@ -215,11 +129,11 @@ body.hf-list-screen .subsubsub li a.current .count {
     padding: 0;
 }
 
-.hf-list-screen .hf-add-new-form {
+.hf-list-header .hf-add-new-form {
     margin: 0;
 }
 
-.hf-list-screen .hf-add-new-form .button {
+.hf-list-header .hf-add-new-form .button {
     background: var(--hf-accent, #2271b1);
     border: 1px solid var(--hf-accent, #2271b1);
     border-radius: var(--hf-radius-sm, 4px);
@@ -234,64 +148,87 @@ body.hf-list-screen .subsubsub li a.current .count {
     transition: background-color var(--hf-transition, .15s ease);
 }
 
-.hf-list-screen .hf-add-new-form .button:hover,
-.hf-list-screen .hf-add-new-form .button:focus {
+.hf-list-header .hf-add-new-form .button:hover,
+.hf-list-header .hf-add-new-form .button:focus {
     background: var(--hf-accent-hover, #135e96);
     border-color: var(--hf-accent-hover, #135e96);
     color: var(--hf-text-inverse, #fff);
 }
 
-/* ---------- Header stats ---------- */
+/* ---------- Header stats ----------
+ *
+ * These sit in the bar now, between the title and Add New, so they are chips
+ * on one line rather than the stacked cards they were when they had a row of
+ * their own below the header. Scoped to .hf-list-header for the same reason
+ * as the rest of the bar: it is printed outside .hf-list-screen.
+ */
 
-.hf-list-screen .hf-list-stats {
+.hf-list-header .hf-list-stats {
+    align-items: center;
     display: flex;
     flex-wrap: wrap;
-    gap: var(--hf-space-3, 12px);
-    margin: 0 0 var(--hf-space-5, 24px);
+    gap: var(--hf-space-2, 8px);
+    /* Sits with the title rather than adrift in the middle of a wide bar;
+       Add New stays pinned to the right. */
+    margin: 0 auto 0 var(--hf-space-4, 16px);
 }
 
-.hf-list-screen .hf-stat {
-    background: var(--hf-surface, #fff);
+.hf-list-header .hf-stat {
+    align-items: baseline;
+    background: var(--hf-surface-sunken, #fafbfc);
     border: 1px solid var(--hf-border, #e2e5ea);
-    border-radius: var(--hf-radius, 8px);
-    box-shadow: var(--hf-shadow-sm, 0 1px 2px rgba(16, 24, 40, .05));
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 130px;
-    padding: var(--hf-space-3, 12px) var(--hf-space-4, 16px);
+    border-radius: var(--hf-radius-pill, 999px);
+    display: inline-flex;
+    gap: var(--hf-space-2, 8px);
+    line-height: 1;
+    padding: 5px var(--hf-space-3, 12px);
     text-decoration: none;
-    transition: border-color var(--hf-transition, .15s ease), box-shadow var(--hf-transition, .15s ease);
+    transition: background-color var(--hf-transition, .15s ease), border-color var(--hf-transition, .15s ease);
+    white-space: nowrap;
 }
 
-.hf-list-screen a.hf-stat:hover,
-.hf-list-screen a.hf-stat:focus {
+.hf-list-header a.hf-stat:hover,
+.hf-list-header a.hf-stat:focus {
+    background: var(--hf-surface, #fff);
     border-color: var(--hf-border-strong, #d3d8e0);
-    box-shadow: var(--hf-shadow-md, 0 4px 10px -2px rgba(16, 24, 40, .1));
 }
 
-.hf-list-screen a.hf-stat:focus-visible {
+.hf-list-header a.hf-stat:focus-visible {
     outline: 2px solid var(--hf-accent, #2271b1);
     outline-offset: 1px;
 }
 
-.hf-list-screen .hf-stat-value {
+.hf-list-header .hf-stat-value {
     color: var(--hf-text, #1e2327);
-    font-size: 24px;
+    font-size: var(--hf-font-md, 14px);
     font-weight: 600;
-    letter-spacing: -.02em;
-    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.01em;
 }
 
-.hf-list-screen .hf-stat-label {
+.hf-list-header .hf-stat-label {
     color: var(--hf-text-muted, #646970);
-    font-size: var(--hf-font-xs, 11px);
-    font-weight: 600;
-    letter-spacing: .04em;
-    text-transform: uppercase;
+    font-size: var(--hf-font-sm, 12px);
+    font-weight: 500;
 }
 
-/* ---------- Status links and filters ---------- */
+/* Below the breakpoint the bar wraps; the chips go with the title. */
+@media only screen and (max-width: 782px) {
+
+    .hf-list-header .hf-list-stats {
+        margin: 0;
+        width: 100%;
+    }
+}
+
+/* ---------- Status links and filters ----------
+ *
+ * One set of declarations for both shapes of view switcher. The plugin's own
+ * lists render <div class="hf-view-tabs subsubsub"><a class="hf-view-tab">,
+ * while the core list table renders <ul class="subsubsub"><li><a> with a
+ * pipe between each — different markup, same control, so the selectors are
+ * paired rather than the rules written twice.
+ */
 
 /* Status tabs and the search box share one row above the table. */
 .hf-list-screen .hf-list-toolbar {
@@ -300,29 +237,31 @@ body.hf-list-screen .subsubsub li a.current .count {
     flex-wrap: wrap;
     gap: var(--hf-space-3, 12px);
     justify-content: space-between;
-    margin: 0 0 var(--hf-space-4, 16px);
+    margin: 0 0 var(--hf-space-3, 12px);
 }
 
-.hf-list-screen .hf-list-toolbar .search-box {
-    margin: 0;
-}
-
-/* A segmented control rather than core's pipe-separated sentence, which read
-   as stray text next to the panels around it. float is reset because the
-   subsubsub class is kept for compatibility and core floats it left. */
-.hf-list-screen .hf-view-tabs {
-    align-items: center;
-    background: var(--hf-surface, #fff);
-    border: 1px solid var(--hf-border, #e2e5ea);
-    border-radius: var(--hf-radius-sm, 4px);
-    display: inline-flex;
-    float: none;
+.hf-list-screen .hf-view-tabs,
+.hf-list-screen .subsubsub {
+    display: flex;
+    flex-wrap: wrap;
+    /* Left, as core has it: the search box that follows floats right and
+       wraps alongside. They are printed into different parents on the core
+       list, so no flex container can hold both. */
+    float: left;
     gap: 2px;
     margin: 0;
-    padding: 2px;
+    padding: 0;
 }
 
-.hf-list-screen .hf-view-tab {
+/* Core puts a pipe between the links; it is hidden rather than removed so
+   the markup stays as core wrote it. */
+.hf-list-screen .subsubsub li {
+    color: transparent;
+    margin: 0;
+}
+
+.hf-list-screen .hf-view-tab,
+.hf-list-screen .subsubsub li a {
     align-items: center;
     border-radius: 3px;
     color: var(--hf-text-muted, #646970);
@@ -336,22 +275,26 @@ body.hf-list-screen .subsubsub li a.current .count {
     transition: background-color var(--hf-transition, .15s ease), color var(--hf-transition, .15s ease);
 }
 
-.hf-list-screen .hf-view-tab:hover {
+.hf-list-screen .hf-view-tab:hover,
+.hf-list-screen .subsubsub li a:hover {
     background: var(--hf-surface-sunken, #fafbfc);
     color: var(--hf-text, #1e2327);
 }
 
-.hf-list-screen .hf-view-tab:focus-visible {
+.hf-list-screen .hf-view-tab:focus-visible,
+.hf-list-screen .subsubsub li a:focus-visible {
     outline: 2px solid var(--hf-accent, #2271b1);
     outline-offset: -1px;
 }
 
-.hf-list-screen .hf-view-tab.current {
+.hf-list-screen .hf-view-tab.current,
+.hf-list-screen .subsubsub li a.current {
     background: var(--hf-accent-soft, #f0f6fc);
     color: var(--hf-accent-text, #a3591b);
 }
 
-.hf-list-screen .hf-view-tab .count {
+.hf-list-screen .hf-view-tab .count,
+.hf-list-screen .subsubsub .count {
     background: #f0f1f3;
     border-radius: var(--hf-radius-pill, 999px);
     color: var(--hf-text-faint, #8c9196);
@@ -363,7 +306,8 @@ body.hf-list-screen .subsubsub li a.current .count {
     text-align: center;
 }
 
-.hf-list-screen .hf-view-tab.current .count {
+.hf-list-screen .hf-view-tab.current .count,
+.hf-list-screen .subsubsub li a.current .count {
     background: var(--hf-accent, #2271b1);
     color: var(--hf-text-inverse, #fff);
 }
@@ -398,10 +342,14 @@ body.hf-list-screen .subsubsub li a.current .count {
 /* width is reset from the token sheet, which stretches every field to 100%
    for the stacked settings panels. Here a control shares a line with the
    button that acts on it, so a full-width field pushes that button onto the
-   next row. */
-.hf-list-screen select,
-.hf-list-screen input[type="search"],
-.hf-list-screen input[type="text"] {
+   next row.
+
+   Not on the Settings screen: it borrows this shell for its header and its
+   measure but is a stack of settings panels, which is exactly the case the
+   token sheet's 100% is for. */
+.hf-list-screen:not(.hf-settings-screen) select,
+.hf-list-screen:not(.hf-settings-screen) input[type="search"],
+.hf-list-screen:not(.hf-settings-screen) input[type="text"] {
     border: 1px solid var(--hf-border-strong, #d3d8e0);
     border-radius: var(--hf-radius-sm, 4px);
     box-shadow: none;
@@ -411,15 +359,21 @@ body.hf-list-screen .subsubsub li a.current .count {
     width: auto;
 }
 
-.hf-list-screen select:focus,
-.hf-list-screen input[type="search"]:focus,
-.hf-list-screen input[type="text"]:focus {
+.hf-list-screen:not(.hf-settings-screen) select:focus,
+.hf-list-screen:not(.hf-settings-screen) input[type="search"]:focus,
+.hf-list-screen:not(.hf-settings-screen) input[type="text"]:focus {
     border-color: var(--hf-accent, #2271b1);
     box-shadow: 0 0 0 1px var(--hf-accent, #2271b1);
     outline: 0;
 }
 
-.hf-list-screen .button:not(.hf-trigger-modal) {
+/* The secondary buttons around the table — Bulk actions, Apply, Search.
+   Scoped to .wrap so it cannot reach the header bar's Add New: on the style
+   templates list .hf-list-screen is on <body>, which put the header inside
+   its reach and turned that button's label dark on the accent fill. The
+   Settings screen is excluded for the same reason — its only .button is the
+   accent-filled Save. */
+.hf-list-screen:not(.hf-settings-screen) .wrap .button:not(.hf-trigger-modal) {
     border-color: var(--hf-border-strong, #d3d8e0);
     border-radius: var(--hf-radius-sm, 4px);
     color: var(--hf-text, #1e2327);
@@ -427,7 +381,7 @@ body.hf-list-screen .subsubsub li a.current .count {
     min-height: 34px;
 }
 
-.hf-list-screen .button:not(.hf-trigger-modal):hover {
+.hf-list-screen:not(.hf-settings-screen) .wrap .button:not(.hf-trigger-modal):hover {
     background: var(--hf-surface-sunken, #fafbfc);
     border-color: var(--hf-text-faint, #8c9196);
     color: var(--hf-text, #1e2327);
@@ -546,7 +500,7 @@ body.hf-list-screen .subsubsub li a.current .count {
 
 .hf-list-screen .wp-list-table .check-column {
     padding-left: var(--hf-space-4, 16px);
-    width: 32px;
+    width: 64px;
 }
 
 /* Now that cells align to the top, the checkbox lines up with the top of the
@@ -807,10 +761,6 @@ body.hf-list-screen .subsubsub li a.current .count {
         float: right;
         margin: 0 20px 0 0;
         position: static;
-    }
-
-    .hf-list-header-inner {
-        padding: var(--hf-space-3, 12px);
     }
 
     .hf-list-screen .search-box {

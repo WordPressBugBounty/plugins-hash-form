@@ -726,21 +726,6 @@ body.hf-dragging #hf-editor-wrap ul.hf-editor-sorting.hf-dropabble:not(:has(.hf-
     padding: 5px 0;
 }
 
-/*
- * A tall field previewed shorter.
- *
- * A textarea renders at its full row count, and one of them took nearly half
- * the canvas, pushing the rest of the form out of view while it was being
- * built. The field is still a textarea and still says so; only the preview is
- * cut down, and the fade says the box carries on past what is drawn.
- */
-#hf-editor-wrap .hf-editor-field-elements textarea {
-    max-height: 120px;
-    mask-image: linear-gradient(#000 70%, transparent);
-    -webkit-mask-image: linear-gradient(#000 70%, transparent);
-    resize: none;
-}
-
 .hf-editor-has-fields #hf-editor-fields {
     min-height: 0;
 }
@@ -2679,6 +2664,15 @@ form.hf-error {
     color: var(--hf-danger, #d3383c);
 }
 
+/* Dismissal belongs to the component rather than to whichever script raised it,
+   so the toast leaves the same way wherever it was shown from. */
+.hf-updated-info.hf-dismissing {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition: opacity .25s ease, transform .25s ease;
+}
+
 @keyframes hf-toast-in {
     from {
         opacity: 0;
@@ -2713,6 +2707,53 @@ form.hf-error {
 @keyframes hf-spin {
     to {
         transform: rotate(1turn)
+    }
+}
+
+/*
+ * The class three scripts already reach for while a request is in flight —
+ * admin-settings.js and backend.js on the style preview, and the pro AI
+ * generator on its form preview. Nothing had ever defined it, so every one of
+ * those waits looked exactly like a screen that had stopped responding.
+ *
+ * The panel it lands on keeps its size and its content, dimmed and inert, with
+ * a spinner over the middle, so nothing jumps when the answer arrives.
+ */
+/* .hf-typography-loading is the same wait by another name, raised by
+   admin-settings.js while the font list is fetched. */
+.hf-content-loading,
+.hf-typography-loading {
+    pointer-events: none;
+    position: relative;
+}
+
+.hf-content-loading > *,
+.hf-typography-loading > * {
+    opacity: .4;
+    transition: opacity var(--hf-transition, .15s ease);
+}
+
+.hf-content-loading::after,
+.hf-typography-loading::after {
+    animation: hf-spin .6s linear infinite;
+    border: 2px solid var(--hf-border-strong, #d3d8e0);
+    border-radius: 50%;
+    border-top-color: var(--hf-accent, #dd823b);
+    content: "";
+    height: 24px;
+    left: 50%;
+    margin: -12px 0 0 -12px;
+    position: absolute;
+    top: 50%;
+    width: 24px;
+    z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .hf-content-loading::after,
+    .hf-typography-loading::after {
+        animation-duration: 1.6s;
     }
 }
 
@@ -2923,118 +2964,256 @@ form.hf-error {
 }
 
 /* =========== Entries Page =========== */
+/* -----------------------------------------------------------------------------
+ * Entry detail
+ *
+ * One record, so it reads as a record: a card with its own header, the answers
+ * as a plain two column list, and the tools that act on the entry kept apart
+ * from the data at the foot. The field names sit on the left in muted small
+ * type rather than bold and right aligned against the values, which had made
+ * the screen look like a form waiting to be filled in rather than a submission
+ * already made.
+ * -------------------------------------------------------------------------- */
+
+.hf-form-entry-details-wrap {
+    margin: var(--hf-space-5) var(--hf-space-5) var(--hf-space-6) 0;
+    max-width: 1180px;
+}
+
 #hf-form-entry-details {
-    background: #FFF;
-    border: 1px solid #c3c4c7;
+    background: var(--hf-surface);
+    border: 1px solid var(--hf-border);
+    border-radius: var(--hf-radius-lg);
+    box-shadow: var(--hf-shadow);
+    overflow: hidden;
+}
+
+.hf-entry-header {
+    border-bottom: 1px solid var(--hf-border);
+    padding: var(--hf-space-5) var(--hf-space-6);
 }
 
 /*
- * Scoped to the entry's own table. These were written against every table on
- * the page, so a field that stores a table of its own — a repeater's rows —
- * had its headers pushed to 300px and right aligned, as though each one were
- * a field name in the left-hand column.
+ * Every control that acts on the screen sits on one row above the title: the
+ * way out of the entry on the left, the ones that move between entries on the
+ * right. They were a text link and two buttons before, which read as three
+ * unrelated things when they are all the same kind of thing.
+ */
+.hf-entry-toolbar {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--hf-space-3);
+    justify-content: space-between;
+    margin: 0 0 var(--hf-space-4);
+}
+
+/* The screen had no route back to the list other than the browser button or
+   the menu. */
+.hf-entry-back {
+    text-decoration: none;
+}
+
+.hf-entry-title {
+    color: var(--hf-text);
+    font-size: var(--hf-font-xl);
+    font-weight: 600;
+    line-height: 1.25;
+    margin: 0;
+    padding: 0;
+}
+
+.hf-entry-submitted {
+    color: var(--hf-text-muted);
+    font-size: var(--hf-font-base);
+    margin: var(--hf-space-1) 0 0;
+}
+
+.hf-entry-header-actions {
+    align-items: center;
+    display: flex;
+    gap: var(--hf-space-3);
+}
+
+/*
+ * Scoped to the entry's own table with a child combinator. These were once
+ * written against every table on the page, so a field that stores a table of
+ * its own — a repeater's rows — had its headers pushed to a fixed width and
+ * right aligned, as though each one were a field name in the left-hand column.
+ * A repeater table is a descendant, sitting inside a cell, so the combinator is
+ * what keeps the two apart and it must stay.
+ *
+ * Pro answers hf_after_entry_detail_view with tables of its own, and now that
+ * the action fires outside this one they are siblings of it, which is to say
+ * children of the panel — so the same rules dress them without a second set.
  */
 #hf-form-entry-details > table {
     border-collapse: collapse;
-    margin: 30px;
-    width: 1000px;
-    max-width: 100%;
+    margin: 0;
+    width: 100%;
 }
 
-#hf-form-entry-details > table,
-#hf-form-entry-details > table > tbody > tr > th,
-#hf-form-entry-details > table > tbody > tr > td {
-    border: 1px solid #EEE;
+#hf-form-entry-details > table + table {
+    border-top: 1px solid var(--hf-border);
+}
+
+/* Those pro tables carry their heading in a thead as a single spanning cell,
+   which no rule reached before, so it printed flush against the rows. */
+#hf-form-entry-details > table > thead > tr > th,
+#hf-form-entry-details > table > thead > tr > td {
+    border-bottom: 1px solid var(--hf-border);
+    padding: var(--hf-space-5) var(--hf-space-6) var(--hf-space-3);
+    text-align: left;
+}
+
+#hf-form-entry-details > table > thead h3 {
+    color: var(--hf-text);
+    font-size: var(--hf-font-md);
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
 }
 
 #hf-form-entry-details > table > tbody > tr > th,
 #hf-form-entry-details > table > tbody > tr > td {
-    padding: 15px;
+    padding: var(--hf-space-4) var(--hf-space-6);
     vertical-align: top;
 }
 
-#hf-form-entry-details > table > tbody > tr > th {
-    width: 300px;
-    text-align: right;
+/* Between rows only, so the first answer does not sit under a second line
+   immediately below the header. */
+#hf-form-entry-details > table > tbody > tr + tr > th,
+#hf-form-entry-details > table > tbody > tr + tr > td {
+    border-top: 1px solid var(--hf-border);
 }
 
-#hf-form-entry-details td p{
-    margin: 0 0 20px;
+#hf-form-entry-details > table > tbody > tr > th {
+    color: var(--hf-text-muted);
+    font-size: var(--hf-font-sm);
+    font-weight: 600;
+    text-align: left;
+    width: 220px;
+}
+
+#hf-form-entry-details > table > tbody > tr > td {
+    color: var(--hf-text);
+    font-size: var(--hf-font-md);
+    line-height: 1.6;
+    word-break: break-word;
+}
+
+#hf-form-entry-details > table > tbody > tr:hover {
+    background: var(--hf-surface-sunken);
+}
+
+#hf-form-entry-details td p {
+    margin: 0 0 var(--hf-space-3);
 }
 
 #hf-form-entry-details td p:last-child {
     margin: 0;
 }
 
-#hf-form-entry-details > table > tbody > tr:hover {
-    background: #f8fafc;
-}
-
 #hf-form-entry-details img {
     max-width: 150px;
 }
 
+/* A field nobody answered. Left as an empty cell it read as a fault in the
+   page rather than as an answer that was never given. */
+.hf-entry-blank {
+    color: var(--hf-text-faint);
+}
+
+.hf-entry-swatch {
+    border: 1px solid var(--hf-border-strong);
+    border-radius: var(--hf-radius-sm);
+    display: inline-block;
+    height: 16px;
+    margin-right: var(--hf-space-2);
+    vertical-align: -3px;
+    width: 16px;
+}
+
+.hf-entry-swatch-value {
+    font-family: Consolas, Monaco, monospace;
+    font-size: var(--hf-font-base);
+}
+
 .hf-form-entry-preview {
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #EEE;
+    border-bottom: 1px solid var(--hf-border);
+    margin-bottom: var(--hf-space-3);
+    padding-bottom: var(--hf-space-3);
 }
 
 .hf-form-entry-preview:last-child {
+    border-bottom: 0;
     margin-bottom: 0;
     padding-bottom: 0;
-    border-bottom: 0;
 }
 
 .hf-form-entry-preview a {
-    text-decoration: none;
-    outline: 0;
     box-shadow: none;
+    text-decoration: none;
+}
+
+/* The outline was dropped here with nothing put back, so tabbing through an
+   entry that carries uploads moved the focus with no way to see where it had
+   gone. */
+.hf-form-entry-preview a:focus-visible {
+    border-radius: var(--hf-radius-sm);
+    outline: 2px solid var(--hf-accent);
+    outline-offset: 2px;
 }
 
 .hf-form-entry-preview .hf-attachment-icon {
-    width: 40px;
-    border: 1px solid #666;
-    border-radius: 6px;
+    border: 1px solid var(--hf-border-strong);
+    border-radius: var(--hf-radius-sm);
     padding: 4px;
-}
-
-.hf-empty-row {
-    display: none;
-}
-
-.hf-form-entry-date {
-    text-transform: none;
-    font-size: 14px;
+    width: 40px;
 }
 
 .hf-form-entry-navigation {
     display: inline-flex;
-    gap: 15px;
+    gap: var(--hf-space-2);
 }
 
-.hf-form-entry-navigation > a {
-    display: flex;
-    gap: 5px;
-    background: #EEE;
-    font-size: 12px;
-    text-transform: uppercase;
-    padding: 6px 10px;
-    border-radius: 2px;
-    text-decoration: none;
-    color: #333;
-    outline: 0 !important;
-    box-shadow: none;
-    font-weight: bold;
+/*
+ * A first or last entry has nowhere to go, and that end of the pair is printed
+ * as a span rather than an anchor: a link with href="#" was still focusable
+ * and still followed, which took the reader to the top of the same page.
+ */
+.hf-form-entry-navigation > .hf-disabled {
+    cursor: default;
+    opacity: .5;
+    pointer-events: none;
 }
 
-.hf-form-entry-navigation > a:hover:not(.hf-disabled) {
-    background: #ddedf8;
+/* Matches the buttons beside it rather than sitting among them as a bare
+   glyph. The colours stay on .hf-entry-star so the entries list, which shares
+   them, is untouched. */
+/* Both classes, so this outweighs the bare .hf-entry-star rules further down
+   that strip the background and border for the list's icon-only version. */
+.hf-entry-star.hf-entry-star-large {
+    align-items: center;
+    background: var(--hf-surface);
+    border: 1px solid var(--hf-border-strong);
+    border-radius: var(--hf-radius-sm);
+    display: inline-flex;
+    height: 36px;
+    justify-content: center;
+    padding: 0;
+    transition: background-color var(--hf-transition), border-color var(--hf-transition);
+    width: 36px;
 }
 
-.hf-form-entry-navigation > a.hf-disabled {
-    opacity: 0.7;
-    cursor: auto;
+.hf-entry-star.hf-entry-star-large:hover {
+    background: var(--hf-surface-sunken);
+    border-color: var(--hf-text-faint);
+}
+
+.hf-entry-star.hf-entry-star-large:focus-visible {
+    outline: 2px solid var(--hf-accent);
+    outline-offset: 1px;
 }
 
 /* =========== Import dropzone =========== */
@@ -3136,29 +3315,6 @@ form.hf-error {
 #hf-settings-form .hf-add-email + p:empty {
     display: none;
     margin: 0;
-}
-
-/* ---------- Field-tag picker ---------- */
-
-/* Sits on the label line: "Subject   [tags]". It was an unstyled uppercase
-   word with a loose icon beside it. */
-/* Fields that only apply once the control above them is set, stepped in and
-   hung off a rule, so a group reads as belonging to its switch rather than as
-   rows that happen to come and go. */
-#hf-settings-form > div > .hf-form-container > [data-condition-toggle] {
-    border-left: 2px solid var(--hf-border, #e2e5ea);
-    margin-bottom: var(--hf-space-5, 24px);
-    padding-left: var(--hf-space-4, 16px);
-}
-
-#hf-settings-form > div > .hf-form-container > [data-condition-toggle]:last-child {
-    margin-bottom: 0;
-}
-
-/* A group of dependent rows is stepped in once, not once per row. */
-#hf-settings-form > div > .hf-form-container > [data-condition-toggle] [data-condition-toggle] {
-    border-left: 0;
-    padding-left: 0;
 }
 
 /* Must out-weigh the display:block label rule above, which carries one more
@@ -3491,27 +3647,184 @@ form.hf-error {
     width: 12px;
 }
 
-/* =========== Setting Main Menu Page  =========== */
-#hf-settings-wrap {
-    background: #FFF;
-    border: 1px solid #c3c4c7;
-}
+/* -----------------------------------------------------------------------------
+ * Settings screen
+ *
+ * The site-wide Settings page. It used to be a bordered white box under a
+ * black bar with the title in uppercase — the one screen in the plugin still
+ * dressed that way, and nothing the header, the lists or the builder shared.
+ *
+ * It is now the shell every other screen uses: the bar from
+ * HashFormHelper::render_list_header() above .hf-list-wrap, and the body on
+ * the same measure as the Forms and Entries lists, with the nav rail and the
+ * panel as two cards on it — the pairing the builder and the per-form
+ * settings tab already use.
+ * -------------------------------------------------------------------------- */
 
-.hf-page-title {
-    border-bottom: none;
-    padding: 20px 30px;
+/* Capped and left-aligned under the title in the header bar. The lists it
+   shares this shell with fill the full 1400px because a table has that much
+   to say; a column of settings does not, and stretched to the same measure it
+   left every control marooned against a third of a screen of white. 900 for
+   the panel is the width the builder gives its canvas. */
+.hf-settings-screen .hf-settings-layout {
+    align-items: flex-start;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #000;
+    gap: var(--hf-space-4, 16px);
+    max-width: calc(900px + 240px + var(--hf-space-4, 16px));
 }
 
-.hf-page-title h3 {
+/* Follows down the page rather than leaving the tabs above the fold on a long
+   section, and stops below the admin bar. */
+.hf-settings-screen .hf-settings-nav {
+    background: var(--hf-surface, #fff);
+    border: 1px solid var(--hf-border, #e2e5ea);
+    border-radius: var(--hf-radius, 8px);
+    box-shadow: var(--hf-shadow, 0 1px 2px rgba(16, 24, 40, .05));
+    flex: 0 0 240px;
+    position: sticky;
+    top: calc(var(--wp-admin--admin-bar--height, 32px) + var(--hf-space-4, 16px));
+    width: 240px;
+}
+
+.hf-settings-screen .hf-settings-panel {
+    background: var(--hf-surface, #fff);
+    border: 1px solid var(--hf-border, #e2e5ea);
+    border-radius: var(--hf-radius, 8px);
+    box-shadow: var(--hf-shadow, 0 1px 2px rgba(16, 24, 40, .05));
+    /* min-width:0 so a wide control inside cannot push the panel past the
+       flex line and out from under the nav rail. */
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.hf-settings-screen .hf-settings-sections {
+    padding: var(--hf-space-5, 24px);
+}
+
+/* The save bar is part of the panel, so it reads as belonging to the section
+   above it rather than floating under the page. Sticky, because the captcha
+   section is long enough to scroll Save off the bottom. */
+.hf-settings-screen .hf-footer {
+    border-radius: 0 0 var(--hf-radius, 8px) var(--hf-radius, 8px);
+    bottom: 0;
+    position: sticky;
+    z-index: 2;
+}
+
+/* ---------- Sections ---------- */
+
+/* The intro copy the captcha section opens with: it was body text at the same
+   weight as a setting's own label, directly above the first control. */
+.hf-settings-screen .hf-settings-section > p {
+    color: var(--hf-text-muted, #646970);
+    font-size: var(--hf-font-base, 13px);
+    line-height: 1.6;
+    margin: 0 0 var(--hf-space-2, 8px);
+    max-width: 68ch;
+}
+
+.hf-settings-screen .hf-settings-section > p:last-of-type {
+    margin-bottom: var(--hf-space-5, 24px);
+}
+
+.hf-settings-screen .hf-settings-row {
+    margin: 0 0 var(--hf-space-5, 24px);
+}
+
+.hf-settings-screen .hf-settings-row:last-child {
+    margin-bottom: 0;
+}
+
+/* The email section lays its rows out on the 6-column grid, where a gap and a
+   bottom margin stack up and leave it spaced twice as far apart as the
+   captcha section beside it. The gap is the one that carries here. */
+.hf-settings-screen .hf-grid-container {
+    gap: var(--hf-space-5, 24px);
+}
+
+.hf-settings-screen .hf-grid-container > .hf-settings-row {
+    margin-bottom: 0;
+}
+
+/* Help text under a control. .hf-desc is only styled where it sits inside
+   .hf-setting-fields — and italic there — while half the rows on this screen
+   put it directly in the row, where nothing answered it at all. One
+   treatment, whichever way a section writes it. */
+.hf-settings-screen .hf-settings-row p.hf-desc {
+    color: var(--hf-text-muted, #646970);
+    font-size: var(--hf-font-sm, 12px);
+    font-style: normal;
+    line-height: 1.5;
+    margin: var(--hf-space-2, 8px) 0 0;
+    max-width: 68ch;
+}
+
+/* The description on the threshold row explains the slider that follows it,
+   so it belongs between the label and the control, not after both. */
+.hf-settings-screen .hf-settings-row > p.hf-desc {
+    margin: 0 0 var(--hf-space-3, 12px);
+}
+
+/* The media picker is a control like any other here, and at the panel's full
+   width it was three times the size of the fields under it. */
+.hf-settings-screen .hf-image-preview {
+    max-width: 480px;
+}
+
+/* A key or a language picker does not need the whole panel; the token sheet
+   stretches every field to 100% for the narrow panels it was written for. */
+.hf-settings-screen .hf-settings-row input[type="text"],
+.hf-settings-screen .hf-settings-row input[type="email"],
+.hf-settings-screen .hf-settings-row input[type="password"],
+.hf-settings-screen .hf-settings-row select {
+    max-width: 480px;
+}
+
+/* Send Test Email: the field and its button on one line. */
+.hf-settings-screen .hf-setting-field {
+    align-items: center;
+    display: flex;
+    gap: var(--hf-space-2, 8px);
+}
+
+.hf-settings-screen .hf-setting-field input[type="email"] {
+    flex: 0 1 320px;
+}
+
+.hf-settings-screen #hf-test-email-button {
+    flex: 0 0 auto;
+}
+
+/* Checkbox rows read as one line, with the switch beside its wording rather
+   than block-level above it. */
+.hf-settings-screen .hf-setting-fields > label {
+    align-items: center;
+    color: var(--hf-text, #1e2327);
+    display: inline-flex;
+    font-size: var(--hf-font-base, 13px);
+    gap: var(--hf-space-2, 8px);
+}
+
+.hf-settings-screen .hf-setting-fields > label input[type="checkbox"] {
     margin: 0;
-    font-size: 18px;
-    color: #FFF;
-    font-weight: normal;
-    text-transform: uppercase;
+}
+
+@media only screen and (max-width: 960px) {
+
+    .hf-settings-screen .hf-settings-layout {
+        display: block;
+    }
+
+    .hf-settings-screen .hf-settings-nav {
+        margin-bottom: var(--hf-space-4, 16px);
+        position: static;
+        width: auto;
+    }
+
+    .hf-settings-screen .hf-settings-tab {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
 }
 
 .hf-footer {
@@ -3634,7 +3947,7 @@ form.hf-error {
 }
 
 #hf-test-email-button {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
 }
@@ -3838,7 +4151,6 @@ form.hf-error {
 
 #hf-entry-list {
     clear: both;
-    margin-top: 20px;
 }
 
 /** Admin Notice **/
@@ -4105,45 +4417,121 @@ form.hf-error {
 }
 
 /* Notes and resend, on the entry detail screen */
+/* The two things that act on the entry rather than describe it, set on a
+   sunken strip so they read as a footer to the record and not as more of it. */
 .hf-entry-tools {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 24px;
-    margin-top: 24px;
+    background: var(--hf-surface-sunken);
+    border-top: 1px solid var(--hf-border);
+    display: grid;
+    gap: var(--hf-space-5);
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    padding: var(--hf-space-6);
 }
 
 .hf-entry-tools > div {
-    background: #fff;
-    border: 1px solid #dcdcde;
-    border-radius: 6px;
-    flex: 1 1 320px;
-    padding: 16px 20px;
+    background: var(--hf-surface);
+    border: 1px solid var(--hf-border);
+    border-radius: var(--hf-radius);
+    padding: var(--hf-space-5);
 }
 
 .hf-entry-tools h4 {
-    font-size: 14px;
-    margin: 0 0 6px;
+    color: var(--hf-text);
+    font-size: var(--hf-font-md);
+    font-weight: 600;
+    margin: 0 0 var(--hf-space-1);
+    padding: 0;
 }
 
 .hf-entry-tools p {
-    color: #646970;
-    margin: 0 0 10px;
+    color: var(--hf-text-muted);
+    font-size: var(--hf-font-base);
+    line-height: 1.5;
+    margin: 0 0 var(--hf-space-3);
 }
 
+/* The token control styles are scoped to wrappers this screen does not carry,
+   so the note field states what it needs itself. */
 .hf-entry-note-field {
+    border: 1px solid var(--hf-border-strong);
+    border-radius: var(--hf-radius-sm);
+    box-shadow: none;
+    color: var(--hf-text);
+    font-family: inherit;
+    font-size: var(--hf-font-base);
+    line-height: 1.5;
+    padding: var(--hf-space-2) var(--hf-space-3);
     width: 100%;
+}
+
+.hf-entry-note-field:focus {
+    border-color: var(--hf-accent);
+    box-shadow: 0 0 0 1px var(--hf-accent);
+    outline: 0;
+}
+
+.hf-entry-note-actions,
+.hf-entry-resend-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--hf-space-3);
+    margin: var(--hf-space-3) 0 0;
+}
+
+/* Both requests disable their button for the duration and say nothing else,
+   so the disabled state is the only thing telling anyone work is in hand. */
+.hf-entry-tools .hf-btn:disabled {
+    cursor: default;
+    opacity: .6;
 }
 
 .hf-entry-note-status,
 .hf-entry-resend-status {
-    color: #2e7d4f;
-    font-size: 13px;
-    margin-left: 8px;
+    color: var(--hf-success);
+    font-size: var(--hf-font-base);
+    margin: 0;
 }
+
+/*
+ * Deliberately not hidden while empty. Both carry role="status", and a
+ * display:none element is not in the accessibility tree at all, so it is not a
+ * live region either — revealing it and filling it in the same operation is
+ * the pattern screen readers are known to miss, which would have cost this
+ * screen every announcement it makes. An empty span is invisible on its own,
+ * and it sits at the end of its row, so the gap it leaves behind falls after
+ * the last thing on the line where there is nothing to disturb.
+ */
 
 .hf-entry-status-error,
 .hf-entry-delivery-failed {
-    color: #b32d2e;
+    color: var(--hf-danger);
+}
+
+@media screen and (max-width: 782px) {
+
+    .hf-entry-header,
+    .hf-entry-tools {
+        padding: var(--hf-space-4);
+    }
+
+    /* Two columns cannot hold a label and a long answer at this width, so the
+       answer moves under its label. */
+    #hf-form-entry-details > table > tbody > tr > th,
+    #hf-form-entry-details > table > tbody > tr > td {
+        display: block;
+        width: auto;
+    }
+
+    #hf-form-entry-details > table > tbody > tr > th {
+        padding: var(--hf-space-4) var(--hf-space-4) 0;
+    }
+
+    #hf-form-entry-details > table > tbody > tr > td,
+    #hf-form-entry-details > table > tbody > tr + tr > td {
+        border-top: 0;
+        padding: var(--hf-space-1) var(--hf-space-4) var(--hf-space-4);
+    }
 }
 
 /* Field sidebar icons */
@@ -4157,4 +4545,47 @@ form.hf-error {
 .hf-fields-list .hf-drag-field:hover .hf-field-icon,
 .hf-fields-list .hf-field-box:hover .hf-field-icon {
     color: var(--wp-admin-theme-color, #2271b1);
+}
+
+/*
+ * The documentation link in the shared page bar.
+ *
+ * Matched to the one the Modules screen has carried in its own header since it
+ * was built (.hf-version a in the pro plugin's modules-ui.css), so the two read
+ * as the same control wherever they appear. It lives here rather than in
+ * list-screens.css only to keep this change out of a file being edited
+ * elsewhere; the bar itself is a token host, so the values resolve.
+ *
+ * margin-left:auto rather than a wrapper: the bar is a space-between row, and
+ * this pushes the link and the action button that may follow it into one group
+ * on the right without changing the markup the other screens share.
+ */
+.hf-list-header .hf-list-docs {
+    margin: 0 0 0 auto;
+}
+
+.hf-list-header .hf-list-docs a {
+    align-items: center;
+    border: 1px solid var(--hf-border-strong, #d3d8e0);
+    border-radius: var(--hf-radius-sm, 4px);
+    color: var(--hf-text, #1e2327);
+    display: inline-flex;
+    font-size: var(--hf-font-base, 13px);
+    gap: var(--hf-space-2, 8px);
+    min-height: 32px;
+    padding: 0 var(--hf-space-3, 12px);
+    text-decoration: none;
+    transition: background-color var(--hf-transition, .15s ease), border-color var(--hf-transition, .15s ease);
+}
+
+.hf-list-header .hf-list-docs a:hover,
+.hf-list-header .hf-list-docs a:focus {
+    background: var(--hf-surface-sunken, #fafbfc);
+    border-color: var(--hf-text-faint, #8c9196);
+    color: var(--hf-text, #1e2327);
+}
+
+.hf-list-header .hf-list-docs a:focus-visible {
+    outline: 2px solid var(--hf-accent, #dd823b);
+    outline-offset: 1px;
 }

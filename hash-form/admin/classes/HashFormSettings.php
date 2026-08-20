@@ -3,8 +3,11 @@ defined('ABSPATH') || die();
 
 class HashFormSettings {
 
+    const DOCS_URL = 'https://hashthemes.com/documentation/hash-form-drag-and-drop-form-builder-documentation/';
+
     public function __construct() {
         add_action('admin_menu', array($this, 'menu'), 45);
+        add_action('in_admin_header', array($this, 'list_header'));
 
         add_action('wp_ajax_hashform_test_email_template', array($this, 'send_test_email'), 10, 0);
     }
@@ -17,7 +20,31 @@ class HashFormSettings {
         if (!defined('HASH_FORM_PRO_VERSION')) {
             add_submenu_page('hashform', 'Hash Form | ' . esc_html__('Settings', 'hash-form'), esc_html__('Settings', 'hash-form'), 'manage_options', 'hashform-settings', array($this, 'route'));
         }
-        add_submenu_page('hashform', esc_html__('Documentation', 'hash-form'), esc_html__('Documentation', 'hash-form'), 'manage_options', esc_url_raw('https://hashthemes.com/documentation/hash-form-drag-and-drop-form-builder-documentation/'));
+        add_submenu_page('hashform', esc_html__('Documentation', 'hash-form'), esc_html__('Documentation', 'hash-form'), 'manage_options', esc_url_raw(self::DOCS_URL));
+    }
+
+    /**
+     * The bar across the top of the Settings screen.
+     *
+     * The same component the Forms, Entries and style template lists use, so
+     * this screen is headed the way every other one is. It replaces the black
+     * uppercase title bar this page carried, which was the only one of its
+     * kind left in the plugin.
+     */
+    public function list_header() {
+        if (!self::is_settings_page()) {
+            return;
+        }
+
+        HashFormHelper::render_list_header(array(
+            'title' => esc_html__('Settings', 'hash-form'),
+            'docs' => self::DOCS_URL,
+        ));
+    }
+
+    private static function is_settings_page() {
+        return !defined('HASH_FORM_PRO_VERSION')
+                && 'hashform-settings' === HashFormHelper::get_var('page', 'sanitize_title');
     }
 
     public function route() {
@@ -35,14 +62,17 @@ class HashFormSettings {
             'captcha-settings' => array(
                 'name' => esc_html__('Captcha', 'hash-form'),
                 'icon' => 'mdi mdi-security',
+                'desc' => esc_html__('The reCAPTCHA keys every captcha field on the site checks against, and the language and score it runs at.', 'hash-form'),
             ),
             'email-settings' => array(
                 'name' => esc_html__('Email Settings', 'hash-form'),
-                'icon' => 'mdi mdi-email-multiple-outline'
+                'icon' => 'mdi mdi-email-multiple-outline',
+                'desc' => esc_html__('The header image and template used for every email this plugin sends.', 'hash-form'),
             ),
             'general-settings' => array(
                 'name' => esc_html__('General', 'hash-form'),
-                'icon' => 'mdi mdi-tune'
+                'icon' => 'mdi mdi-tune',
+                'desc' => esc_html__('Site-wide options that apply to every form.', 'hash-form'),
             )
         ));
         $vars = apply_filters('hash_form_settings_vars', array(
@@ -60,65 +90,87 @@ class HashFormSettings {
         }
         ?>
 
-        <div class="hf-settings-wrap wrap">
-            <h1></h1>
-            <div id="hf-settings-wrap">
-                <form name="hashform_settings_form" method="post" action="?page=hashform-settings<?php echo esc_html($current ? '&amp;t=' . $current : ''); ?>">
-                    <div class="hf-page-title">
-                        <h3><?php esc_html_e('Settings', 'hash-form'); ?></h3>
-                    </div>
-                    <div class="hf-content">
-                        <div class="hf-body">
-                            <div class="hf-fields-sidebar">
-                                <ul class="hf-settings-tab">
-                                    <?php
-                                    foreach ($sections as $key => $section) {
-                                        ?>
-                                        <li class="<?php echo esc_attr($current === $key ? 'hf-active' : ''); ?>">
-                                            <a href="#hf-<?php echo esc_attr($key); ?>">
-                                                <i class="<?php echo esc_attr($section['icon']); ?>"></i>
-                                                <?php echo wp_kses_post($section['name']); ?>
-                                            </a>
-                                        </li>
-                                        <?php
-                                    }
-                                    ?>
-                                </ul>
-                            </div>
+        <?php // The header bar is printed on in_admin_header; see list_header(). ?>
+        <div class="hf-content hf-list-screen hf-settings-screen">
+            <div class="hf-list-wrap wrap">
+                <h1></h1>
 
-                            <div id="hf-form-panel">
-                                <div class="hf-form-wrap">
-                                    <?php HashFormHelper::print_message(); ?>
-
-                                    <input type="hidden" name="hashform_action" value="process-form" />
+                <?php
+                /*
+                 * esc_url, not esc_html. esc_html turned the '&amp;' into
+                 * '&amp;amp;', which the browser submitted to a literal
+                 * '&amp;t=' — so the save landed with $_GET['amp;t'] set and
+                 * 't' absent, and every save from a tab that had not been
+                 * clicked came back on the first one. esc_url emits '&#038;',
+                 * which decodes to a plain '&'.
+                 */
+                $action_url = '?page=hashform-settings' . ($current ? '&t=' . $current : '');
+                ?>
+                <form name="hashform_settings_form" method="post" action="<?php echo esc_url($action_url); ?>">
+                    <input type="hidden" name="hashform_action" value="process-form" />
                     <input type="hidden" name="hashform_rendered_checkboxes" value="" />
+                    <?php wp_nonce_field('hashform_process_form_action', 'hashform_process_form_nonce'); ?>
+
+                    <div class="hf-settings-layout">
+                        <div class="hf-settings-nav">
+                            <ul class="hf-settings-tab">
+                                <?php
+                                foreach ($sections as $key => $section) {
+                                    ?>
+                                    <li class="<?php echo esc_attr($current === $key ? 'hf-active' : ''); ?>">
+                                        <a href="#hf-<?php echo esc_attr($key); ?>">
+                                            <i class="<?php echo esc_attr($section['icon']); ?>"></i>
+                                            <?php echo wp_kses_post($section['name']); ?>
+                                        </a>
+                                    </li>
                                     <?php
-                                    wp_nonce_field('hashform_process_form_action', 'hashform_process_form_nonce');
-                                    foreach ($sections as $key => $section) {
-                                        ?>
-                                        <div id="hf-<?php echo esc_attr($key); ?>" class="<?php echo ($current === $key) ? '' : 'hf-hidden'; ?>">
-                                            <h3><?php echo esc_html($section['name']); ?></h3>
-                                            <?php
-                                            $path = '';
+                                }
+                                ?>
+                            </ul>
+                        </div>
 
-                                            if (file_exists(HASHFORM_PATH . 'admin/settings/' . $key . '.php')) {
-                                                $path = HASHFORM_PATH . 'admin/settings/' . $key . '.php';
-                                            } else {
-                                                $path = apply_filters('hash_form_settings_sections_path', $key);
-                                            }
-                                            include($path);
+                        <div class="hf-settings-panel">
+                            <?php HashFormHelper::print_message(); ?>
 
-                                            ?>
+                            <?php
+                            /*
+                             * The sections are kept in a wrapper of their own:
+                             * the tab script hides the clicked panel's
+                             * siblings, and before this the nonce, the hidden
+                             * inputs and the saved notice were all siblings
+                             * too.
+                             */
+                            ?>
+                            <div class="hf-settings-sections">
+                                <?php
+                                foreach ($sections as $key => $section) {
+                                    ?>
+                                    <div id="hf-<?php echo esc_attr($key); ?>" class="hf-settings-section <?php echo ($current === $key) ? '' : 'hf-hidden'; ?>">
+                                        <div class="hf-panel-head">
+                                            <h2><?php echo esc_html($section['name']); ?></h2>
+                                            <?php if (!empty($section['desc'])) { ?>
+                                                <p class="hf-panel-desc"><?php echo esc_html($section['desc']); ?></p>
+                                            <?php } ?>
                                         </div>
                                         <?php
-                                    }
-                                    ?>
-                                </div>
+                                        $path = '';
+
+                                        if (file_exists(HASHFORM_PATH . 'admin/settings/' . $key . '.php')) {
+                                            $path = HASHFORM_PATH . 'admin/settings/' . $key . '.php';
+                                        } else {
+                                            $path = apply_filters('hash_form_settings_sections_path', $key);
+                                        }
+                                        include($path);
+                                        ?>
+                                    </div>
+                                    <?php
+                                }
+                                ?>
                             </div>
 
-                        </div>
-                        <div class="hf-footer">
-                            <input class="button button-primary button-large" type="submit" value="<?php esc_attr_e('Update', 'hash-form'); ?>" />
+                            <div class="hf-footer">
+                                <input class="button button-primary button-large" type="submit" value="<?php esc_attr_e('Save Changes', 'hash-form'); ?>" />
+                            </div>
                         </div>
                     </div>
                 </form>

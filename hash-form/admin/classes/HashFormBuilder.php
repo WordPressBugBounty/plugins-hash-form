@@ -20,6 +20,14 @@ class HashFormBuilder {
         add_action('wp_ajax_hashform_add_more_condition_block', array($this, 'add_more_condition_block'));
         add_action('admin_footer', array($this, 'init_overlay_html'));
 
+        // Printed above #wpbody so the bar sits flush under the admin bar and
+        // clear of the Screen Options tab.
+        add_action('in_admin_header', array($this, 'list_header'));
+
+        // Notices are moved inside the screen wrapper; see buffer_notices().
+        add_action('admin_notices', array($this, 'buffer_notices'), -PHP_INT_MAX);
+        add_action('all_admin_notices', array($this, 'capture_notices'), PHP_INT_MAX);
+
         add_filter('plugin_action_links_' . plugin_basename(HASHFORM_FILE), array($this, 'add_plugin_action_link'), 10, 1);
 
         add_action('wp_ajax_hashform_file_upload_action', array($this, 'file_upload_action'));
@@ -92,21 +100,12 @@ class HashFormBuilder {
         ?>
         <div class="hf-content hf-list-screen">
 
-            <?php // Outside .wrap so the bar spans the screen; the inner box keeps its contents lined up with the table. ?>
-            <div class="hf-list-header">
-                <div class="hf-list-header-inner">
-                    <h2 class="hf-list-title"><?php esc_html_e('Forms', 'hash-form'); ?></h2>
-
-                    <div class="hf-add-new-form">
-                        <a href="#" class="button hf-trigger-modal"><?php esc_html_e('Add New', 'hash-form'); ?></a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="hf-form-list-wrap wrap">
+            <?php // The header bar is printed on in_admin_header; see list_header(). ?>
+            <div class="hf-list-wrap wrap">
                 <h1></h1>
 
                 <?php
+                self::print_notices();
                 self::display_message($message, $class);
 
                 $form_table = new HashFormListing();
@@ -116,8 +115,6 @@ class HashFormBuilder {
                 // a search that found nothing before deciding what to print.
                 $form_table->prepare_items();
                 $is_searching = '' !== (string) HashFormHelper::get_var('s');
-
-                self::display_list_stats();
                 ?>
                 <form id="posts-filter" method="get">
                     <input type="hidden" name="page" value="<?php echo esc_attr(HashFormHelper::get_var('page', 'sanitize_title')); ?>" />
@@ -142,35 +139,56 @@ class HashFormBuilder {
     }
 
     /**
-     * Totals across the top of the Forms screen. Suppressed on a brand new
-     * install, where three zeroes above an empty state say nothing.
+     * Totals for the header bar. Empty on a brand new install, where zeroes
+     * say nothing.
      */
-    private static function display_list_stats() {
+    private static function list_stats() {
         $stats = HashFormListing::get_stats();
 
         if (!$stats['forms'] && !$stats['trash']) {
+            return array();
+        }
+
+        $chips = array(
+            array(
+                'value' => number_format_i18n($stats['forms']),
+                'label' => _n('Form', 'Forms', $stats['forms'], 'hash-form'),
+            ),
+            array(
+                'value' => number_format_i18n($stats['entries']),
+                'label' => _n('Entry', 'Entries', $stats['entries'], 'hash-form'),
+                'url' => admin_url('admin.php?page=hashform-entries'),
+            ),
+        );
+
+        if ($stats['trash']) {
+            $chips[] = array(
+                'value' => number_format_i18n($stats['trash']),
+                'label' => esc_html__('In Trash', 'hash-form'),
+                'url' => admin_url('admin.php?page=hashform&status=trash'),
+            );
+        }
+
+        return $chips;
+    }
+
+    /**
+     * The bar across the top of the Forms list, through the shared renderer.
+     */
+    public function list_header() {
+        if (!self::is_list_view()) {
             return;
         }
-        ?>
-        <div class="hf-list-stats">
-            <div class="hf-stat">
-                <span class="hf-stat-value"><?php echo esc_html(number_format_i18n($stats['forms'])); ?></span>
-                <span class="hf-stat-label"><?php echo esc_html(_n('Form', 'Forms', $stats['forms'], 'hash-form')); ?></span>
-            </div>
 
-            <a class="hf-stat" href="<?php echo esc_url(admin_url('admin.php?page=hashform-entries')); ?>">
-                <span class="hf-stat-value"><?php echo esc_html(number_format_i18n($stats['entries'])); ?></span>
-                <span class="hf-stat-label"><?php echo esc_html(_n('Entry', 'Entries', $stats['entries'], 'hash-form')); ?></span>
-            </a>
-
-            <?php if ($stats['trash']) { ?>
-                <a class="hf-stat" href="<?php echo esc_url(admin_url('admin.php?page=hashform&status=trash')); ?>">
-                    <span class="hf-stat-value"><?php echo esc_html(number_format_i18n($stats['trash'])); ?></span>
-                    <span class="hf-stat-label"><?php esc_html_e('In Trash', 'hash-form'); ?></span>
-                </a>
-            <?php } ?>
-        </div>
-        <?php
+        HashFormHelper::render_list_header(array(
+            'title' => esc_html__('Forms', 'hash-form'),
+            'stats' => self::list_stats(),
+            'action' => array(
+                'label' => esc_html__('Add New', 'hash-form'),
+                'url' => '#',
+                'class' => 'hf-trigger-modal',
+            ),
+        ));
     }
 
     public function create_form() {

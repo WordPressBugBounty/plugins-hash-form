@@ -19,6 +19,11 @@ class HashFormStyles {
         // the same shell as the Forms and Entries lists.
         add_filter('admin_body_class', array($this, 'list_body_class'));
         add_action('in_admin_header', array($this, 'list_header'));
+
+        // Wraps the core list table in the same markup the plugin's own list
+        // screens print; see wrap_list_body().
+        add_action('admin_notices', array($this, 'buffer_list_body'), -PHP_INT_MAX);
+        add_action('in_admin_footer', array($this, 'wrap_list_body'), -PHP_INT_MAX);
     }
 
     public function register_post_type() {
@@ -1267,6 +1272,8 @@ class HashFormStyles {
     /**
      * Is this the style templates list table?
      */
+    private static $body_buffering = false;
+
     private function is_list_screen() {
         $screen = function_exists('get_current_screen') ? get_current_screen() : null;
 
@@ -1274,16 +1281,69 @@ class HashFormStyles {
     }
 
     /**
-     * list-screens.css is scoped to .hf-list-screen, which the plugin's own
-     * list pages print around their markup. A core CPT screen owns its own
-     * wrapper, so the class goes on <body> instead and the same rules apply.
+     * A marker class for this screen.
      */
     public function list_body_class($classes) {
         if ($this->is_list_screen()) {
-            $classes .= ' hf-content hf-list-screen';
+            // Marks the screen for the few rules that have to reach outside
+            // the wrapper; the wrapper itself carries hf-content and
+            // hf-list-screen, exactly as the Forms and Entries lists do.
+            $classes .= ' hf-styles-list';
         }
 
         return $classes;
+    }
+
+    /**
+     * Everything #wpbody-content holds on this screen, captured.
+     *
+     * The notices and the core list table are printed straight into
+     * #wpbody-content, and core offers no hook between the end of the table
+     * and the tag that closes it — so the only way to put them inside the
+     * wrapper the plugin's own lists use is to buffer the lot and re-emit it.
+     */
+    public function buffer_list_body() {
+        if (!$this->is_list_screen()) {
+            return;
+        }
+
+        self::$body_buffering = true;
+        ob_start();
+    }
+
+    /**
+     * Re-emits the captured markup inside .hf-content.hf-list-screen.
+     *
+     * By the time in_admin_footer runs, admin-footer.php has already printed
+     * the tags that close #wpbody-content, #wpbody and #wpcontent, so the
+     * wrapper has to close before the first of them. That position is found
+     * from the comment core leaves after it, and if it is ever not there the
+     * capture is echoed exactly as it came — no wrapper, but nothing broken
+     * either.
+     */
+    public function wrap_list_body() {
+        if (!self::$body_buffering) {
+            return;
+        }
+
+        self::$body_buffering = false;
+        $html = ob_get_clean();
+
+        $marker = '<!-- wpbody-content -->';
+        $marker_at = strpos($html, $marker);
+        $close_at = (false === $marker_at) ? false : strrpos(substr($html, 0, $marker_at), '</div>');
+
+        if (false === $close_at) {
+            echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+            return;
+        }
+
+        // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo '<div class="hf-content hf-list-screen"><div class="hf-list-wrap wrap">';
+        echo substr($html, 0, $close_at);
+        echo '</div></div>';
+        echo substr($html, $close_at);
+        // phpcs:enable
     }
 
     /**
@@ -1300,46 +1360,41 @@ class HashFormStyles {
         $counts = wp_count_posts('hashform-styles');
         $published = isset($counts->publish) ? (int) $counts->publish : 0;
         $trashed = isset($counts->trash) ? (int) $counts->trash : 0;
-        $in_use = self::forms_using_a_template();
-        ?>
-        <div class="hf-list-header">
-            <div class="hf-list-header-inner">
-                <h2 class="hf-list-title"><?php esc_html_e('Style Templates', 'hash-form'); ?></h2>
+        $stats = array();
 
-                <div class="hf-add-new-form">
-                    <a href="<?php echo esc_url(admin_url('post-new.php?post_type=hashform-styles')); ?>" class="button"><?php esc_html_e('Add New', 'hash-form'); ?></a>
-                </div>
-            </div>
-        </div>
+        // Zeroes say nothing on an empty list, so the chips wait until there
+        // is something to count — the same rule the Forms screen uses.
+        if ($published || $trashed) {
+            $in_use = self::forms_using_a_template();
 
-        <?php
-        // Zeroes above an empty list say nothing, so the tiles wait until
-        // there is something to count — the same rule the Forms screen uses.
-        if (!$published && !$trashed) {
-            return;
+            $stats[] = array(
+                'value' => number_format_i18n($published),
+                'label' => _n('Template', 'Templates', $published, 'hash-form'),
+            );
+
+            $stats[] = array(
+                'value' => number_format_i18n($in_use),
+                'label' => _n('Form Styled', 'Forms Styled', $in_use, 'hash-form'),
+                'url' => admin_url('admin.php?page=hashform'),
+            );
+
+            if ($trashed) {
+                $stats[] = array(
+                    'value' => number_format_i18n($trashed),
+                    'label' => esc_html__('In Trash', 'hash-form'),
+                    'url' => admin_url('edit.php?post_status=trash&post_type=hashform-styles'),
+                );
+            }
         }
-        ?>
-        <div class="hf-list-stats-wrap">
-            <div class="hf-list-stats">
-                <div class="hf-stat">
-                    <span class="hf-stat-value"><?php echo esc_html(number_format_i18n($published)); ?></span>
-                    <span class="hf-stat-label"><?php echo esc_html(_n('Template', 'Templates', $published, 'hash-form')); ?></span>
-                </div>
 
-                <a class="hf-stat" href="<?php echo esc_url(admin_url('admin.php?page=hashform')); ?>">
-                    <span class="hf-stat-value"><?php echo esc_html(number_format_i18n($in_use)); ?></span>
-                    <span class="hf-stat-label"><?php echo esc_html(_n('Form Styled', 'Forms Styled', $in_use, 'hash-form')); ?></span>
-                </a>
-
-                <?php if ($trashed) { ?>
-                    <a class="hf-stat" href="<?php echo esc_url(admin_url('edit.php?post_status=trash&post_type=hashform-styles')); ?>">
-                        <span class="hf-stat-value"><?php echo esc_html(number_format_i18n($trashed)); ?></span>
-                        <span class="hf-stat-label"><?php esc_html_e('In Trash', 'hash-form'); ?></span>
-                    </a>
-                <?php } ?>
-            </div>
-        </div>
-        <?php
+        HashFormHelper::render_list_header(array(
+            'title' => esc_html__('Style Templates', 'hash-form'),
+            'stats' => $stats,
+            'action' => array(
+                'label' => esc_html__('Add New', 'hash-form'),
+                'url' => admin_url('post-new.php?post_type=hashform-styles'),
+            ),
+        ));
     }
 
     /**

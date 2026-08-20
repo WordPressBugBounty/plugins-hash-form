@@ -1310,44 +1310,15 @@ body.hashform_preview_page .hf-form-preview {
 
 
 /* -----------------------------------------------------------------------------
- * Pickers: shared tokens
- *
- * Both the date and the time picker move their panel to <body> as they open, so
- * neither sits inside #hf-container-{id} and neither can inherit the per form
- * --hf-field-* tokens through the cascade. frontend.js copies the handful that
- * matter onto whichever panel is opening, which is what makes a picker follow
- * the palette of the form that was clicked even with several differently styled
- * forms on one page. The values below are the fallbacks for when that has not
- * run, and they are shared so the two pickers cannot drift apart.
- * -------------------------------------------------------------------------- */
-.ui-datepicker,
-.ui-timepicker-wrapper {
-    --hf-pick-accent: #2271b1;
-    --hf-pick-on-accent: #fff;
-    --hf-pick-surface: #fff;
-    --hf-pick-text: #1e2327;
-    --hf-pick-muted: #646970;
-    --hf-pick-border: #e2e5ea;
-    --hf-pick-font: inherit;
-    --hf-pick-radius: 12px;
-    --hf-pick-cell: 36px;
-    --hf-pick-shadow: 0 12px 28px -8px rgba(16, 24, 40, .18), 0 4px 10px -4px rgba(16, 24, 40, .1);
-
-    /* Two declarations: the flat rgba is the fallback for engines without
-       color-mix, the second wins everywhere else and tracks the accent. */
-    --hf-pick-soft: rgba(34, 113, 177, .1);
-    --hf-pick-soft: color-mix(in srgb, var(--hf-pick-accent) 12%, transparent);
-}
-
-/* -----------------------------------------------------------------------------
- * Date picker
- * -------------------------------------------------------------------------- */
-/* -----------------------------------------------------------------------------
  * Preview
  *
  * The submit button is rendered disabled on the preview page so a look at the
  * form cannot post an entry. It kept the full button styling though, so it
  * invited a click and then did nothing at all.
+ *
+ * This rule has nothing to do with the pickers. It was sitting inside the
+ * picker block, between the section heading and the first datepicker rule, and
+ * is lifted out to here so the block below is contiguous.
  * -------------------------------------------------------------------------- */
 .hashform_preview_page .hashform-form button[disabled] {
     cursor: not-allowed;
@@ -1355,117 +1326,394 @@ body.hashform_preview_page .hf-form-preview {
     opacity: .55;
 }
 
-/* jQuery UI appends this one shared div to <body> as soon as any datepicker
-   is attached, and leaves it to a jQuery UI theme stylesheet to keep it
-   hidden until it is opened. WordPress does not enqueue one, so with only the
-   rules below it rendered as an empty bordered box at the foot of every page
-   carrying a date field. Matched on the id, so an inline datepicker — which
-   is a different element and meant to be visible — is untouched. The script
-   sets display inline when opening and closing, so this only supplies the
-   state before it has ever been opened. */
+/* =============================================================================
+ * Pickers
+ *
+ * Both panels are moved to <body> as they open, so neither sits inside
+ * #hf-container-{id} and neither can inherit the per form --hf-field-* tokens
+ * through the cascade. frontend.js copies the three that matter onto whichever
+ * panel is opening, which is what makes a picker follow the palette of the form
+ * that was clicked even with several differently styled forms on one page. The
+ * values below are the fallbacks for when that has not run - in the builder it
+ * never runs - and they are declared once for all three panel shapes so the
+ * pickers cannot drift apart.
+ *
+ * The bridge writes those custom properties as inline style properties, and an
+ * inline declaration beats any selector, so the selectors here may be raised as
+ * far as they need to go. What must never happen is an !important on a
+ * --hf-pick-* declaration: an important stylesheet declaration outranks a
+ * normal inline one, and every form on the site would collapse back to this
+ * fallback palette.
+ *
+ *
+ * Why the selectors look like this
+ *
+ * These class names are not ours. They belong to jQuery UI and to the bundled
+ * timepicker, and any theme or plugin that ships a jQuery UI stylesheet writes
+ * the same ones. A plain .ui-datepicker rule is specificity (0,1,0) and so is
+ * theirs, which hands the panel to whichever stylesheet the page loads last.
+ * Reordering the enqueue does not settle it either: the .admin-color-* variants
+ * those sheets carry reach (0,3,1) and beat a plain rule outright.
+ *
+ * So the date panel is matched through #ui-datepicker-div, the single div
+ * jQuery UI appends to <body> and reuses for every date input on the page. One
+ * id outranks any number of classes, so every rule here lands at (1,x,y) and
+ * wins on merit rather than on load order, without a single !important.
+ *
+ * The prefix is applied to every rule in the block without exception, including
+ * all four media blocks. That is load bearing rather than tidiness: the block
+ * relies on its own internal cascade, and raising some rules but not others
+ * inverts it. The universal reset is the floor at (1,0,0) and every other rule
+ * in the block carries at least one element or class on top of the id, so the
+ * lightest thing that can override it is (1,0,1) - the table, thead, th and td
+ * rules. Media queries contribute no specificity of their own, so an unraised
+ * override inside one would silently lose to a raised base rule.
+ * ========================================================================== */
+
+#ui-datepicker-div.ui-datepicker,
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper,
+select.ui-timepicker-select.ui-timepicker-select {
+
+    /*
+     * The accent is #a3591b rather than the brand #dd823b because the panel
+     * uses it as a fill behind a numeral and as the hue the state ink is drawn
+     * from: #dd823b on white is 2.9:1 and fails both jobs, while #a3591b is
+     * 5.2:1 and passes. Same hue, taken down far enough to be legible, exactly
+     * as --hf-accent-text does for the rest of the admin. On the front end this
+     * is replaced by whatever colour the form owner chose, which is why nothing
+     * below trusts it to be readable on its own.
+     */
+    --hf-pick-accent: #a3591b;
+
+    /*
+     * Everything that has to be READ rather than merely seen is drawn in this,
+     * never in the raw accent. It is the accent mixed 45% into black, which is
+     * not an arbitrary ratio: mixing any sRGB colour 45% with black caps every
+     * channel at 115, so the lightest result that can ever come out is #737373,
+     * which is 4.74:1 against the panel. That is a floor for every possible
+     * input colour including pure white, so the keyboard cursor, the focus
+     * rings, today's ring, the arrow hover glyph and the selected chip's
+     * keyline stay legible no matter what a site owner bridges in. The literal
+     * is the resolved value for the default accent, for engines without
+     * color-mix.
+     */
+    --hf-pick-accent-ink: #49280c;
+    --hf-pick-accent-ink: color-mix(in srgb, var(--hf-pick-accent) 45%, #000);
+
+    /*
+     * The numeral on a filled chip. The fallback is white, which is correct for
+     * the #a3591b default at 5.2:1; the second declaration replaces it wherever
+     * relative colour syntax is understood and flips to black once the accent
+     * is light. The switch is on OKLCh lightness rather than HSL lightness on
+     * purpose - HSL lightness is not perceptual, and a saturated light hue like
+     * #ffcc00 reports l=50% there and would wrongly keep white text. Multiplying
+     * by infinity inside the lightness slot clamps to 0 or 1, and dropping the
+     * chroma to 0 makes the result a true black or white rather than a tint.
+     */
+    --hf-pick-on-accent: #fff;
+    --hf-pick-on-accent: oklch(from var(--hf-pick-accent) calc((.62 - l) * infinity) 0 h);
+
+    --hf-pick-surface: #fff;
+    --hf-pick-text: #1e2327;
+
+    /*
+     * Muted is 5.5:1 and carries the weekday row, the durations and the days
+     * from the neighbouring month, which stay selectable when selectOtherMonths
+     * is on and are therefore live content, not decoration. Faint is 3.2:1 and
+     * is reserved for genuinely unavailable slots, which also carry a line
+     * through them so the state never rests on telling two greys apart. Neither
+     * is ever dimmed with opacity - the old .45 took other-month days to about
+     * 1.9:1, which is not a shade, it is unreadable.
+     */
+    --hf-pick-muted: #646970;
+    --hf-pick-faint: #8c9196;
+    --hf-pick-border: #e2e5ea;
+
+    --hf-pick-font: inherit;
+    --hf-pick-font-size: 13px;
+
+    /*
+     * One padding value drives the panel gutter and one cell value drives both
+     * the day chip and the panel's minimum width, so the grid, the header and
+     * the panel edge stay on the same vertical lines when either changes. The
+     * cell gap is 3px rather than 2px so the keyboard cursor ring, which sits
+     * 2px outside a 36px chip, still clears its neighbour by 2px.
+     */
+    --hf-pick-pad: 12px;
+    --hf-pick-cell-gap: 3px;
+    --hf-pick-cell: 36px;
+    --hf-pick-tap: 34px;
+
+    --hf-pick-radius: 12px;
+    --hf-pick-radius-control: 8px;
+
+    /*
+     * The 1px border is only 1.3:1 against a white page, so the shadow is what
+     * actually separates the panel from what is behind it. It is load bearing
+     * rather than decoration and must not be traded for a heavier border.
+     */
+    --hf-pick-shadow: 0 12px 28px -8px rgba(16, 24, 40, .18), 0 4px 10px -4px rgba(16, 24, 40, .1);
+
+    /*
+     * Every transition in the block reads this one token, which is what lets
+     * the reduced motion block at the end redefine it once instead of listing
+     * selectors it could silently fall behind.
+     */
+    --hf-pick-transition: .15s ease;
+
+    /*
+     * Hover only, where the tint is a supplementary cue on top of a pointer
+     * that is already there, so its contrast is not carrying a state on its
+     * own. 16% is as far as it can go before the tint stops being a whisper.
+     */
+    --hf-pick-soft: rgba(163, 89, 27, .16);
+    --hf-pick-soft: color-mix(in srgb, var(--hf-pick-accent) 16%, transparent);
+}
+
+/* -----------------------------------------------------------------------------
+ * Date picker
+ *
+ * An inline datepicker renders as .ui-datepicker.ui-datepicker-inline in the
+ * page and never inside #ui-datepicker-div, so nothing here matches it and it
+ * is deliberately left alone. It is meant to sit in the page rather than float
+ * over it, it may well belong to another plugin, and it could not have been
+ * hardened by an id anyway - .ui-datepicker.ui-datepicker-inline is only
+ * (0,2,0) and still loses to a theme's (0,3,1). Nothing in hash-form or
+ * hash-form-pro creates one; all three .datepicker() calls are popups.
+ * -------------------------------------------------------------------------- */
+
+/* jQuery UI leaves it to a jQuery UI theme stylesheet to keep this div hidden
+   until it is opened. WordPress does not enqueue one, so without this it
+   rendered as an empty bordered box at the foot of every page carrying a date
+   field. The script writes display inline when opening and closing, so this
+   only supplies the state before it has ever been opened. */
 #ui-datepicker-div {
     display: none;
     position: absolute;
 }
 
-.ui-datepicker {
+#ui-datepicker-div.ui-datepicker {
     background-color: var(--hf-pick-surface);
+    /* jQuery UI's own theme puts a sprite here through .ui-widget-content. */
+    background-image: none;
     border: 1px solid var(--hf-pick-border);
     border-radius: var(--hf-pick-radius);
     box-shadow: var(--hf-pick-shadow);
+    box-sizing: border-box;
     color: var(--hf-pick-text);
     font-family: var(--hf-pick-font);
+    font-size: var(--hf-pick-font-size);
+    line-height: 1.4;
+    /* Clears the input rather than touching it. jQuery UI gives no class for
+       the flipped-above state, so when the panel is pushed above a field near
+       the foot of the viewport this margin lands on the wrong side. That one
+       cannot be closed from CSS and is listed with the JS recommendations. */
     margin: 6px 0 0;
-    min-width: 17em;
-    padding: 12px;
+    /* Seven chips, each in a cell of its own gap, less the one gap the table is
+       pulled out by at each end, plus the two gutters. Written from the tokens
+       so the panel can never end up narrower than the grid it holds. */
+    min-width: calc((var(--hf-pick-cell) + var(--hf-pick-cell-gap) * 2) * 7 - var(--hf-pick-cell-gap) * 2 + var(--hf-pick-pad) * 2);
+    max-width: calc(100vw - 16px);
+    padding: var(--hf-pick-pad);
+    /* jQuery UI writes an inline em width whenever numberOfMonths is above one,
+       sized for its own 17em-per-month layout rather than this one. An inline
+       declaration can only be beaten by !important, and the flex rule further
+       down lays the months out correctly without it. */
     width: auto !important;
-    z-index: 999999 !important;
+    /* Also inline, recomputed on every open from the input's own stacking
+       context, which in wp-admin is usually 0 or 1 and would put the panel
+       behind #adminmenuwrap at 9990 and #wpadminbar at 99999. The value clears
+       the plugin's own bulk edit dialog at 999999 as well, because a date field
+       opened inside that dialog has to render above it and an exact tie there
+       is decided by whichever element was appended to <body> last. */
+    z-index: 1000001 !important;
 }
 
-.ui-datepicker * {
+/* The panel arrives carrying ui-widget, ui-widget-content, ui-corner-all and
+   ui-helper-clearfix, and its children carry ui-corner-all and ui-icon, so a
+   site with a full jQuery UI theme loaded brings sprite backgrounds, corner
+   radii and cell colours with it. This flattens all of that in one pass at
+   (1,0,0), the floor of the block, so every rule below still overrides it. The
+   transparent background is what finally stops a theme colouring the weekend,
+   today and current-day table cells behind the chips - nothing here declared a
+   background on the cell before, so any sheet that painted it won by default
+   rather than by weight. */
+#ui-datepicker-div * {
+    background-color: transparent;
+    background-image: none;
+    border: 0;
     border-radius: 0;
+    box-shadow: none;
+    box-sizing: border-box;
+    float: none;
     font-family: inherit;
     padding: 0;
+}
+
+/* Dragging a selection across the calendar while clicking through months looks
+   broken, so selection is switched off on the controls and the grid. It is
+   deliberately not put on the panel as a whole: the month and year in the
+   header are the one thing in the picker somebody may reasonably want to
+   select and copy. */
+#ui-datepicker-div .ui-datepicker-prev,
+#ui-datepicker-div .ui-datepicker-next,
+#ui-datepicker-div table {
     -webkit-user-select: none;
     user-select: none;
 }
 
-.ui-datepicker .ui-datepicker-group {
-    float: left;
-    padding: 0 6px;
-}
-
-.ui-datepicker table {
-    border: none;
-    border-collapse: collapse;
-    font-size: 13px;
-    margin: 0;
-    width: 100%;
-}
-
 /* ---------- Header ---------- */
 
-/* jQuery UI prints prev, next, then the title. Flex order puts them back in
-   reading order without touching the markup. */
-.ui-datepicker .ui-widget-header,
-.ui-datepicker .ui-datepicker-header {
+/* jQuery UI prints prev, then next, then the title. Flex order puts them back
+   into reading order without touching the markup, and pairs the two arrows on
+   the trailing edge so the month reads as a heading sitting on its grid rather
+   than as a label squeezed between two buttons. .ui-widget-header is named
+   alongside .ui-datepicker-header because a jQuery UI theme sheet paints the
+   framework class, not the widget one. */
+#ui-datepicker-div .ui-widget-header,
+#ui-datepicker-div .ui-datepicker-header {
     align-items: center;
     background: none;
-    background-image: none;
     border: none;
     color: var(--hf-pick-text);
     display: flex;
     font-weight: normal;
-    gap: 4px;
-    padding: 0 0 8px;
+    /* Enough that the paired arrows cannot be mis-clicked for one another. */
+    gap: 6px;
+    padding: 0 0 var(--hf-pick-pad);
+    position: relative;
 }
 
-.ui-datepicker .ui-datepicker-header .ui-state-hover {
+/* jQuery UI adds ui-state-hover to the arrows through a delegated handler on
+   the panel, which in a full jQuery UI theme repaints them. The arrows carry
+   their own hover further down; this only stops the framework class doing
+   anything on its own. */
+#ui-datepicker-div .ui-datepicker-header .ui-state-hover {
     background: transparent;
     border-color: transparent;
     cursor: pointer;
 }
 
-.ui-datepicker .ui-datepicker-title {
+#ui-datepicker-div .ui-datepicker-title {
+    align-items: center;
     color: var(--hf-pick-text);
+    display: flex;
+    /* Takes the slack so the arrows are pushed to the trailing edge. On a short
+       month name that leaves an obvious gap between the two, which is the
+       intent: the month starts on the same vertical line as the weekday row
+       and the first chip, and the navigation stays where the hand expects it
+       rather than moving with the length of the word. */
     flex: 1;
     font-size: 14px;
     font-weight: 600;
+    gap: 4px;
     line-height: 1.4;
     margin: 0;
-    order: 2;
-    text-align: center;
+    /* Without this the title refuses to shrink below the width of a long
+       localised month name and pushes the arrows off the panel. */
+    min-width: 0;
+    order: 1;
+    text-align: left;
 }
 
-.ui-datepicker .ui-datepicker-prev,
-.ui-datepicker .ui-datepicker-next {
+/* The title is a select only for whichever of month and year was made
+   changeable - the plugin turns the month on and leaves the year off - and
+   both halves of every secondary month in a multi-month panel arrive as plain
+   spans. They have to read identically. */
+#ui-datepicker-div .ui-datepicker-title span.ui-datepicker-month,
+#ui-datepicker-div .ui-datepicker-title span.ui-datepicker-year {
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    white-space: nowrap;
+}
+
+/* Given the plugin's own border, radius and chevron rather than left bare. A
+   borderless select is either invisible as a control or shows an OS-drawn
+   arrow floating in a transparent box, and it changes shape per platform,
+   which made it the least legible thing in an otherwise precise panel. The
+   chevron is drawn against --hf-pick-surface, which is never bridged, so a
+   fixed muted grey is always the right colour for it. */
+#ui-datepicker-div select.ui-datepicker-month,
+#ui-datepicker-div select.ui-datepicker-year {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: var(--hf-pick-surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23646970' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 10px 6px;
+    border: 1px solid var(--hf-pick-border);
+    border-radius: var(--hf-pick-radius-control);
+    box-shadow: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: inherit;
+    font-weight: inherit;
+    height: auto;
+    line-height: 1.4;
+    margin: 0;
+    max-width: 46%;
+    min-height: 0;
+    min-width: 0;
+    padding: 3px 26px 3px 8px;
+    text-overflow: ellipsis;
+    transition: border-color var(--hf-pick-transition);
+    width: auto;
+}
+
+#ui-datepicker-div select.ui-datepicker-month:hover,
+#ui-datepicker-div select.ui-datepicker-year:hover {
+    border-color: var(--hf-pick-accent-ink);
+}
+
+/* A real ring rather than a 1px border colour change, which is not something a
+   user can be expected to find, and keyed to :focus-visible so it stays off a
+   mouse click. */
+#ui-datepicker-div select.ui-datepicker-month:focus-visible,
+#ui-datepicker-div select.ui-datepicker-year:focus-visible {
+    border-color: var(--hf-pick-accent-ink);
+    outline: 2px solid var(--hf-pick-accent-ink);
+    outline-offset: 1px;
+}
+
+/* 34px rather than 28px so the header does not sit optically lighter and
+   smaller than the 36px grid it heads. */
+#ui-datepicker-div .ui-datepicker-prev,
+#ui-datepicker-div .ui-datepicker-next {
     align-items: center;
-    border: none;
-    border-radius: 50%;
+    border-radius: var(--hf-pick-radius-control);
     cursor: pointer;
     display: flex;
-    height: 30px;
+    flex: none;
+    height: var(--hf-pick-tap);
     justify-content: center;
+    /* jQuery UI's theme positions these absolutely inside the header. They are
+       flex items here, so the offsets have to go. */
     left: auto;
     position: relative;
     right: auto;
     top: 0;
-    transition: background-color .15s ease;
-    width: 30px;
+    transition: background-color var(--hf-pick-transition);
+    width: var(--hf-pick-tap);
 }
 
-.ui-datepicker .ui-datepicker-prev {
-    order: 1;
+#ui-datepicker-div .ui-datepicker-prev {
+    order: 2;
 }
 
-.ui-datepicker .ui-datepicker-next {
+#ui-datepicker-div .ui-datepicker-next {
     order: 3;
 }
 
-.ui-datepicker .ui-state-hover.ui-datepicker-prev,
-.ui-datepicker .ui-state-hover.ui-datepicker-next,
-.ui-datepicker .ui-datepicker-prev-hover,
-.ui-datepicker .ui-datepicker-next-hover {
+/* jQuery UI adds both ui-state-hover and ui-datepicker-prev-hover on hover. The
+   compound half is the one that carries the weight: the plain -prev-hover
+   selector on its own would lose to the header rule above, which also matches
+   the arrow. */
+#ui-datepicker-div .ui-state-hover.ui-datepicker-prev,
+#ui-datepicker-div .ui-state-hover.ui-datepicker-next,
+#ui-datepicker-div .ui-datepicker-prev-hover,
+#ui-datepicker-div .ui-datepicker-next-hover {
     background: var(--hf-pick-soft);
     border: none;
     left: auto;
@@ -1473,290 +1721,764 @@ body.hashform_preview_page .hf-form-preview {
     top: 0;
 }
 
-.ui-datepicker .ui-datepicker-prev:before {
+/* Kept as insurance rather than as a live path: jQuery UI builds these anchors
+   without an href, so they never take focus as things stand. If a host ever
+   gives them one, the panel already behaves. */
+#ui-datepicker-div .ui-datepicker-prev:focus-visible,
+#ui-datepicker-div .ui-datepicker-next:focus-visible {
+    outline: 2px solid var(--hf-pick-accent-ink);
+    outline-offset: 1px;
+}
+
+#ui-datepicker-div .ui-datepicker-prev:before {
     content: "\f341";
 }
 
-.ui-datepicker .ui-datepicker-next:before {
+#ui-datepicker-div .ui-datepicker-next:before {
     content: "\f345";
 }
 
-.ui-datepicker .ui-datepicker-next span,
-.ui-datepicker .ui-datepicker-prev span {
-    display: none;
+/* These anchors carry no href, so they are exposed as neither link nor button
+   and their whole accessible name is the title attribute and the word inside
+   this span. Hiding it with display:none took it out of the accessibility tree
+   along with the picture and left month navigation announcing nothing at all,
+   so it is clipped instead: gone from the page, still read out. The class on it
+   is ui-icon, which in a jQuery UI theme means a sprite, so that is cleared. */
+#ui-datepicker-div .ui-datepicker-prev span,
+#ui-datepicker-div .ui-datepicker-next span {
+    background: none;
+    border: 0;
+    clip-path: inset(50%);
+    display: block;
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
 }
 
-.ui-datepicker .ui-datepicker-next.ui-state-disabled,
-.ui-datepicker .ui-datepicker-prev.ui-state-disabled {
+/* Hidden rather than removed so the header keeps its shape when a minDate or
+   maxDate takes one arrow out of play. */
+#ui-datepicker-div .ui-datepicker-next.ui-state-disabled,
+#ui-datepicker-div .ui-datepicker-prev.ui-state-disabled {
+    cursor: default;
     visibility: hidden;
 }
 
-.ui-datepicker .ui-datepicker-next:not(.ui-state-disabled):before,
-.ui-datepicker .ui-datepicker-prev:not(.ui-state-disabled):before {
+#ui-datepicker-div .ui-datepicker-next:not(.ui-state-disabled):before,
+#ui-datepicker-div .ui-datepicker-prev:not(.ui-state-disabled):before {
     color: var(--hf-pick-muted);
     font: normal 20px/1 "dashicons";
     height: 20px;
-    speak: none;
     width: 20px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
-.ui-datepicker .ui-datepicker-prev-hover:before,
-.ui-datepicker .ui-datepicker-next-hover:before {
-    color: var(--hf-pick-accent);
+/* The ink rather than the raw accent, because on the front end the accent is
+   the customer's colour and a hover state that comes out paler than its own
+   rest state is worse than no hover state at all. */
+#ui-datepicker-div .ui-datepicker-prev-hover:before,
+#ui-datepicker-div .ui-datepicker-next-hover:before {
+    color: var(--hf-pick-accent-ink);
     opacity: 1;
 }
 
-.ui-datepicker select.ui-datepicker-month,
-.ui-datepicker select.ui-datepicker-year {
-    border: 1px solid var(--hf-pick-border);
-    border-radius: 6px;
-    color: var(--hf-pick-text);
-    font-size: 13px;
-    margin: 0 2px;
-    max-width: 46%;
-    padding: 3px 30px 3px 3px;
-    width: auto;
-    height: auto;
+/* ---------- Grid ---------- */
+
+/* Pulled out by one cell gap on each side so the chips, which sit inside a cell
+   of their own padding, line up with the header and the panel edge instead of
+   floating three pixels inside them.
+
+   The width is written out from the same tokens as the panel's min-width rather
+   than as a percentage of it. A table-layout:fixed table takes no width from
+   its contents, so a percentage here left the panel — which jQuery UI positions
+   absolutely and which is therefore sized to fit its contents — with nothing to
+   size itself from: it fell through to max-width and opened the full width of
+   the window. Seven cells, each in a gap of its own, comes to the same number
+   the percentage was reaching for whenever the panel is at its minimum. */
+#ui-datepicker-div table {
+    border-collapse: collapse;
+    font-size: var(--hf-pick-font-size);
+    margin: 0 calc(var(--hf-pick-cell-gap) * -1);
+    table-layout: fixed;
+    width: calc((var(--hf-pick-cell) + var(--hf-pick-cell-gap) * 2) * 7);
 }
 
-.ui-datepicker select.ui-datepicker-month:focus,
-.ui-datepicker select.ui-datepicker-year:focus {
-    border-color: var(--hf-pick-accent);
-    outline: 0;
-}
-
-/* ---------- Weekday row ---------- */
-
-.ui-datepicker thead {
+#ui-datepicker-div thead {
     background: none;
     color: var(--hf-pick-muted);
-    font-weight: 600;
 }
 
-.ui-datepicker th {
+#ui-datepicker-div th {
+    color: var(--hf-pick-muted);
     font-size: 11px;
     font-weight: 600;
     letter-spacing: .04em;
-    padding: 6px 0;
+    padding: 0 0 6px;
     text-align: center;
     text-transform: uppercase;
 }
 
-/* ---------- Days ---------- */
+/* Weekends are not tinted. The grid carries no rules and no alternating fills;
+   the only colour in it belongs to today and to the selected day, which is what
+   makes those two readable at a glance. Stated rather than left unsaid, because
+   tinting the weekend column is exactly the sort of thing a jQuery UI theme
+   does uninvited. */
+#ui-datepicker-div th.ui-datepicker-week-end {
+    background: none;
+    color: var(--hf-pick-muted);
+}
 
-.ui-datepicker td {
+#ui-datepicker-div td {
+    background: none;
     border: none;
-    padding: 1px;
+    padding: var(--hf-pick-cell-gap);
     text-align: center;
 }
 
-.ui-datepicker tr:first-of-type td {
-    border-top: none;
-}
-
-.ui-datepicker td .ui-state-default {
+/* Covers both branches: a selectable day is an anchor, an unselectable one is a
+   span, and a rule written against td a would silently miss every disabled cell
+   and hand it back to whatever jQuery UI stylesheet the site has - which is
+   precisely the failure that showed up in the builder. Tabular figures stop the
+   columns shimmering as the month changes. */
+#ui-datepicker-div td .ui-state-default {
     align-items: center;
     background: transparent;
     border: none;
-    border-radius: 50%;
+    border-radius: var(--hf-pick-radius-control);
     color: var(--hf-pick-text);
     display: flex;
+    font-variant-numeric: tabular-nums;
     font-weight: normal;
     height: var(--hf-pick-cell);
     justify-content: center;
     margin: 0 auto;
-    padding: 0;
+    /* Anchors nothing today, but keeps the chip a containing block so a future
+       marker does not have to reflow the cell to get one. */
+    position: relative;
     text-align: center;
     text-decoration: none;
-    transition: background-color .15s ease, color .15s ease;
+    transition: background-color var(--hf-pick-transition), color var(--hf-pick-transition);
     width: var(--hf-pick-cell);
 }
 
-.ui-datepicker td .ui-state-hover {
+/* jQuery UI also hangs ui-state-highlight on today's link, which in its own
+   theme is a yellow notice background. Cleared at the same weight as hover so
+   hovering today still paints. */
+#ui-datepicker-div td .ui-state-highlight {
+    background: transparent;
+    border: none;
+}
+
+#ui-datepicker-div td .ui-state-hover {
     background: var(--hf-pick-soft);
     color: var(--hf-pick-text);
 }
 
-.ui-datepicker td.ui-datepicker-today .ui-state-default {
-    box-shadow: inset 0 0 0 1px var(--hf-pick-accent);
-    color: var(--hf-pick-accent);
+/* Today is a ring and a weight change rather than a fill, so it never competes
+   with the selected day. The ring is 2px because at 1px it was much the fainter
+   of the two next to a solid chip in the same hue, and it is drawn in the ink
+   so it clears the 3:1 a non-text state indicator has to reach whatever accent
+   a form owner bridged in. */
+#ui-datepicker-div td.ui-datepicker-today .ui-state-default {
+    box-shadow: inset 0 0 0 2px var(--hf-pick-accent-ink);
+    color: var(--hf-pick-accent-ink);
     font-weight: 600;
 }
 
-.ui-datepicker td.ui-datepicker-current-day .ui-state-default,
-.ui-datepicker td .ui-state-active {
+/* One filled chip in the grid, and only one. The 1px keyline is not decoration:
+   the fill is the form owner's colour on the front end and could be very pale,
+   and the keyline is derived to be at least 4.7:1 against the panel, so the
+   boundary of the chip is visible even when the fill is not. */
+#ui-datepicker-div td.ui-datepicker-current-day .ui-state-default,
+#ui-datepicker-div td .ui-state-active {
     background: var(--hf-pick-accent);
-    box-shadow: none;
+    box-shadow: inset 0 0 0 1px var(--hf-pick-accent-ink);
     color: var(--hf-pick-on-accent);
     font-weight: 600;
 }
 
-.ui-datepicker td.ui-datepicker-other-month .ui-state-default {
+/* Today AND selected. Both classes co-occur, and without this the fill simply
+   replaced the ring and today became unrecoverable on the one cell users most
+   often look for it. A second ring drawn in the chip's own text colour reads as
+   a deliberate concentric marker rather than as a seam, and it is guaranteed to
+   contrast with the fill because that is what --hf-pick-on-accent is chosen for.
+   Written as a compound so it wins on weight and not on its position in the
+   block, which the two rules above no longer depend on either. */
+#ui-datepicker-div td.ui-datepicker-today.ui-datepicker-current-day .ui-state-default,
+#ui-datepicker-div td.ui-datepicker-today .ui-state-active {
+    box-shadow: inset 0 0 0 1px var(--hf-pick-accent-ink), inset 0 0 0 3px var(--hf-pick-on-accent);
+    color: var(--hf-pick-on-accent);
+}
+
+/* The selected day still has to answer the pointer, and the plain hover rule
+   cannot reach it. Compound, so this does not rest on source order either. */
+#ui-datepicker-div td.ui-datepicker-current-day .ui-state-hover,
+#ui-datepicker-div td .ui-state-active.ui-state-hover {
+    background: color-mix(in srgb, var(--hf-pick-accent) 85%, #000);
+    color: var(--hf-pick-on-accent);
+}
+
+/* The keyboard cursor, and the most important rule in the block. jQuery UI
+   never moves focus into the panel - tab closes it and every open and redraw
+   pushes focus back onto the input - so the cell a keyboard user is standing on
+   is marked with this class alone, and the library paints it by firing its own
+   mouseover handler at it. Left alone that made the cursor identical to a mouse
+   hover, a tint at about 1.1:1, which is not somewhere anyone can see they are.
+   The ring sits outside the chip so it can never be mistaken for today's, which
+   sits inside, and it is an outline rather than a box-shadow so it survives
+   forced-colors mode. The :focus-visible half is insurance for the same reason
+   as the arrows: it is not a live path today. */
+#ui-datepicker-div td.ui-datepicker-days-cell-over .ui-state-default,
+#ui-datepicker-div td .ui-state-default:focus-visible {
+    outline: 2px solid var(--hf-pick-accent-ink);
+    outline-offset: 2px;
+}
+
+/* Days from the neighbouring month are muted with a designed colour at 5.5:1
+   rather than dimmed with opacity. They stay selectable whenever
+   selectOtherMonths is on, so they are ordinary live content and the faint grey
+   reserved for unavailable slots would be too dark a reading of them. */
+#ui-datepicker-div td.ui-datepicker-other-month .ui-state-default,
+#ui-datepicker-div td .ui-state-default.ui-priority-secondary {
     color: var(--hf-pick-muted);
-    opacity: .45;
-}
-
-.ui-datepicker td.ui-state-disabled {
-    cursor: default;
-    opacity: .35;
-}
-
-.ui-datepicker td.ui-state-disabled .ui-state-default {
-    background: transparent;
-    cursor: default;
-}
-
-.ui-datepicker td .ui-state-default.ui-priority-secondary {
-    opacity: .45;
-}
-
-.ui-datepicker td .ui-state-default.ui-priority-secondary.ui-state-hover {
+    font-weight: normal;
     opacity: 1;
 }
 
-.ui-datepicker td .ui-state-default:focus-visible {
-    outline: 2px solid var(--hf-pick-accent);
+#ui-datepicker-div td.ui-datepicker-other-month .ui-state-hover,
+#ui-datepicker-div td .ui-state-default.ui-priority-secondary.ui-state-hover {
+    color: var(--hf-pick-text);
+}
+
+#ui-datepicker-div td.ui-state-disabled,
+#ui-datepicker-div td.ui-datepicker-unselectable {
+    cursor: default;
+    opacity: 1;
+}
+
+/* Unavailable days. Disabled text is exempt from the contrast minimum, but
+   exempt is not the same as usable, so this is a designed 3.2:1 rather than a
+   by-product of stacking opacity. The line through the number is the part that
+   matters: without it a day blocked by minDate or maxDate is separated from an
+   ordinary neighbouring-month day only by one grey being darker than another,
+   which is a comparison nobody should have to make against a neighbour. */
+#ui-datepicker-div td.ui-state-disabled .ui-state-default,
+#ui-datepicker-div td.ui-datepicker-unselectable .ui-state-default {
+    background: transparent;
+    box-shadow: none;
+    color: var(--hf-pick-faint);
+    cursor: default;
+    font-weight: normal;
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+}
+
+/* Only rendered when showWeek is on. Nothing in Hash Form turns it on, but the
+   panel is shared with every other datepicker on the page and the option is
+   global, so a third party can turn it on through $.datepicker.setDefaults. */
+#ui-datepicker-div th.ui-datepicker-week-col,
+#ui-datepicker-div td.ui-datepicker-week-col {
+    color: var(--hf-pick-faint);
+    font-size: 11px;
+    font-weight: normal;
+    padding-right: 6px;
+    text-align: center;
+}
+
+/* ---------- Button pane ---------- */
+
+/* Same reasoning: showButtonPanel is off in all three of the plugin's inits,
+   but the div is shared and the defaults are global, so another plugin can put
+   Today and Done buttons inside our panel. A few rules are cheaper than the
+   bug report. */
+#ui-datepicker-div .ui-datepicker-buttonpane {
+    background: none;
+    border-top: 1px solid var(--hf-pick-border);
+    display: flex;
+    gap: 6px;
+    justify-content: space-between;
+    margin: var(--hf-pick-pad) 0 0;
+    padding: var(--hf-pick-pad) 0 0;
+}
+
+#ui-datepicker-div .ui-datepicker-buttonpane button {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--hf-pick-radius-control);
+    color: var(--hf-pick-text);
+    cursor: pointer;
+    float: none;
+    font-family: inherit;
+    font-size: var(--hf-pick-font-size);
+    font-weight: 500;
+    line-height: 1.4;
+    min-height: 32px;
+    padding: 6px 12px;
+    transition: background-color var(--hf-pick-transition), color var(--hf-pick-transition);
+    width: auto;
+}
+
+/* jQuery UI dims a secondary button with opacity, which is the same unreadable
+   result the other-month days used to have. */
+#ui-datepicker-div .ui-datepicker-buttonpane button.ui-priority-secondary {
+    color: var(--hf-pick-muted);
+    opacity: 1;
+}
+
+#ui-datepicker-div .ui-datepicker-buttonpane button.ui-priority-primary {
+    background: var(--hf-pick-accent);
+    border-color: var(--hf-pick-accent-ink);
+    color: var(--hf-pick-on-accent);
+    font-weight: 600;
+}
+
+#ui-datepicker-div .ui-datepicker-buttonpane button:hover {
+    background: var(--hf-pick-soft);
+    color: var(--hf-pick-text);
+}
+
+#ui-datepicker-div .ui-datepicker-buttonpane button.ui-priority-primary:hover {
+    background: color-mix(in srgb, var(--hf-pick-accent) 85%, #000);
+    color: var(--hf-pick-on-accent);
+}
+
+#ui-datepicker-div .ui-datepicker-buttonpane button:focus-visible {
+    outline: 2px solid var(--hf-pick-accent-ink);
     outline-offset: 1px;
 }
 
-@media (prefers-reduced-motion: reduce) {
+/* ---------- Multiple months ---------- */
 
-    .ui-datepicker .ui-datepicker-prev,
-    .ui-datepicker .ui-datepicker-next,
-    .ui-datepicker td .ui-state-default {
-        transition-duration: .001ms;
-    }
+/* jQuery UI floats the month groups and clears them with ui-helper-clearfix.
+   Flex does the same thing without the float that the reset above removes, and
+   without depending on the inline em width that is forced to auto. */
+#ui-datepicker-div.ui-datepicker-multi {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--hf-pick-pad);
+}
+
+#ui-datepicker-div.ui-datepicker-multi .ui-datepicker-group {
+    flex: 1;
+    float: none;
+    width: auto;
+}
+
+#ui-datepicker-div .ui-datepicker-row-break {
+    flex-basis: 100%;
+    height: 0;
+    width: 100%;
+}
+
+/* ---------- Right to left ---------- */
+
+/* The flex order and the dashicons glyphs both assume a left to right header,
+   so both are mirrored rather than left to the browser. The old pair of rules
+   here were scoped to body.wp-admin, so the front end got nothing at all. */
+#ui-datepicker-div.ui-datepicker-rtl .ui-datepicker-title {
+    text-align: right;
+}
+
+#ui-datepicker-div.ui-datepicker-rtl .ui-datepicker-prev {
+    order: 3;
+}
+
+#ui-datepicker-div.ui-datepicker-rtl .ui-datepicker-next {
+    order: 2;
+}
+
+#ui-datepicker-div.ui-datepicker-rtl .ui-datepicker-prev:before {
+    content: "\f345";
+}
+
+#ui-datepicker-div.ui-datepicker-rtl .ui-datepicker-next:before {
+    content: "\f341";
+}
+
+#ui-datepicker-div.ui-datepicker-rtl select.ui-datepicker-month,
+#ui-datepicker-div.ui-datepicker-rtl select.ui-datepicker-year {
+    background-position: left 8px center;
+    padding: 3px 8px 3px 26px;
+}
+
+#ui-datepicker-div.ui-datepicker-rtl th.ui-datepicker-week-col,
+#ui-datepicker-div.ui-datepicker-rtl td.ui-datepicker-week-col {
+    padding-left: 6px;
+    padding-right: 0;
+}
+
+/* Parent input alignment. The panel is placed against the input's border box,
+   which is one pixel wider than its text on each side. Raised with everything
+   else because a theme shipping jQuery UI CSS ships this pair too, byte for
+   byte, and used to win it on load order. */
+body.wp-admin:not(.rtl) #ui-datepicker-div.ui-datepicker {
+    margin-left: -1px;
+}
+
+body.wp-admin.rtl #ui-datepicker-div.ui-datepicker {
+    margin-right: -1px;
 }
 
 /* -----------------------------------------------------------------------------
  * Time picker
  *
- * Replaces the stock jquery.timepicker stylesheet, which is no longer enqueued.
- * That sheet carried its own blue (#1980EC), its own grey and its own shadow, so
- * a date and a time field sitting next to each other looked like they came from
- * different plugins. Everything here comes off the shared picker tokens above.
+ * Replaces the stock jquery.timepicker stylesheet, which is deliberately not
+ * enqueued. That sheet carried its own blue, its own grey and its own shadow,
+ * so a date and a time field sitting next to each other looked like they came
+ * from different plugins.
+ *
+ * The wrapper is appended to <body> as a sibling of #ui-datepicker-div, not
+ * inside it, so the id above is no help here - #ui-datepicker-div
+ * .ui-timepicker-wrapper matches nothing - and the class is repeated instead.
+ * Three repetitions put every rule at (0,3,0) or higher, which clears the stock
+ * sheet's heaviest selector at (0,3,1) and any admin-colour prefixed derivative
+ * of it with two class weights to spare, so a copy of that sheet loading after
+ * this one changes nothing.
+ *
+ * The repetition has to be kept on every rule: drop one on one rule and it
+ * falls a whole class weight with no visible symptom until a competing sheet
+ * turns up on a customer site. Nothing in CSS can enforce that, which is why
+ * passing the library's own className option is the recommended way out and is
+ * listed with the JS changes. It is deliberately not relied on here, because
+ * the stylesheet has to keep working when the script does not.
  * -------------------------------------------------------------------------- */
-.ui-timepicker-wrapper {
+
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper {
     background: var(--hf-pick-surface);
     border: 1px solid var(--hf-pick-border);
     border-radius: var(--hf-pick-radius);
     box-shadow: var(--hf-pick-shadow);
+    box-sizing: border-box;
     color: var(--hf-pick-text);
     font-family: var(--hf-pick-font);
+    font-size: var(--hf-pick-font-size);
+    line-height: 1.4;
     margin: 6px 0 0;
-    /* The stock sheet capped this at 150px, which showed about five slots.
-       Roughly nine now, still short enough to stay inside a viewport. */
-    max-height: 280px;
+    /* The stock sheet capped this at 150px, about five slots. Roughly seven
+       here, and the vh half keeps it inside a short viewport - a laptop in
+       landscape, or a phone with the keyboard up - without a media query. */
+    max-height: min(288px, 45vh);
+    max-width: calc(100vw - 16px);
     outline: none;
+    /* A dropdown that hands its momentum to the page underneath once it reaches
+       the last slot feels broken. */
+    overscroll-behavior: contain;
     overflow-x: hidden;
     overflow-y: auto;
     padding: 6px;
+    /* Left as auto so the library's listWidth option, which writes an inline
+       width, still decides when it is used. */
     width: auto;
-    z-index: 999999;
+    /* No !important needed, unlike the date panel: this library writes display,
+       position, top and left inline but never a z-index. Matched to the date
+       panel so a form carrying both fields cannot have one picker land above a
+       dialog and the other below it. */
+    z-index: 1000001;
 
     scrollbar-width: thin;
-    scrollbar-color: var(--hf-pick-border) transparent;
+    scrollbar-color: color-mix(in srgb, var(--hf-pick-muted) 45%, transparent) transparent;
 }
 
-.ui-timepicker-wrapper::-webkit-scrollbar {
+/* The library adds this class when it opens the list above the input, and it
+   works out where to put the panel by ADDING the wrapper's own margin-top into
+   the offset - in both directions. Opening downward that margin is the gap.
+   Opening upward the same positive margin pushed the list down over the field
+   by exactly the six pixels that were meant to clear it, and zeroing the margin
+   only makes the panel sit flush; a margin-bottom is inert, because jQuery's
+   offset setter compensates for rendered margins and only margin-top reaches
+   the formula. A negative margin-top is the one value that puts the gap back on
+   the side it can be seen. Placed after the base rule, which it ties with. */
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-positioned-top {
+    margin: -6px 0 0;
+}
+
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper::-webkit-scrollbar {
     width: 8px;
 }
 
-.ui-timepicker-wrapper::-webkit-scrollbar-thumb {
-    background: var(--hf-pick-border);
+/* The thumb used to be drawn in the border grey, which is 1.26:1 on the white
+   surface - present in the DOM, absent to the eye. The muted ink at low opacity
+   reads as a scrollbar without becoming a second piece of colour in the panel. */
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--hf-pick-muted) 45%, transparent);
     border-radius: 999px;
 }
 
-.ui-timepicker-wrapper::-webkit-scrollbar-track {
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper::-webkit-scrollbar-track {
     background: transparent;
 }
 
-.ui-timepicker-list {
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list {
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
-.ui-timepicker-list li {
-    border-radius: 6px;
+/* A 36px row matches the day chip and clears the touch target minimum with room
+   rather than by a pixel. Tabular figures for the same reason as the calendar:
+   a column of proportional times sets ragged down a forty-eight row menu. */
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list li {
+    background: none;
+    border: none;
+    border-radius: var(--hf-pick-radius-control);
+    box-shadow: none;
     color: var(--hf-pick-text);
     cursor: pointer;
-    font-size: 13px;
+    font-size: var(--hf-pick-font-size);
+    font-variant-numeric: tabular-nums;
     line-height: 1.4;
     list-style: none;
     margin: 0;
-    /* Was 3px 0 3px 5px. A 34px row clears the 24px minimum touch target
-       without making the list feel airy. */
-    padding: 8px 12px;
-    transition: background-color .15s ease, color .15s ease;
+    padding: 9px 12px;
+    position: relative;
+    transition: background-color var(--hf-pick-transition), color var(--hf-pick-transition);
     white-space: nowrap;
 }
 
-.ui-timepicker-list li + li {
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list li + li {
     margin-top: 1px;
 }
 
-/* The library keeps .ui-timepicker-selected on the chosen row while the pointer
+/* The one piece of structure in a list that is otherwise forty-eight
+   near-identical rows: a hairline where the morning ends. It is the only
+   landmark the markup offers, since the library classes every row am or pm, and
+   it costs nothing when the configured range sits entirely on one side of noon,
+   because then no am row is ever followed by a pm row. Drawn as a positioned
+   line rather than a border, because a border on an 8px rounded row curves up
+   at both ends instead of sitting flat. */
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list li.ui-timepicker-am + li.ui-timepicker-pm {
+    margin-top: 9px;
+}
+
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list li.ui-timepicker-am + li.ui-timepicker-pm:before {
+    background: var(--hf-pick-border);
+    content: "";
+    height: 1px;
+    left: 12px;
+    position: absolute;
+    right: 12px;
+    top: -5px;
+}
+
+/* The library keeps ui-timepicker-selected on the chosen row while the pointer
    is elsewhere in the list, so hover has to win over it to read correctly. */
-.ui-timepicker-list li:hover,
-.ui-timepicker-list:hover .ui-timepicker-selected:hover {
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list li:hover {
     background: var(--hf-pick-soft);
     color: var(--hf-pick-text);
 }
 
-li.ui-timepicker-selected,
-.ui-timepicker-list .ui-timepicker-selected {
+/* This class is doing two jobs at once: it marks the committed value and it is
+   also the arrow-key cursor, because focus never leaves the input. It is filled
+   so it can be found again after scrolling a long list, and it carries the same
+   guaranteed keyline as the selected day for the same reason - on the front end
+   the fill is the form owner's colour and the keyline is the part whose
+   contrast is derived rather than hoped for. */
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper li.ui-timepicker-selected,
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list .ui-timepicker-selected,
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list:hover .ui-timepicker-selected {
     background: var(--hf-pick-accent);
+    box-shadow: inset 0 0 0 1px var(--hf-pick-accent-ink);
     color: var(--hf-pick-on-accent);
     font-weight: 600;
 }
 
-.ui-timepicker-list:hover .ui-timepicker-selected {
-    background: var(--hf-pick-accent);
+/* Hovering the committed row itself. Compound so it wins on weight rather than
+   on its position in the block. */
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list li.ui-timepicker-selected:hover {
+    background: color-mix(in srgb, var(--hf-pick-accent) 85%, #000);
     color: var(--hf-pick-on-accent);
 }
 
-.ui-timepicker-duration {
+/* With showDuration on the library appends a span to the row. Laying the row
+   out as a flex line puts the duration on the trailing edge, which the stock
+   sheet faked with a fixed padding-right that went with it. */
+.ui-timepicker-wrapper.ui-timepicker-with-duration.ui-timepicker-wrapper .ui-timepicker-list li {
+    display: flex;
+    gap: var(--hf-pick-pad);
+    justify-content: space-between;
+}
+
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-duration {
     color: var(--hf-pick-muted);
     margin-left: 6px;
 }
 
-.ui-timepicker-list li:hover .ui-timepicker-duration {
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list li:hover .ui-timepicker-duration {
     color: var(--hf-pick-muted);
 }
 
-li.ui-timepicker-selected .ui-timepicker-duration,
-.ui-timepicker-list .ui-timepicker-selected .ui-timepicker-duration {
+/* Full strength rather than dimmed. The duration is the second half of the
+   row's meaning, and fading it against a filled chip pushed it under the
+   threshold on exactly the row a user was most likely to be reading. */
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper li.ui-timepicker-selected .ui-timepicker-duration,
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list .ui-timepicker-selected .ui-timepicker-duration {
     color: var(--hf-pick-on-accent);
-    opacity: .75;
+    opacity: 1;
 }
 
-.ui-timepicker-list li.ui-timepicker-disabled,
-.ui-timepicker-list li.ui-timepicker-disabled:hover,
-.ui-timepicker-list li.ui-timepicker-selected.ui-timepicker-disabled {
-    background: transparent;
+/* The empty row the noneOption setting prepends carries no am or pm class and
+   no time, so it is marked as the absence of a choice rather than as one. */
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list li[data-time=""] {
     color: var(--hf-pick-muted);
+}
+
+/* Same reasoning as the disabled day: a designed grey plus a line through the
+   time, rather than an opacity that has to be compared against its neighbours
+   to be understood. */
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list li.ui-timepicker-disabled,
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list li.ui-timepicker-disabled:hover,
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list li.ui-timepicker-selected.ui-timepicker-disabled {
+    background: transparent;
+    box-shadow: none;
+    color: var(--hf-pick-faint);
     cursor: default;
     font-weight: normal;
-    opacity: .4;
+    opacity: 1;
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
 }
 
-@media (prefers-reduced-motion: reduce) {
+.ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list li.ui-timepicker-disabled .ui-timepicker-duration {
+    color: var(--hf-pick-faint);
+}
 
-    .ui-timepicker-list li {
-        transition-duration: .001ms;
+/* The useSelect rendering mode replaces the whole panel with a native select
+   placed next to the input, inside the form rather than on <body>. It carries
+   the tokens itself through the shared block at the top. Nothing in Hash Form
+   turns useSelect on; this only stops it arriving unstyled, and it is kept at
+   two class weights rather than given id weight, because that control lives
+   inside the form and a form owner's own styling has to keep reaching it. */
+select.ui-timepicker-select.ui-timepicker-select {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: var(--hf-pick-surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23646970' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-position: right 10px center;
+    background-repeat: no-repeat;
+    background-size: 10px 6px;
+    border: 1px solid var(--hf-pick-border);
+    border-radius: var(--hf-pick-radius-control);
+    color: var(--hf-pick-text);
+    font-family: var(--hf-pick-font);
+    font-size: var(--hf-pick-font-size);
+    min-height: 36px;
+    padding: 6px 30px 6px 12px;
+}
+
+select.ui-timepicker-select.ui-timepicker-select:focus-visible {
+    border-color: var(--hf-pick-accent-ink);
+    outline: 2px solid var(--hf-pick-accent-ink);
+    outline-offset: 1px;
+}
+
+/* -----------------------------------------------------------------------------
+ * Pickers: small screens, motion, forced colours, print
+ * -------------------------------------------------------------------------- */
+
+/* Seven 36px chips plus their gutters and the panel padding comes to about
+   312px, which is wider than a small phone in portrait once the panel is nudged
+   away from the viewport edge. The chip shrinks to 32px, still well above the
+   24px minimum target, and the header lets go of the month select so a long
+   localised month name has somewhere to go. */
+@media screen and (max-width:480px) {
+
+    #ui-datepicker-div.ui-datepicker,
+    .ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper,
+    select.ui-timepicker-select.ui-timepicker-select {
+        --hf-pick-cell: 32px;
+        --hf-pick-tap: 32px;
+        --hf-pick-pad: 8px;
+    }
+
+    #ui-datepicker-div select.ui-datepicker-month,
+    #ui-datepicker-div select.ui-datepicker-year {
+        max-width: none;
+    }
+
+    #ui-datepicker-div.ui-datepicker-multi {
+        display: block;
+    }
+
+    .ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper {
+        max-height: min(240px, 40vh);
     }
 }
 
-/* Parent Input Alignment */
-body.wp-admin:not(.rtl) .ui-datepicker {
-    margin-left: -1px;
+/* Every transition in the block reads --hf-pick-transition, so redefining that
+   one token is enough and there is no list of selectors here to fall out of
+   step with the rules above. The selector list is the token block's, repeated
+   exactly, so it ties on specificity and wins on position. Not 0s: a zero
+   duration never fires transitionend, and both jQuery and the timepicker listen
+   for it in places. */
+@media (prefers-reduced-motion: reduce) {
+
+    #ui-datepicker-div.ui-datepicker,
+    .ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper,
+    select.ui-timepicker-select.ui-timepicker-select {
+        --hf-pick-transition: .001ms linear;
+    }
 }
 
-body.wp-admin.rtl .ui-datepicker {
-    margin-right: -1px;
+/* In forced colours mode the browser throws away background and colour, and
+   drops box-shadow outright - so the selected chip loses its fill and today
+   loses its ring entirely, which takes the state away from exactly the users
+   most dependent on it. Both are restated in system colours, and today moves
+   from a shadow to an outline so it survives. Disabled is restated too, because
+   the strikethrough alone would be carrying it otherwise. */
+@media (forced-colors: active) {
+
+    #ui-datepicker-div.ui-datepicker,
+    .ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper {
+        border-color: ButtonBorder;
+    }
+
+    #ui-datepicker-div td.ui-datepicker-today .ui-state-default {
+        box-shadow: none;
+        outline: 2px solid CanvasText;
+        outline-offset: -2px;
+    }
+
+    #ui-datepicker-div td.ui-datepicker-current-day .ui-state-default,
+    #ui-datepicker-div td .ui-state-active,
+    .ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper li.ui-timepicker-selected,
+    .ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list .ui-timepicker-selected {
+        background: Highlight;
+        box-shadow: none;
+        color: HighlightText;
+        forced-color-adjust: none;
+    }
+
+    /* Today and selected at once: the concentric ring is redrawn in the
+       highlight's own text colour so the two states stay separable. */
+    #ui-datepicker-div td.ui-datepicker-today.ui-datepicker-current-day .ui-state-default,
+    #ui-datepicker-div td.ui-datepicker-today .ui-state-active {
+        outline: 2px solid HighlightText;
+        outline-offset: -4px;
+    }
+
+    #ui-datepicker-div td.ui-datepicker-days-cell-over .ui-state-default,
+    #ui-datepicker-div td .ui-state-default:focus-visible {
+        outline-color: CanvasText;
+    }
+
+    #ui-datepicker-div td.ui-state-disabled .ui-state-default,
+    #ui-datepicker-div td.ui-datepicker-unselectable .ui-state-default,
+    .ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper .ui-timepicker-list li.ui-timepicker-disabled {
+        color: GrayText;
+    }
+}
+
+/* A panel that happens to be open when the page is printed would otherwise land
+   in the middle of the printed form. Both libraries write display inline as
+   they open, so this is the one place !important is unavoidable. */
+@media print {
+
+    #ui-datepicker-div,
+    .ui-timepicker-wrapper.ui-timepicker-wrapper.ui-timepicker-wrapper {
+        display: none !important;
+    }
 }
 
 .hf-hashform-block {

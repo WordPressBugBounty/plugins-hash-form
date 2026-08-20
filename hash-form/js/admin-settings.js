@@ -146,8 +146,16 @@
                 $styleField.addClass('hf-typography-loading');
             },
             success: function (response) {
-                $styleField.removeClass('hf-typography-loading');
                 $styleField.find('select').html(response).trigger('chosen:updated').trigger('change');
+            },
+            /*
+             * Clearing the wait belongs here rather than in success alone. The
+             * class had no styling of its own, so a request that failed left
+             * behind a mark nobody could see; now that it draws a spinner, the
+             * same failure would leave the field spinning for good.
+             */
+            complete: function () {
+                $styleField.removeClass('hf-typography-loading');
             }
         });
     });
@@ -350,7 +358,24 @@
      * WP Mail SMTP install/activate
      * -------------------------------------------------------------------- */
 
-    function activateSmtpPlugin(button) {
+    /*
+     * Puts the button back the way it was found.
+     *
+     * Every one of these requests could only ever end well. A stale nonce, a
+     * user without the capability, a download that fails, an activation that
+     * throws — none of them were handled, so the button kept its spinner and
+     * its "Installing…" label for as long as the page stayed open, with no way
+     * to try again short of a reload.
+     */
+    function smtpFailed(button, label) {
+        button.removeClass('updating-message').html(hashform_admin_js_obj.error);
+
+        window.setTimeout(function () {
+            button.html(label);
+        }, 4000);
+    }
+
+    function activateSmtpPlugin(button, label) {
         $.ajax({
             url: ajaxurl,
             type: 'POST',
@@ -361,32 +386,59 @@
                 admin_setting_nonce: adminNonce
             }
         }).done(function (response) {
-            const result = JSON.parse(response);
-            if (result.success) {
+            var result;
+
+            // A capability failure or a fatal answers with something that is
+            // not JSON, and parsing it threw inside the success path where
+            // nothing was watching.
+            try {
+                result = (typeof response === 'string') ? JSON.parse(response) : response;
+            } catch (e) {
+                result = null;
+            }
+
+            if (result && result.success) {
                 location.reload();
             } else {
-                button.removeClass('updating-message').html(hashform_admin_js_obj.error);
+                smtpFailed(button, label);
             }
+        }).fail(function () {
+            smtpFailed(button, label);
         });
     }
 
     $('.hf-activate-wp-mail-smtp-plugin').on('click', function (e) {
         e.preventDefault();
         const button = $(this);
+
+        // Nothing stopped a second click starting a second request.
+        if (button.hasClass('updating-message')) {
+            return;
+        }
+
+        const label = button.html();
         button.addClass('updating-message').html(hashform_admin_js_obj.activating_text);
-        activateSmtpPlugin(button);
+        activateSmtpPlugin(button, label);
     });
 
     $('.hf-install-wp-mail-smtp-plugin').on('click', function (e) {
         e.preventDefault();
         const button = $(this);
+
+        if (button.hasClass('updating-message')) {
+            return;
+        }
+
+        const label = button.html();
         button.addClass('updating-message').html(hashform_admin_js_obj.installing_text);
 
         wp.updates.installPlugin({
             slug: 'wp-mail-smtp'
         }).done(function () {
             button.html(hashform_admin_js_obj.activating_text);
-            activateSmtpPlugin(button);
+            activateSmtpPlugin(button, label);
+        }).fail(function () {
+            smtpFailed(button, label);
         });
     });
 

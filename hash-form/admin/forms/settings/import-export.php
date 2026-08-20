@@ -31,7 +31,18 @@ $field_count = is_array($fields) ? count($fields) : 0;
                 <input type="hidden" name="hashform_imex_action" value="export_form" />
                 <input type="hidden" name="hashform_form_id" value="<?php echo esc_attr($id); ?>" />
                 <?php wp_nonce_field('hashform_imex_export_nonce', 'hashform_imex_export_nonce'); ?>
-                <button class="button button-primary" id="hashform_export" name="hashform_export">
+                <?php
+                /*
+                 * type="button" on purpose. HTML has no nested forms, so the
+                 * parser drops the <form> above and hands its contents to the
+                 * settings form this partial is rendered inside. An untyped
+                 * button defaults to submit, which made this the settings
+                 * form's default button: pressing Enter in any field on the
+                 * screen downloaded an export and threw away the edits. The
+                 * export is posted from js/backend.js instead.
+                 */
+                ?>
+                <button type="button" class="button button-primary" id="hashform_export" name="hashform_export">
                     <span class="mdi mdi-tray-arrow-down" aria-hidden="true"></span>
                     <?php esc_html_e('Export Form', 'hash-form'); ?>
                 </button>

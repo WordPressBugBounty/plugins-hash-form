@@ -78,6 +78,75 @@ trait HashFormListActions {
         static::render_list();
     }
 
+    /**
+     * Would route() fall through to the list table for this request?
+     *
+     * The header bar is printed on in_admin_header, which fires before the
+     * page callback runs, so it has to work out for itself whether the list
+     * is what is about to render. Mirrors the dispatch above: anything the
+     * screen declares as an action goes somewhere else, everything else ends
+     * on the list.
+     */
+    public static function is_list_view() {
+        $config = static::list_config();
+
+        if (!HashFormHelper::is_admin_page($config['page'])) {
+            return false;
+        }
+
+        $action = htmlspecialchars_decode(HashFormHelper::get_var('hashform_action', 'sanitize_text_field', HashFormHelper::get_var('action')));
+
+        if ('' === $action || '-1' === $action) {
+            $action = htmlspecialchars_decode(HashFormHelper::get_var('action2', 'sanitize_text_field'));
+        }
+
+        return !in_array($action, $config['actions'], true);
+    }
+
+    /**
+     * Admin notices, moved inside the screen's own wrapper.
+     *
+     * Core prints them into #wpbody-content before the page callback runs
+     * (wp-admin/admin-header.php), which puts them above and outside
+     * .hf-content.hf-list-screen and off the measure the rest of the screen
+     * lines up to. They are buffered from before the first notice hook to
+     * after the last, then re-emitted by print_notices() inside the wrapper.
+     */
+    private static $notice_html = '';
+    private static $buffering = false;
+
+    public static function buffer_notices() {
+        if (!static::is_list_view()) {
+            return;
+        }
+
+        self::$buffering = true;
+        ob_start();
+    }
+
+    public static function capture_notices() {
+        // Only ever closes a buffer this class opened, so an early exit
+        // somewhere else cannot leave output swallowed.
+        if (!self::$buffering) {
+            return;
+        }
+
+        self::$buffering = false;
+        self::$notice_html = ob_get_clean();
+    }
+
+    /**
+     * Whatever core and other plugins printed, already escaped by them.
+     */
+    public static function print_notices() {
+        if ('' === self::$notice_html) {
+            return;
+        }
+
+        echo self::$notice_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        self::$notice_html = '';
+    }
+
     public static function display_message($message, $class) {
         if ('' !== trim($message)) {
             echo '<div id="message" class="' . esc_attr($class) . ' notice is-dismissible">';

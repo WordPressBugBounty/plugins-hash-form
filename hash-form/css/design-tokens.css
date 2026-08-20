@@ -12,9 +12,7 @@
 .hf-content,
 .hf-wrap,
 #hf-wrap,
-.hf-entry-list-wrap,
 .hf-form-entry-details-wrap,
-.hashform-settings-wrap,
 /* Printed into admin_footer, so they sit outside every wrapper above and
    have to declare the tokens themselves. */
 #hf-add-form-modal,
@@ -22,6 +20,12 @@
 /* jQuery UI moves a dialog to <body> when it opens, which detaches it from
    the builder wrapper, so these need the tokens declared on them too. */
 .hf-dialog,
+/* The list header is printed on in_admin_header, above #wpbody and so outside
+   every wrapper below. */
+.hf-list-header,
+/* The module settings dialog is moved out to <body> so the page cannot clip
+   it, which puts it outside every wrapper too. */
+.hf-msm-overlay,
 #hf-bulk-edit-modal {
     /*
      * Brand + state.
@@ -101,7 +105,14 @@
 /* ---------- Primitives ---------- */
 
 .hf-content *,
-.hf-wrap * {
+.hf-wrap *,
+/* The list header is printed on in_admin_header, which puts it outside both
+   wrappers above, so the reset never reached it: its inner bar carried a width
+   of 100% and 32px of padding either side under content-box and so ran 64px
+   wider than the header holding it, which the page answered with a horizontal
+   scrollbar on every list screen. */
+.hf-list-header,
+.hf-list-header * {
     box-sizing: border-box;
 }
 
@@ -116,7 +127,9 @@
 /* Buttons. Scoped tightly so WP's own .button styling is not disturbed
    elsewhere in the admin. */
 .hf-content .hf-btn,
-.hf-wrap .hf-btn {
+.hf-wrap .hf-btn,
+.hf-msm-overlay .hf-btn,
+.hf-form-entry-details-wrap .hf-btn {
     align-items: center;
     background: var(--hf-surface);
     border: 1px solid var(--hf-border-strong);
@@ -136,52 +149,68 @@
 }
 
 .hf-content .hf-btn:hover,
-.hf-wrap .hf-btn:hover {
+.hf-wrap .hf-btn:hover,
+.hf-msm-overlay .hf-btn:hover,
+.hf-form-entry-details-wrap .hf-btn:hover {
     background: var(--hf-surface-sunken);
     border-color: var(--hf-text-faint);
     color: var(--hf-text);
 }
 
 .hf-content .hf-btn:focus-visible,
-.hf-wrap .hf-btn:focus-visible {
+.hf-wrap .hf-btn:focus-visible,
+.hf-msm-overlay .hf-btn:focus-visible,
+.hf-form-entry-details-wrap .hf-btn:focus-visible {
     outline: 2px solid var(--hf-accent);
     outline-offset: 1px;
 }
 
 .hf-content .hf-btn-primary,
-.hf-wrap .hf-btn-primary {
+.hf-wrap .hf-btn-primary,
+.hf-msm-overlay .hf-btn-primary,
+.hf-form-entry-details-wrap .hf-btn-primary {
     background: var(--hf-accent);
     border-color: var(--hf-accent);
     color: var(--hf-text-inverse);
 }
 
 .hf-content .hf-btn-primary:hover,
-.hf-wrap .hf-btn-primary:hover {
+.hf-wrap .hf-btn-primary:hover,
+.hf-msm-overlay .hf-btn-primary:hover,
+.hf-form-entry-details-wrap .hf-btn-primary:hover {
     background: var(--hf-accent-hover);
     border-color: var(--hf-accent-hover);
     color: var(--hf-text-inverse);
 }
 
 .hf-content .hf-btn-ghost,
-.hf-wrap .hf-btn-ghost {
+.hf-wrap .hf-btn-ghost,
+.hf-msm-overlay .hf-btn-ghost,
+.hf-form-entry-details-wrap .hf-btn-ghost {
     background: none;
     border-color: transparent;
     color: var(--hf-text-muted);
 }
 
 .hf-content .hf-btn-ghost:hover,
-.hf-wrap .hf-btn-ghost:hover {
+.hf-wrap .hf-btn-ghost:hover,
+.hf-msm-overlay .hf-btn-ghost:hover,
+.hf-form-entry-details-wrap .hf-btn-ghost:hover {
     background: rgba(16, 24, 40, .05);
     border-color: transparent;
 }
 
 .hf-content .hf-btn-danger,
-.hf-wrap .hf-btn-danger {
+.hf-wrap .hf-btn-danger,
+.hf-msm-overlay .hf-btn-danger,
+.hf-form-entry-details-wrap .hf-btn-danger {
     color: var(--hf-danger);
 }
 
 .hf-content .hf-btn-danger:hover,
-.hf-wrap .hf-btn-danger:hover {
+.hf-wrap .hf-btn-danger:hover,
+.hf-msm-overlay .hf-btn-danger:hover,
+.hf-form-entry-details-wrap .hf-btn-danger:hover {
     background: #fdf2f2;
     border-color: var(--hf-danger);
 }
@@ -223,8 +252,22 @@
 .hf-content input[type="number"],
 .hf-content input[type="search"],
 .hf-content input[type="password"],
+.hf-content input[type="date"],
+.hf-content input[type="time"],
+.hf-content input[type="datetime-local"],
 .hf-content select,
-.hf-content textarea {
+.hf-content textarea,
+.hf-msm-overlay input[type="text"],
+.hf-msm-overlay input[type="email"],
+.hf-msm-overlay input[type="url"],
+.hf-msm-overlay input[type="number"],
+.hf-msm-overlay input[type="search"],
+.hf-msm-overlay input[type="password"],
+.hf-msm-overlay input[type="date"],
+.hf-msm-overlay input[type="time"],
+.hf-msm-overlay input[type="datetime-local"],
+.hf-msm-overlay select,
+.hf-msm-overlay textarea {
     border: 1px solid var(--hf-border-strong);
     border-radius: var(--hf-radius-sm);
     box-shadow: none;
@@ -237,18 +280,23 @@
     line-height: 26px;
 }
 
-.hf-content select {
+.hf-content select,
+.hf-msm-overlay select {
     padding-right: 30px;
 }
 
-.hf-content textarea {
+.hf-content textarea,
+.hf-msm-overlay textarea {
     min-height: 84px;
     padding-top: var(--hf-space-2);
 }
 
 .hf-content input:focus,
 .hf-content select:focus,
-.hf-content textarea:focus {
+.hf-content textarea:focus,
+.hf-msm-overlay input:focus,
+.hf-msm-overlay select:focus,
+.hf-msm-overlay textarea:focus {
     border-color: var(--hf-accent);
     box-shadow: 0 0 0 1px var(--hf-accent);
     outline: 0;
