@@ -26,9 +26,7 @@ class HashFormFields {
     }
 
     public static function create() {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
 
         check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
         $field_type = HashFormHelper::get_post('field_type', 'sanitize_text_field');
@@ -38,9 +36,7 @@ class HashFormFields {
     }
 
     public static function destroy() {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
 
         check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
         $field_id = HashFormHelper::get_post('field_id', 'absint', 0);
@@ -49,9 +45,7 @@ class HashFormFields {
     }
 
     public static function duplicate() {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
 
         check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
         $field_id = HashFormHelper::get_post('field_id', 'absint', 0);
@@ -119,6 +113,11 @@ class HashFormFields {
         $field_array = self::covert_field_obj_to_array($field);
         $field_obj = HashFormFields::get_field_class($field_array['type'], $field_array);
         $field_obj->load_single_field();
+
+        // The row was created and its markup printed, but the function fell
+        // off the end and handed every caller null, so nothing downstream
+        // could tell a successful insert from a refused one.
+        return $field_id;
     }
 
     public static function setup_new_field_vars($type = '', $form_id = '') {
@@ -145,9 +144,7 @@ class HashFormFields {
     }
 
     public static function import_options() {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
 
         check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
 

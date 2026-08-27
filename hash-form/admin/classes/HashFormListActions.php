@@ -48,6 +48,47 @@ trait HashFormListActions {
 
     abstract protected static function message_none_specified();
 
+    /**
+     * The capability a list action needs, or '' when the screen does not say.
+     *
+     * @param string $action One of the keys in the screen's 'caps' config.
+     * @return string
+     */
+    protected static function list_cap($action) {
+        $config = static::list_config();
+
+        if (empty($config['caps'][$action])) {
+            return '';
+        }
+
+        return $config['caps'][$action];
+    }
+
+    /**
+     * Stop a list action the current user is not allowed to take.
+     *
+     * The menu capability only decides who reaches the screen. Without this,
+     * anyone who could open the Forms or Entries list could also trash and
+     * permanently delete from it: the rows print their own action links, so
+     * the nonce those links carry was the only thing standing in the way, and
+     * a nonce proves who is asking, not what they may do.
+     *
+     * @param string $action
+     */
+    protected static function require_list_cap($action) {
+        $cap = static::list_cap($action);
+
+        if ('' === $cap || HashFormCapabilities::user_can($cap)) {
+            return;
+        }
+
+        wp_die(
+                esc_html__('You do not have permission to do that.', 'hash-form'),
+                esc_html__('Permission denied', 'hash-form'),
+                array('response' => 403)
+        );
+    }
+
     public static function route() {
         $config = static::list_config();
 
@@ -173,6 +214,8 @@ trait HashFormListActions {
             return;
         }
 
+        static::require_list_cap('delete');
+
         $config = static::list_config();
         $id = HashFormHelper::get_var('id', 'absint');
 
@@ -216,10 +259,13 @@ trait HashFormListActions {
         $placeholders = implode(',', array_fill(0, count($id), '%d'));
         $prepare_args = array_merge(array($status), $id);
 
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $table is $wpdb->prefix plus a table name from the subclass's own list_config(), and $placeholders is a string of %d markers whose values are bound through $prepare_args.
         return $wpdb->query($wpdb->prepare("UPDATE {$table} SET status=%s WHERE id IN ({$placeholders})", $prepare_args));
     }
 
     public static function delete_all() {
+        static::require_list_cap('delete');
+
         $config = static::list_config();
 
         // The "Empty Trash" button submits inside the list table form, which
@@ -235,6 +281,7 @@ trait HashFormListActions {
 
         $config = static::list_config();
         $table = $wpdb->prefix . $config['table'];
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $table is $wpdb->prefix plus a table name from the subclass's own list_config(); the one value is bound.
         $trashed = $wpdb->get_col($wpdb->prepare("SELECT id FROM {$table} WHERE status=%s", 'trash'));
 
         if (!$trashed) {
@@ -251,6 +298,8 @@ trait HashFormListActions {
     }
 
     public static function destroy() {
+        static::require_list_cap('delete');
+
         $config = static::list_config();
         $id = HashFormHelper::get_var('id', 'absint');
 
@@ -270,6 +319,7 @@ trait HashFormListActions {
     }
 
     public static function process_bulk_actions() {
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a presence test only; check_admin_referer() runs three lines down, before anything is read.
         if (!$_REQUEST) {
             return;
         }
@@ -308,12 +358,15 @@ trait HashFormListActions {
 
         switch ($bulkaction) {
             case 'delete':
+                static::require_list_cap('delete');
                 $message = static::bulk_destroy($ids);
                 break;
             case 'trash':
+                static::require_list_cap('delete');
                 $message = static::bulk_trash($ids);
                 break;
             case 'untrash':
+                static::require_list_cap('delete');
                 $message = static::bulk_untrash($ids);
         }
 

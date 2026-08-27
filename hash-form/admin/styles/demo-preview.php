@@ -37,7 +37,6 @@ defined('ABSPATH') || die();
                 <div class="hf-field-container">
                     <label class="hf-field-label">
                         <?php esc_html_e('Email', 'hash-form'); ?>
-                        <span class="hf-field-required" aria-hidden="true"></span>
                     </label>
                     <div class="hf-field-content">
                         <input type="text" id="hf-field-nhf53" name="item_meta[420]" value="" aria-describedby="hashform_desc_hf-field-nhf53">
@@ -49,7 +48,6 @@ defined('ABSPATH') || die();
                 <div class="hf-field-container">
                     <label class="hf-field-label">
                         <?php esc_html_e('Phone', 'hash-form'); ?>
-                        <span class="hf-field-required" aria-hidden="true"></span>
                     </label>
                     <div class="hf-field-content">
                         <input type="text" id="hf-field-o47py" name="item_meta[421]" value="">
@@ -61,7 +59,6 @@ defined('ABSPATH') || die();
                 <div class="hf-field-container">
                     <label class="hf-field-label">
                         <?php esc_html_e('Website/URL', 'hash-form'); ?>
-                        <span class="hf-field-required" aria-hidden="true"></span>
                     </label>
                     <div class="hf-field-content">
                         <input type="text" id="hf-field-yyw4j" name="item_meta[422]" value="">
@@ -72,7 +69,6 @@ defined('ABSPATH') || die();
                 <div class="hf-field-container">
                     <label class="hf-field-label">
                         <?php esc_html_e('Address', 'hash-form'); ?>
-                        <span class="hf-field-required" aria-hidden="true"></span>
                     </label>
                     <div class="hf-field-content">
                         <div class="hf-grouped-field" id="hf-grouped-field-423">
@@ -120,7 +116,7 @@ defined('ABSPATH') || die();
                     </div>
                 </div>
             </div>
-            <div id="hf-field-container-424" class="hf-form-field  hashform-field-type-heading hf-text-alignment-left">
+            <div id="hf-field-container-424" class="hf-form-field  hashform-field-type-heading hf-text-alignment-left hf-field-alignment-left">
                 <div class="hf-field-container">
                     <div class="hf-field-content">
                         <h1 id="hf-field-424">
@@ -129,7 +125,7 @@ defined('ABSPATH') || die();
                     </div>
                 </div>
             </div>
-            <div id="hf-field-container-425" class="hf-form-field  hashform-field-type-paragraph hf-text-alignment-left">
+            <div id="hf-field-container-425" class="hf-form-field  hashform-field-type-paragraph hf-text-alignment-left hf-field-alignment-left">
                 <div class="hf-field-container">
                     <div class="hf-field-content">
                         <p id="hf-field-425">
@@ -142,7 +138,6 @@ defined('ABSPATH') || die();
                 <div class="hf-field-container">
                     <label class="hf-field-label">
                         <?php esc_html_e('Text', 'hash-form'); ?>
-                        <span class="hf-field-required" aria-hidden="true"></span>
                     </label>
                     <div class="hf-field-content">
                         <input type="text" id="hf-field-it7tv" name="item_meta[429]" value="">
@@ -153,7 +148,6 @@ defined('ABSPATH') || die();
                 <div class="hf-field-container">
                     <label class="hf-field-label">
                         <?php esc_html_e('Text Area', 'hash-form'); ?>
-                        <span class="hf-field-required" aria-hidden="true"></span>
                     </label>
                     <div class="hf-field-content">
                         <textarea name="item_meta[430]" id="hf-field-idkqz" rows="5"></textarea>
@@ -164,7 +158,6 @@ defined('ABSPATH') || die();
                 <div class="hf-field-container">
                     <label class="hf-field-label">
                         <?php esc_html_e('Dropdown', 'hash-form'); ?>
-                        <span class="hf-field-required" aria-hidden="true"></span>
                     </label>
                     <div class="hf-field-content">
                         <select name="item_meta[431]" id="hf-field-n05ha">
@@ -182,7 +175,6 @@ defined('ABSPATH') || die();
                 <div class="hf-field-container">
                     <label class="hf-field-label">
                         <?php esc_html_e('Checkboxes', 'hash-form'); ?>
-                        <span class="hf-field-required" aria-hidden="true"></span>
                     </label>
                     <div class="hf-field-content">
                         <div class="hf-choice-container">
@@ -230,43 +222,42 @@ defined('ABSPATH') || die();
                 <div class="hf-field-container">
                     <label class="hf-field-label">
                         <?php esc_html_e('Radio Buttons', 'hash-form'); ?>
-                        <span class="hf-field-required" aria-hidden="true"></span>
                     </label>
                     <div class="hf-field-content">
                         <div class="hf-choice-container">
                             <div class="hf-choice hf-radio" id="hf-radio-433-0">
                                 <label for="hf-field-dfwf8-0">
-                                    <input type="radio" name="item_meta[433]" id="hf-field-dfwf8-0" value="Strongly Disagree">
+                                    <input type="radio" name="item_meta[433][]" id="hf-field-dfwf8-0" value="Strongly Disagree">
                                     <?php esc_html_e('Strongly Disagree', 'hash-form'); ?>
                                 </label>
                             </div>
                             <div class="hf-choice hf-radio" id="hf-radio-433-1">
                                 <label for="hf-field-dfwf8-1">
-                                    <input type="radio" name="item_meta[433]" id="hf-field-dfwf8-1" value="Disagree">
+                                    <input type="radio" name="item_meta[433][]" id="hf-field-dfwf8-1" value="Disagree">
                                     <?php esc_html_e('Disagree', 'hash-form'); ?>
                                 </label>
                             </div>
                             <div class="hf-choice hf-radio" id="hf-radio-433-2">
                                 <label for="hf-field-dfwf8-2">
-                                    <input type="radio" name="item_meta[433]" id="hf-field-dfwf8-2" value="Neutral">
+                                    <input type="radio" name="item_meta[433][]" id="hf-field-dfwf8-2" value="Neutral">
                                     <?php esc_html_e('Neutral', 'hash-form'); ?>
                                 </label>
                             </div>
                             <div class="hf-choice hf-radio" id="hf-radio-433-3">
                                 <label for="hf-field-dfwf8-3">
-                                    <input type="radio" name="item_meta[433]" id="hf-field-dfwf8-3" value="Agree">
+                                    <input type="radio" name="item_meta[433][]" id="hf-field-dfwf8-3" value="Agree">
                                     <?php esc_html_e('Agree', 'hash-form'); ?>
                                 </label>
                             </div>
                             <div class="hf-choice hf-radio" id="hf-radio-433-4">
                                 <label for="hf-field-dfwf8-4">
-                                    <input type="radio" name="item_meta[433]" id="hf-field-dfwf8-4" value="Strongly Agree">
+                                    <input type="radio" name="item_meta[433][]" id="hf-field-dfwf8-4" value="Strongly Agree">
                                     <?php esc_html_e('Strongly Agree', 'hash-form'); ?>
                                 </label>
                             </div>
                             <div class="hf-choice hf-radio" id="hf-radio-433-5">
                                 <label for="hf-field-dfwf8-5">
-                                    <input type="radio" name="item_meta[433]" id="hf-field-dfwf8-5" value="N/A">
+                                    <input type="radio" name="item_meta[433][]" id="hf-field-dfwf8-5" value="N/A">
                                     <?php esc_html_e('N/A', 'hash-form'); ?>
                                 </label>
                             </div>
@@ -278,13 +269,12 @@ defined('ABSPATH') || die();
                 <div class="hf-field-container">
                     <label class="hf-field-label">
                         <?php esc_html_e('Image Selector', 'hash-form'); ?>
-                        <span class="hf-field-required" aria-hidden="true"></span>
                     </label>
                     <div class="hf-field-content">
                         <div class="hf-choice-container">
                             <div class="hf-choice hf-radio" id="hf-radio-434-0">
                                 <label for="hf-field-yqvhx-0">
-                                    <input type="radio" name="item_meta[434]" id="hf-field-yqvhx-0" value="Option 1">
+                                    <input type="radio" name="item_meta[434][]" id="hf-field-yqvhx-0" value="Option 1">
                                     <div class="hf-field-is-container hf-field-is-has-label">
                                         <div class="hf-field-is-image"><span class="hf-field-is-checked mdi-check-circle"></span><img src="<?php echo esc_url(HASHFORM_URL . 'img/placeholder.jpg') ?>" alt="Option 1"></div>
                                         <div class="hf-field-is-label"><?php esc_html_e('Option 1', 'hash-form'); ?></div>
@@ -293,7 +283,7 @@ defined('ABSPATH') || die();
                             </div>
                             <div class="hf-choice hf-radio" id="hf-radio-434-1">
                                 <label for="hf-field-yqvhx-1">
-                                    <input type="radio" name="item_meta[434]" id="hf-field-yqvhx-1" value="Option 2">
+                                    <input type="radio" name="item_meta[434][]" id="hf-field-yqvhx-1" value="Option 2">
                                     <div class="hf-field-is-container hf-field-is-has-label">
                                         <div class="hf-field-is-image"><span class="hf-field-is-checked mdi-check-circle"></span><img src="<?php echo esc_url(HASHFORM_URL . 'img/placeholder.jpg') ?>" alt="Option 2"></div>
                                         <div class="hf-field-is-label"><?php esc_html_e('Option 2', 'hash-form'); ?></div>
@@ -302,7 +292,7 @@ defined('ABSPATH') || die();
                             </div>
                             <div class="hf-choice hf-radio" id="hf-radio-434-2">
                                 <label for="hf-field-yqvhx-2">
-                                    <input type="radio" name="item_meta[434]" id="hf-field-yqvhx-2" value="Option 3">
+                                    <input type="radio" name="item_meta[434][]" id="hf-field-yqvhx-2" value="Option 3">
                                     <div class="hf-field-is-container hf-field-is-has-label">
                                         <div class="hf-field-is-image"><span class="hf-field-is-checked mdi-check-circle"></span><img src="<?php echo esc_url(HASHFORM_URL . 'img/placeholder.jpg') ?>" alt="Option 3"></div>
                                         <div class="hf-field-is-label"><?php esc_html_e('Option 3', 'hash-form'); ?></div>
@@ -340,7 +330,6 @@ defined('ABSPATH') || die();
                 <div class="hf-field-container">
                     <label class="hf-field-label">
                         <?php esc_html_e('Number', 'hash-form'); ?>
-                        <span class="hf-field-required" aria-hidden="true"></span>
                     </label>
                     <div class="hf-field-content">
                         <input type="number" id="hf-field-20wn5" min="0" max="9999999" step="" name="item_meta[435]" value="">
@@ -351,7 +340,6 @@ defined('ABSPATH') || die();
                 <div class="hf-field-container">
                     <label class="hf-field-label">
                         <?php esc_html_e('Range Slider', 'hash-form'); ?>
-                        <span class="hf-field-required" aria-hidden="true"></span>
                     </label>
                     <div class="hf-field-content">
                         <div class="hf-range-slider-container">
@@ -370,7 +358,6 @@ defined('ABSPATH') || die();
                 <div class="hf-field-container">
                     <label class="hf-field-label">
                         <?php esc_html_e('Star', 'hash-form'); ?>
-                        <span class="hf-field-required" aria-hidden="true"></span>
                     </label>
                     <div class="hf-field-content">
                         <div class="hf-choice-container">
@@ -404,7 +391,6 @@ defined('ABSPATH') || die();
                 <div class="hf-field-container">
                     <label class="hf-field-label">
                         <?php esc_html_e('Spinner', 'hash-form'); ?>
-                        <span class="hf-field-required" aria-hidden="true"></span>
                     </label>
                     <div class="hf-field-content">
                         <div class="hf-quantity">
@@ -417,7 +403,7 @@ defined('ABSPATH') || die();
                     </div>
                 </div>
             </div>
-            <div class="hf-submit-wrap">
+            <div class="hf-submit-wrap hf-submit-btn-align-left">
                 <button class="hf-submit-button"><?php esc_html_e('Submit', 'hash-form'); ?></button>
             </div>
         </div>

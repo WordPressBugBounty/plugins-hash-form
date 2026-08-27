@@ -1,5 +1,7 @@
 <?php
 
+defined('ABSPATH') || die();
+
 function hashform_sanitize_checkbox($input) {
     if ($input == 'on') {
         return 'on';

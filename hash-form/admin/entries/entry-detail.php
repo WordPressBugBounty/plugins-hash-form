@@ -1,11 +1,17 @@
 <?php
 defined('ABSPATH') || die();
-$prev_entry = HashFormEntry::get_prev_entry($entry->id);
+/*
+ * A template, included from inside a class method - never loaded on its own.
+ * The variables below are locals of the method that includes it, not globals,
+ * which is what the prefix sniff assumes about a file-scope assignment.
+ */
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
+$prev_entry = HashFormEntry::get_prev_entry($entry->id, $entry->form_id);
 $prev_entry = isset($prev_entry[0]) ? $prev_entry[0] : '';
 $prev_entry_id = isset($prev_entry->id) ? $prev_entry->id : '';
 $prev_url = $prev_entry_id ? admin_url('admin.php?page=hashform-entries&hashform_action=view&id=' . $prev_entry_id) : '#';
 
-$next_entry = HashFormEntry::get_next_entry($entry->id);
+$next_entry = HashFormEntry::get_next_entry($entry->id, $entry->form_id);
 $next_entry = isset($next_entry[0]) ? $next_entry[0] : '';
 $next_entry_id = isset($next_entry->id) ? $next_entry->id : '';
 $next_url = $next_entry_id ? admin_url('admin.php?page=hashform-entries&hashform_action=view&id=' . $next_entry_id) : '#';
@@ -157,7 +163,7 @@ $delivery_failed = isset($entry->delivery_status) && !$entry->delivery_status;
                     if ($is_blank) {
                         echo '<td><span class="hf-entry-blank" aria-label="' . esc_attr__('No answer', 'hash-form') . '">&mdash;</span></td>';
                     } else {
-                        echo '<td>' . wpautop(wp_kses_post($entry_value)) . '</td>';
+                        echo '<td>' . wp_kses_post(wpautop($entry_value)) . '</td>';
                     }
 
                     echo '</tr>';
@@ -174,7 +180,16 @@ $delivery_failed = isset($entry->delivery_status) && !$entry->delivery_status;
          * loop left the browser to pull them back out, which it did at a
          * position of its own choosing.
          */
-        do_action('hf_after_entry_detail_view', $entry);
+        /**
+         * After the entry's answers have been printed.
+         *
+         * @param object $entry
+         */
+        do_action('hashform_after_entry_detail_view', $entry);
+
+        // The unprefixed name this hook shipped under. Still fired so an
+        // add-on written against it keeps working.
+        do_action('hf_after_entry_detail_view', $entry); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- kept for backward compatibility; the prefixed hook above is the one to use.
         ?>
 
         <div class="hf-entry-tools">

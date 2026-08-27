@@ -10,7 +10,6 @@ if (!class_exists(WP_List_Table::class)) {
 
 class HashFormListing extends \WP_List_Table {
 
-    private $table_data;
     private $status;
 
     /**
@@ -143,8 +142,6 @@ class HashFormListing extends \WP_List_Table {
     }
 
     public function prepare_items() {
-        $this->table_data = $this->get_table_data();
-
         $hashform_columns = $this->get_columns();
         $hashform_sortable = $this->get_sortable_columns();
         $hashform_hidden = (is_array(get_user_meta(get_current_user_id(), 'managetoplevel_page_hashformcolumnshidden', true))) ? get_user_meta(get_current_user_id(), 'managetoplevel_page_hashformcolumnshidden', true) : array();
@@ -153,70 +150,125 @@ class HashFormListing extends \WP_List_Table {
         $hashform_primary = 'name';
         $this->_column_headers = array($hashform_columns, $hashform_hidden, $hashform_sortable, $hashform_primary);
 
-        if ($this->table_data) {
-            // Sort the raw rows (not the rendered HTML) so ordering works on
-            // real values, then render only the rows of the current page.
-            usort($this->table_data, array(&$this, 'usort_reorder'));
+        $per_page = $this->get_items_per_page('forms_per_page', 10);
+        $current_page = max(1, $this->get_pagenum());
 
-            /* pagination */
-            $per_page = $this->get_items_per_page('forms_per_page', 10);
-            $current_page = $this->get_pagenum();
-            $total_items = count($this->table_data);
+        // Counted and fetched separately, so only the forms being shown are
+        // loaded rather than every form on the site.
+        $total_items = $this->count_rows();
+        $page_rows = $total_items ? $this->get_table_data($per_page, ($current_page - 1) * $per_page) : array();
 
-            $page_rows = array_slice($this->table_data, (($current_page - 1) * $per_page), $per_page);
+        $this->set_pagination_args(array(
+            'total_items' => $total_items,
+            'per_page' => $per_page,
+            'total_pages' => (int) ceil($total_items / max(1, $per_page)),
+        ));
 
-            $data = array();
-            foreach ($page_rows as $item) {
-                $id = $item['id'];
-                $data[$id] = array(
-                    'name' => $this->column_title($item),
-                    'entries' => $this->get_entry_link($id),
-                    'id' => $id,
-                    'form_key' => $item['form_key'],
-                    'shortcode' => $this->get_shortcode_chip($id),
-                    'created_at' => HashFormHelper::convert_date_format($item['created_at'])
-                );
-            }
+        $data = array();
 
-            $this->set_pagination_args(array(
-                'total_items' => $total_items,
-                'per_page' => $per_page,
-                'total_pages' => ceil($total_items / $per_page)
-            ));
-
-            $this->items = $data;
+        foreach ($page_rows as $item) {
+            $id = $item['id'];
+            $data[$id] = array(
+                'name' => $this->column_title($item),
+                'entries' => $this->get_entry_link($id),
+                'id' => $id,
+                'form_key' => $item['form_key'],
+                'shortcode' => $this->get_shortcode_chip($id),
+                'created_at' => HashFormHelper::convert_date_format($item['created_at'])
+            );
         }
+
+        $this->items = $data;
     }
 
-    private function usort_reorder($a, $b) {
-        $sortable = array('name', 'id', 'form_key', 'created_at');
+
+    /**
+     * The WHERE half of the listing query, shared by the count and the page
+     * so the two can never disagree about what is being listed.
+     *
+     * @return array
+     */
+    private function build_query() {
+        global $wpdb;
+
+        $where = array('status = %s');
+        $params = array($this->status);
+
+        $search = trim(htmlspecialchars_decode(HashFormHelper::get_var('s')));
+
+        if ('' !== $search) {
+            $where[] = 'name LIKE %s';
+            $params[] = '%' . $wpdb->esc_like($search) . '%';
+        }
+
+        return array('where' => implode(' AND ', $where), 'params' => $params);
+    }
+
+    /**
+     * The ORDER BY clause, from a whitelist.
+     *
+     * The tie-break on id keeps pagination stable: two forms created in the
+     * same second must not be free to swap places between one page and the
+     * next, or one of them is shown twice and the other never.
+     *
+     * @return string
+     */
+    private function order_clause() {
+        $sortable = array(
+            'id' => 'id',
+            'name' => 'name',
+            'form_key' => 'form_key',
+            'created_at' => 'created_at',
+        );
 
         $orderby = HashFormHelper::get_var('orderby', 'sanitize_text_field', 'created_at');
-        if (!in_array($orderby, $sortable, true)) {
+
+        if (!isset($sortable[$orderby])) {
             $orderby = 'created_at';
         }
 
-        $order = strtolower(HashFormHelper::get_var('order', 'sanitize_text_field', 'desc'));
+        $order = 'asc' === strtolower(HashFormHelper::get_var('order', 'sanitize_text_field', 'desc')) ? 'ASC' : 'DESC';
 
-        if ('id' === $orderby) {
-            $result = (int) $a['id'] < (int) $b['id'] ? -1 : (((int) $a['id'] > (int) $b['id']) ? 1 : 0);
-        } else {
-            $result = strcmp($a[$orderby], $b[$orderby]);
-        }
-
-        return ($order === 'asc') ? $result : -$result;
+        return $sortable[$orderby] . ' ' . $order . ', id ' . $order;
     }
 
-    private function get_table_data() {
+    /**
+     * How many forms the current filters match.
+     *
+     * @return int
+     */
+    private function count_rows() {
         global $wpdb;
-        $status = $this->status;
-        $search = htmlspecialchars_decode(HashFormHelper::get_var('s'));
 
-        if ($search) {
-            return $wpdb->get_results($wpdb->prepare("SELECT * from {$wpdb->prefix}hashform_forms WHERE status=%s AND name Like %s", $status, '%' . $wpdb->esc_like($search) . '%'), ARRAY_A);
-        } else {
-            return $wpdb->get_results($wpdb->prepare("SELECT * from {$wpdb->prefix}hashform_forms WHERE status=%s", $status), ARRAY_A);
-        }
+        $q = $this->build_query();
+
+        // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $q['where'] is a list of literal placeholder clauses built in build_query() and never holds a value; every value travels in $q['params'] and is bound by prepare(). order_clause() returns a column name looked up in a whitelist. The sniffs cannot follow either, so they are silenced here rather than everywhere.
+        return (int) $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$wpdb->prefix}hashform_forms WHERE {$q['where']}", $q['params']));
+        // phpcs:enable
+    }
+
+    /**
+     * One page of forms, ordered and limited by the database.
+     *
+     * @param int $per_page
+     * @param int $offset
+     * @return array
+     */
+    private function get_table_data($per_page, $offset) {
+        global $wpdb;
+
+        $q = $this->build_query();
+        $params = $q['params'];
+        $params[] = max(1, (int) $per_page);
+        $params[] = max(0, (int) $offset);
+
+        // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $q['where'] is a list of literal placeholder clauses built in build_query() and never holds a value; every value travels in $q['params'] and is bound by prepare(). order_clause() returns a column name looked up in a whitelist. The sniffs cannot follow either, so they are silenced here rather than everywhere.
+        return $wpdb->get_results($wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}hashform_forms WHERE {$q['where']}"
+                . ' ORDER BY ' . $this->order_clause()
+                . ' LIMIT %d OFFSET %d', $params), ARRAY_A);
+        // phpcs:enable
     }
 
     public static function get_published_table_data() {

@@ -146,8 +146,21 @@ class HashFormFieldName extends HashFormFieldType {
                 $label = isset($field['desc'][$name]) ? $field['desc'][$name] : '';
                 ?>
 
+                <?php
+                /*
+                 * Each part of the name needs a name of its own. The visible
+                 * caption under the box is a plain div, so on its own the
+                 * control was announced only as whatever the whole field is
+                 * called - "Name, edit text" three times over, with no way to
+                 * tell first from last. Prefer the site's own wording for the
+                 * part and fall back to the built-in caption.
+                 */
+                $sub_label = ('' !== trim((string) $label)) ? $label : $sub_field['label'];
+                $sub_label = trim((string) $sub_label);
+                $aria_label = $sub_label ? $field['name'] . ' ' . $sub_label : $field['name'];
+                ?>
                 <div id="hf-subfield-container-<?php echo esc_attr($name) . '-' . esc_attr($field_id); ?>" class="hf-subfield-element hf-subfield-element-<?php echo esc_attr($name); ?>" data-sub-field-name="<?php echo esc_attr($name); ?>">
-                    <input type="text" id="hf-field-<?php echo esc_attr($field_key) . '-' . esc_attr($name); ?>" value="<?php echo esc_attr(apply_filters('hashform_translate_string', $value, 'Hash Form', $field['id'] . ' - ' . ucwords($name) . ' Value')); ?>" name="<?php echo esc_attr($this->html_name()) . '[' . esc_attr($name) . ']'; ?>" placeholder="<?php echo esc_attr(apply_filters('hashform_translate_string', $placeholder, 'Hash Form', $field['id'] . ' - ' . ucwords($name) . ' Placeholder')); ?>">
+                    <input type="text" id="hf-field-<?php echo esc_attr($field_key) . '-' . esc_attr($name); ?>" aria-label="<?php echo esc_attr($aria_label); ?>"<?php echo !empty($field['required']) ? ' aria-required="true"' : ''; ?> value="<?php echo esc_attr(apply_filters('hashform_translate_string', $value, 'Hash Form', $field['id'] . ' - ' . ucwords($name) . ' Value')); ?>" name="<?php echo esc_attr($this->html_name()) . '[' . esc_attr($name) . ']'; ?>" placeholder="<?php echo esc_attr(apply_filters('hashform_translate_string', $placeholder, 'Hash Form', $field['id'] . ' - ' . ucwords($name) . ' Placeholder')); ?>">
                     <?php
                     if (!empty($label) || is_admin()) {
                         ?>

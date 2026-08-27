@@ -11,7 +11,6 @@ class HashFormBlock {
         add_action('enqueue_block_editor_assets', array($this, 'enqueue_block_editor_assets'));
 
         // Load translation files
-        add_action('plugins_loaded', array($this, 'load_textdomain'), 99);
         add_action('enqueue_block_editor_assets', array($this, 'block_localization'));
     }
 
@@ -428,6 +427,7 @@ class HashFormBlock {
         }
 
         if (!is_admin()) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns a ready-escaped attribute string, and is echoed unescaped by core itself.
             echo '<div ' . get_block_wrapper_attributes(['class' => 'wp-block-hash-form', 'id' => esc_attr($attr['id'])]) . '>';
         }
 
@@ -450,11 +450,6 @@ class HashFormBlock {
         $classes[] = 'hf-form-custom-style';
 
         return $classes;
-    }
-
-    public function load_textdomain() {
-        // Relative to the plugins directory, not an absolute path.
-        load_plugin_textdomain('hash-form', false, dirname(plugin_basename(HASHFORM_FILE)) . '/languages');
     }
 
     // Enqueue localization data for our blocks.

@@ -1,11 +1,27 @@
 <?php
 defined('ABSPATH') || die();
+/*
+ * A template, included from inside a class method - never loaded on its own.
+ * The variables below are locals of the method that includes it, not globals,
+ * which is what the prefix sniff assumes about a file-scope assignment.
+ */
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
 
-$confirmation_types = apply_filters('hf_confirmation_types', array(
+// The unprefixed filter this file shipped with, still applied so an add-on
+// written against it keeps working.
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- kept for backward compatibility; hashform_confirmation_types is the prefixed name to use.
+$hf_confirmation_types = apply_filters('hf_confirmation_types', array(
     'show_message' => __('Message', 'hash-form'),
     'show_page' => __('Show Page', 'hash-form'),
     'redirect_url' => __('Redirect URL', 'hash-form'),
 ));
+
+/**
+ * The ways a form can respond once it has been submitted.
+ *
+ * @param array $hf_confirmation_types Type key => label.
+ */
+$hf_confirmation_types = apply_filters('hashform_confirmation_types', $hf_confirmation_types);
 ?>
 
 <div class="hf-form-container">
@@ -13,9 +29,9 @@ $confirmation_types = apply_filters('hf_confirmation_types', array(
         <label><?php esc_html_e('Confirmation Type', 'hash-form'); ?></label>
         <select name="confirmation_type" data-condition="toggle" id="hf-form-conformation-type">
             <?php
-            foreach ($confirmation_types as $key => $val) {
+            foreach ($hf_confirmation_types as $hf_key => $hf_val) {
                 ?>
-                <option value="<?php echo esc_attr($key) ?>" <?php selected($settings['confirmation_type'], $key); ?>><?php echo esc_html($val); ?></option>
+                <option value="<?php echo esc_attr($hf_key) ?>" <?php selected($settings['confirmation_type'], $hf_key); ?>><?php echo esc_html($hf_val); ?></option>
                 <?php
             }
             ?>

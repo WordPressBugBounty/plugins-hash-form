@@ -10,7 +10,6 @@ if (!class_exists(WP_List_Table::class)) {
 
 class HashFormEntryListing extends \WP_List_Table {
 
-    private $table_data;
     private $status;
     private $form_names;
     private $previews;
@@ -111,12 +110,14 @@ class HashFormEntryListing extends \WP_List_Table {
 
         $ids = implode(',', array_map('absint', $this->page_entry_ids));
 
+        // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $q['join'] and $q['where'] are built in build_query() from literals and placeholders only; the values they refer to are bound through $q['params']. order_clause() returns a whitelisted column. Interpolated entry ids are run through absint() first.
         $rows = $wpdb->get_results(
                 "SELECT m.item_id, m.meta_value, f.type
             FROM {$wpdb->prefix}hashform_entry_meta AS m
             LEFT JOIN {$wpdb->prefix}hashform_fields AS f ON f.id = m.field_id
             WHERE m.item_id IN ({$ids})
-            ORDER BY m.id ASC", ARRAY_A); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+            ORDER BY m.id ASC", ARRAY_A);
+        // phpcs:enable
 
         // Layout only fields hold no answer, so they make a poor preview.
         $skip = array('heading', 'paragraph', 'separator', 'spacer', 'image', 'html', 'captcha', 'hidden', 'user_id');
@@ -167,57 +168,56 @@ class HashFormEntryListing extends \WP_List_Table {
     }
 
     public function prepare_items() {
-        $this->table_data = $this->get_table_data();
-
         $hashform_columns = $this->get_columns();
         $hashform_sortable = $this->get_sortable_columns();
         $hashform_hidden = (is_array(get_user_meta(get_current_user_id(), 'managetoplevel_page_hashform-entriescolumnshidden', true))) ? get_user_meta(get_current_user_id(), 'managetoplevel_page_hashform-entriescolumnshidden', true) : array();
         $hashform_primary = 'id';
         $this->_column_headers = array($hashform_columns, $hashform_hidden, $hashform_sortable, $hashform_primary);
 
-        if ($this->table_data) {
-            // Sort the raw rows (not the rendered HTML) so ordering works on
-            // real values, then render only the rows of the current page.
-            usort($this->table_data, array(&$this, 'usort_reorder'));
+        $per_page = $this->get_items_per_page('entries_per_page', 10);
+        $current_page = max(1, $this->get_pagenum());
 
-            /* pagination */
-            $per_page = $this->get_items_per_page('entries_per_page', 10);
-            $current_page = $this->get_pagenum();
-            $total_items = count($this->table_data);
+        /*
+         * Counted and fetched separately, so only the rows being shown are
+         * ever loaded. This used to select every entry on the site, sort the
+         * lot in php and throw all but ten of them away, which meant the
+         * screen's cost grew with the number of submissions rather than with
+         * the size of a page.
+         */
+        $total_items = $this->count_rows();
+        $page_rows = $total_items ? $this->get_table_data($per_page, ($current_page - 1) * $per_page) : array();
 
-            $page_rows = array_slice($this->table_data, (($current_page - 1) * $per_page), $per_page);
+        $this->set_pagination_args(array(
+            'total_items' => $total_items,
+            'per_page' => $per_page,
+            'total_pages' => (int) ceil($total_items / max(1, $per_page)),
+        ));
 
-            // Collected first so the previews for the whole page load in one
-            // query instead of one per row.
-            $this->page_entry_ids = wp_list_pluck($page_rows, 'id');
+        // Collected first so the previews for the whole page load in one
+        // query instead of one per row.
+        $this->page_entry_ids = wp_list_pluck($page_rows, 'id');
 
-            $data = array();
-            foreach ($page_rows as $item) {
-                $id = $item['id'];
-                $data[$id] = array(
-                    'id' => $item['id'],
-                    'is_read' => isset($item['is_read']) ? $item['is_read'] : 1,
-                    'is_starred' => $this->get_column_star($item),
-                    'name' => $this->get_column_id($item),
-                    'form_id' => $this->get_form_link($item['form_id']),
-                    'preview' => $this->get_column_preview($item['id']),
-                    'user_id' => $this->get_user_link($item['user_id']),
-                    'delivery_status' => $item['delivery_status'] ? esc_html__('Success', 'hash-form') : esc_html__('Failed', 'hash-form'),
-                    'created_at' => HashFormHelper::convert_date_format($item['created_at']),
-                    'ip' => $item['ip']
-                );
+        $data = array();
 
-                $data[$id] = apply_filters('hashform_entries_column_values', $data[$id], $item);
-            }
+        foreach ($page_rows as $item) {
+            $id = $item['id'];
+            $data[$id] = array(
+                'id' => $item['id'],
+                'is_read' => isset($item['is_read']) ? $item['is_read'] : 1,
+                'is_starred' => $this->get_column_star($item),
+                'name' => $this->get_column_id($item),
+                'form_id' => $this->get_form_link($item['form_id']),
+                'preview' => $this->get_column_preview($item['id']),
+                'user_id' => $this->get_user_link($item['user_id']),
+                'delivery_status' => $item['delivery_status'] ? esc_html__('Success', 'hash-form') : esc_html__('Failed', 'hash-form'),
+                'created_at' => HashFormHelper::convert_date_format($item['created_at']),
+                'ip' => $item['ip']
+            );
 
-            $this->set_pagination_args(array(
-                'total_items' => $total_items,
-                'per_page' => $per_page,
-                'total_pages' => ceil($total_items / $per_page)
-            ));
-
-            $this->items = $data;
+            $data[$id] = apply_filters('hashform_entries_column_values', $data[$id], $item);
         }
+
+        $this->items = $data;
     }
 
     public function get_column_id($item) {
@@ -248,27 +248,18 @@ class HashFormEntryListing extends \WP_List_Table {
         return $output;
     }
 
-    public function usort_reorder($a, $b) {
-        $numeric = array('id', 'form_id', 'user_id', 'delivery_status');
-        $sortable = array_merge($numeric, array('status', 'ip', 'created_at'));
 
-        $orderby = HashFormHelper::get_var('orderby', 'sanitize_text_field', 'created_at');
-        if (!in_array($orderby, $sortable, true)) {
-            $orderby = 'created_at';
-        }
-
-        $order = strtolower(HashFormHelper::get_var('order', 'sanitize_text_field', 'desc'));
-
-        if (in_array($orderby, $numeric, true)) {
-            $result = (int) $a[$orderby] < (int) $b[$orderby] ? -1 : (((int) $a[$orderby] > (int) $b[$orderby]) ? 1 : 0);
-        } else {
-            $result = strcmp($a[$orderby], $b[$orderby]);
-        }
-
-        return ($order === 'asc') ? $result : -$result;
-    }
-
-    private function get_table_data() {
+    /**
+     * The FROM/WHERE half of the listing query, shared by the count and the
+     * page so the two can never disagree about what is being listed.
+     *
+     * @return array {
+     *     @type string $join
+     *     @type string $where
+     *     @type array  $params
+     * }
+     */
+    private function build_query() {
         global $wpdb;
 
         // "unread" and "starred" are filters over published entries rather
@@ -322,10 +313,90 @@ class HashFormEntryListing extends \WP_List_Table {
             $where[] = '(' . implode(' OR ', $search_where) . ')';
         }
 
-        // DISTINCT because the meta join returns one row per stored field.
-        $sql = "SELECT DISTINCT e.* FROM {$wpdb->prefix}hashform_entries AS e {$join} WHERE " . implode(' AND ', $where);
+        return array(
+            'join' => $join,
+            'where' => implode(' AND ', $where),
+            'params' => $params,
+        );
+    }
 
-        return $wpdb->get_results($wpdb->prepare($sql, $params), ARRAY_A); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    /**
+     * The ORDER BY clause, from a whitelist.
+     *
+     * A tie-break on id is always appended. Without one, two entries sharing
+     * a created_at can swap places between one page and the next, which with
+     * LIMIT/OFFSET means a row shown twice and another never shown at all.
+     *
+     * @return string
+     */
+    private function order_clause() {
+        // The columns a caller may sort by, mapped to what they are in sql.
+        $sortable = array(
+            'id' => 'e.id',
+            'form_id' => 'e.form_id',
+            'user_id' => 'e.user_id',
+            'delivery_status' => 'e.delivery_status',
+            'status' => 'e.status',
+            'ip' => 'e.ip',
+            'created_at' => 'e.created_at',
+        );
+
+        $orderby = HashFormHelper::get_var('orderby', 'sanitize_text_field', 'created_at');
+
+        if (!isset($sortable[$orderby])) {
+            $orderby = 'created_at';
+        }
+
+        $order = 'asc' === strtolower(HashFormHelper::get_var('order', 'sanitize_text_field', 'desc')) ? 'ASC' : 'DESC';
+
+        return $sortable[$orderby] . ' ' . $order . ', e.id ' . $order;
+    }
+
+    /**
+     * How many rows the current filters match.
+     *
+     * @return int
+     */
+    private function count_rows() {
+        global $wpdb;
+
+        $q = $this->build_query();
+
+        // DISTINCT because the meta join returns one row per stored answer.
+        $sql = "SELECT COUNT(DISTINCT e.id) FROM {$wpdb->prefix}hashform_entries AS e {$q['join']} WHERE {$q['where']}";
+
+        // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $q['join'] and $q['where'] are built in build_query() from literals and placeholders only; the values they refer to are bound through $q['params']. order_clause() returns a whitelisted column. Interpolated entry ids are run through absint() first.
+        return (int) ($q['params']
+                ? $wpdb->get_var($wpdb->prepare($sql, $q['params']))
+                : $wpdb->get_var($sql));
+        // phpcs:enable
+    }
+
+    /**
+     * One page of rows, ordered and limited by the database.
+     *
+     * @param int $per_page
+     * @param int $offset
+     * @return array
+     */
+    private function get_table_data($per_page, $offset) {
+        global $wpdb;
+
+        $q = $this->build_query();
+
+        // DISTINCT because the meta join returns one row per stored answer.
+        $sql = "SELECT DISTINCT e.* FROM {$wpdb->prefix}hashform_entries AS e {$q['join']}"
+                . " WHERE {$q['where']}"
+                . ' ORDER BY ' . $this->order_clause()
+                . ' LIMIT %d OFFSET %d';
+
+        $params = $q['params'];
+        $params[] = max(1, (int) $per_page);
+        $params[] = max(0, (int) $offset);
+
+        // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $q['join'] and $q['where'] are built in build_query() from literals and placeholders only; the values they refer to are bound through $q['params']. order_clause() returns a whitelisted column. Interpolated entry ids are run through absint() first.
+        return $wpdb->get_results($wpdb->prepare($sql, $params), ARRAY_A);
+        // phpcs:enable
     }
 
     public function get_bulk_actions() {

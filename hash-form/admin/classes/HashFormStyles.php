@@ -112,9 +112,7 @@ class HashFormStyles {
     }
 
     public static function save_metabox_settings() {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
 
         if (wp_verify_nonce(HashFormHelper::get_post('hashform_styles_nonce'), 'hf-styles-nonce')) {
             $postID = HashFormHelper::get_post('post_ID');
@@ -337,9 +335,7 @@ class HashFormStyles {
     }
 
     public function get_google_font_variants() {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
 
         check_ajax_referer('hashform_admin_settings_ajax', 'admin_setting_nonce');
 
@@ -1221,8 +1217,7 @@ class HashFormStyles {
     }
 
     public function get_form_preview_html() {
-        if (!current_user_can('manage_options'))
-            return;
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
 
         check_ajax_referer('hashform_admin_settings_ajax', 'admin_setting_nonce');
         ob_start();

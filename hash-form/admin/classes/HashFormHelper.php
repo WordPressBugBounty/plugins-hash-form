@@ -21,6 +21,18 @@ class HashFormHelper {
         return array_merge($form_options_defaults, $values);
     }
 
+    /*
+     * The three request accessors. Each one unslashes, then hands the value
+     * to sanitize_value() with the callback the caller chose - which is the
+     * only way a form builder can work, since what counts as valid depends on
+     * the field. Nothing leaves here unsanitized.
+     *
+     * The sniffs cannot follow a callback, and read accessors are not the
+     * place to check a nonce: the caller acting on the value is. Both are
+     * silenced for these three functions only.
+     */
+    // phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by the caller-supplied callback in sanitize_value(); nonces belong to the code that acts on the value.
+
     /* Sanitizes value and returns param value */
     public static function get_var($param, $sanitize = 'sanitize_text_field', $default = '') {
         $value = (($_GET && isset($_GET[$param])) ? wp_unslash($_GET[$param]) : $default);
@@ -39,6 +51,8 @@ class HashFormHelper {
         }
         return self::sanitize_value($sanitize, $value);
     }
+
+    // phpcs:enable
 
     public static function sanitize_value($sanitize, &$value) {
         if (!empty($sanitize)) {
@@ -80,6 +94,7 @@ class HashFormHelper {
         $tbl_name = $wpdb->prefix . preg_replace('/[^a-z0-9_]/i', '', $table_name);
         $column_name = preg_replace('/[^a-z0-9_]/i', '', $column_name);
 
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- both identifiers are stripped to [a-z0-9_] two lines above and neither can hold a value; $key is bound.
         return (bool) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$tbl_name} WHERE {$column_name}=%s", $key));
     }
 
@@ -771,6 +786,40 @@ class HashFormHelper {
             unset($user);
         }
         return $user_id;
+    }
+
+    /**
+     * Record a diagnostic message.
+     *
+     * Silent unless the site has debugging switched on, so a production
+     * install writes nothing and nothing the plugin logs can ever reach a
+     * visitor. Everything the plugin needs to report about a failure that it
+     * handled - a refused mail, an integration that answered badly, output
+     * where there should have been none - goes through here rather than being
+     * echoed or left to a bare error_log() call.
+     *
+     * @param string $message
+     * @param string $context Optional label for the subsystem reporting.
+     */
+    public static function log($message, $context = 'hash-form') {
+        /**
+         * Whether the plugin should write diagnostics at all.
+         *
+         * Defaults to the site's own debug logging setting, so turning
+         * WP_DEBUG_LOG off in production is enough to silence it.
+         */
+        $enabled = apply_filters('hashform_enable_logging', defined('WP_DEBUG') && WP_DEBUG);
+
+        if (!$enabled) {
+            return;
+        }
+
+        if (is_array($message) || is_object($message)) {
+            $message = wp_json_encode($message);
+        }
+
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+        error_log(sprintf('[%s] %s', $context, (string) $message));
     }
 
     public static function get_ip() {

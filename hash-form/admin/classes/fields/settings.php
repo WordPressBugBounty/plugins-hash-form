@@ -1,5 +1,11 @@
 <?php
 defined('ABSPATH') || die();
+/*
+ * A template, included from inside a class method - never loaded on its own.
+ * The variables below are locals of the method that includes it, not globals,
+ * which is what the prefix sniff assumes about a file-scope assignment.
+ */
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
 ?>
 
 <div class="hf-fields-settings hf-hidden hf-fields-type-<?php echo esc_attr($field_type); ?>" id="hf-fields-settings-<?php echo esc_attr($field_id); ?>" data-fid="<?php echo esc_attr($field_id); ?>">

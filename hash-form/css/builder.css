@@ -446,9 +446,8 @@
    field ran the height of the canvas and pushed the rest of the form out of
    view. Only the builder preview is columned — the live form is untouched. */
 .hf-content .hf-editor-field-elements .hf-payment-container {
-    display: grid;
-    gap: var(--hf-space-1) var(--hf-space-4);
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        display: grid;
+    gap: 10px;
 }
 
 .hf-content .hf-editor-field-elements .hf-payment-option {
@@ -566,6 +565,7 @@
     text-transform: none;
     white-space: nowrap;
     width: auto;
+    line-height: 1.3;
 }
 
 .hf-content .hf-header-status {
@@ -1160,7 +1160,6 @@
     margin: var(--hf-space-5) 0 var(--hf-space-3);
     padding-top: var(--hf-space-4);
     text-transform: uppercase;
-    margin: 0;
 }
 
 /* Sub-field controls — the First/Last parts of a name, the pieces of an

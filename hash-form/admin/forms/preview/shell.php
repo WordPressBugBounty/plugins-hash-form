@@ -1,5 +1,11 @@
 <?php
 defined('ABSPATH') || die();
+/*
+ * A template, included from inside a class method - never loaded on its own.
+ * The variables below are locals of the method that includes it, not globals,
+ * which is what the prefix sniff assumes about a file-scope assignment.
+ */
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
 
 /*
  * The preview shell: a toolbar and an iframe holding the form.
@@ -11,7 +17,7 @@ defined('ABSPATH') || die();
  */
 
 $hf_widths = HashFormPreview::preview_widths();
-$hf_can_edit = current_user_can('manage_options');
+$hf_can_edit = HashFormCapabilities::user_can('hashform_edit_forms');
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>

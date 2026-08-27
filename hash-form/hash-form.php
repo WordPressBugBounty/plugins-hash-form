@@ -3,7 +3,7 @@
 /*
  * Plugin Name: Hash Form - Drag & Drop Form Builder
  * Description: Design, Embed, Connect: Your Ultimate Form Companion for WordPress
- * Version: 1.4.2
+ * Version: 1.4.3
  * Author: HashThemes
  * Author URI: https://hashthemes.com/
  * Text Domain: hash-form
@@ -15,17 +15,20 @@
 
 defined('ABSPATH') || die();
 
-define('HASHFORM_VERSION', '1.4.2');
+define('HASHFORM_VERSION', '1.4.3');
 define('HASHFORM_FILE', __FILE__);
 define('HASHFORM_PATH', plugin_dir_path(HASHFORM_FILE));
 define('HASHFORM_URL', plugin_dir_url(HASHFORM_FILE));
 define('HASHFORM_UPLOAD_DIR', '/hashform');
 
+require HASHFORM_PATH . 'admin/classes/HashFormCapabilities.php';
 require HASHFORM_PATH . 'admin/classes/HashFormSerializedStrParser.php';
 require HASHFORM_PATH . 'admin/classes/HashFormStrReader.php';
 require HASHFORM_PATH . 'admin/classes/HashFormBlock.php';
 require HASHFORM_PATH . 'admin/classes/HashFormUploader.php';
 require HASHFORM_PATH . 'admin/classes/HashFormCreateTable.php';
+require HASHFORM_PATH . 'admin/classes/HashFormMigrations.php';
+require HASHFORM_PATH . 'admin/classes/HashFormCron.php';
 // Must load before the classes that compose it.
 require HASHFORM_PATH . 'admin/classes/HashFormListActions.php';
 require HASHFORM_PATH . 'admin/classes/HashFormBuilder.php';
@@ -46,6 +49,7 @@ require HASHFORM_PATH . 'admin/classes/HashFormSettings.php';
 require HASHFORM_PATH . 'admin/classes/HashFormStyles.php';
 require HASHFORM_PATH . 'admin/classes/HashFormGridHelper.php';
 require HASHFORM_PATH . 'admin/classes/HashFormEmail.php';
+require HASHFORM_PATH . 'admin/classes/HashFormPrivacy.php';
 
 /**
  * Bring the schema up to date after a plugin update, not just on activation.
@@ -82,6 +86,20 @@ function hashform_network_create_table($network_wide) {
     } else {
         $db = new HashFormCreateTable();
         $db->upgrade();
+    }
+}
+
+/**
+ * Plugin Deactivation.
+ *
+ * A scheduled event that outlives the plugin keeps firing against a hook
+ * nothing answers, so the event goes when the plugin does.
+ */
+register_deactivation_hook(HASHFORM_FILE, 'hashform_on_deactivate');
+
+function hashform_on_deactivate() {
+    if (class_exists('HashFormCron')) {
+        HashFormCron::unschedule();
     }
 }
 

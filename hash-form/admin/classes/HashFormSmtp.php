@@ -10,7 +10,7 @@ class HashFormSmtp {
     }
 
     public function menu() {
-        add_submenu_page('hashform', 'Hash Form | ' . esc_html__('SMTP', 'hash-form'), esc_html__('SMTP', 'hash-form'), 'manage_options', 'hashform-smtp', array($this, 'smtp'));
+        add_submenu_page('hashform', 'Hash Form | ' . esc_html__('SMTP', 'hash-form'), esc_html__('SMTP', 'hash-form'), 'hashform_manage_settings', 'hashform-smtp', array($this, 'smtp'));
     }
 
     public function smtp() {

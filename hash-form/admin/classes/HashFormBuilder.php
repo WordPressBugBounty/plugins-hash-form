@@ -48,8 +48,8 @@ class HashFormBuilder {
 
     public function add_menu() {
         global $hashform_listing_page;
-        add_menu_page(esc_html__('Hash Form', 'hash-form'), esc_html__('Hash Form', 'hash-form'), 'manage_options', 'hashform', array($this, 'route'), 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMTcuNjYgMTUyLjI3IiBmaWxsPSIjYTdhYWFkIj48Zz48Zz48cGF0aCBkPSJNMCwzLjQ2QTMuNDYsMy40NiwwLDAsMSwzLjE0LDBoODBBMy41MywzLjUzLDAsMCwxLDg1LjYsMWwzMSwzMWEzLjQ3LDMuNDcsMCwwLDEsMSwyLjQzVjE0OC44MWEzLjQ2LDMuNDYsMCwwLDEtMy40NiwzLjQ2SDMxLjYzYTMuNDYsMy40NiwwLDEsMSwwLTYuOTJoNzkuMTFWMzguMDdIODMuMDVhMy40NiwzLjQ2LDAsMCwxLTMuNDYtMy40NlY2LjkySDYuOTJWMTQ1LjM1SDE0YTMuNDYsMy40NiwwLDEsMSwwLDYuOTJIMy40NkEzLjQ2LDMuNDYsMCwwLDEsMCwxNDguODFaTTEwNiwzMS4xNSw4Ni41MSwxMS42OFYzMS4xNVoiLz48cGF0aCBkPSJNNzguNjYsNTkuM0g5NS4wOXY2LjYxSDc4LjY2Vjg1Ljc1SDcyLjA1VjQyLjg3aDYuNjFabTAsMzkuNjd2MTYuNDJINzIuMDVWOTlINTIuMjJWOTIuMzZIOTUuMDlWOTlaTTM5LDk5SDIyLjU3VjkyLjM2SDM5VjcyLjUyaDYuNjFWMTE1LjRIMzlaTTM5LDU5LjNWNDIuODdoNi42MVY1OS4zSDY1LjQ0djYuNjFIMjIuNTdWNTkuM1oiLz48L2c+PC9nPjwvc3ZnPg==', 29);
-        $hashform_listing_page = add_submenu_page('hashform', esc_html__('Forms', 'hash-form'), esc_html__('Forms', 'hash-form'), 'manage_options', 'hashform', array($this, 'route'));
+        add_menu_page(esc_html__('Hash Form', 'hash-form'), esc_html__('Hash Form', 'hash-form'), 'hashform_view_forms', 'hashform', array($this, 'route'), 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMTcuNjYgMTUyLjI3IiBmaWxsPSIjYTdhYWFkIj48Zz48Zz48cGF0aCBkPSJNMCwzLjQ2QTMuNDYsMy40NiwwLDAsMSwzLjE0LDBoODBBMy41MywzLjUzLDAsMCwxLDg1LjYsMWwzMSwzMWEzLjQ3LDMuNDcsMCwwLDEsMSwyLjQzVjE0OC44MWEzLjQ2LDMuNDYsMCwwLDEtMy40NiwzLjQ2SDMxLjYzYTMuNDYsMy40NiwwLDEsMSwwLTYuOTJoNzkuMTFWMzguMDdIODMuMDVhMy40NiwzLjQ2LDAsMCwxLTMuNDYtMy40NlY2LjkySDYuOTJWMTQ1LjM1SDE0YTMuNDYsMy40NiwwLDEsMSwwLDYuOTJIMy40NkEzLjQ2LDMuNDYsMCwwLDEsMCwxNDguODFaTTEwNiwzMS4xNSw4Ni41MSwxMS42OFYzMS4xNVoiLz48cGF0aCBkPSJNNzguNjYsNTkuM0g5NS4wOXY2LjYxSDc4LjY2Vjg1Ljc1SDcyLjA1VjQyLjg3aDYuNjFabTAsMzkuNjd2MTYuNDJINzIuMDVWOTlINTIuMjJWOTIuMzZIOTUuMDlWOTlaTTM5LDk5SDIyLjU3VjkyLjM2SDM5VjcyLjUyaDYuNjFWMTE1LjRIMzlaTTM5LDU5LjNWNDIuODdoNi42MVY1OS4zSDY1LjQ0djYuNjFIMjIuNTdWNTkuM1oiLz48L2c+PC9nPjwvc3ZnPg==', 29);
+        $hashform_listing_page = add_submenu_page('hashform', esc_html__('Forms', 'hash-form'), esc_html__('Forms', 'hash-form'), 'hashform_view_forms', 'hashform', array($this, 'route'));
         add_action("load-$hashform_listing_page", array($this, 'listing_page_screen_options'));
     }
 
@@ -60,6 +60,11 @@ class HashFormBuilder {
             'id_key' => 'form_id',
             'nonce_item' => 'form',
             'bulk_nonce' => 'bulk-forms',
+            'caps' => array(
+                'delete' => 'hashform_delete_forms',
+                'edit' => 'hashform_edit_forms',
+                'create' => 'hashform_create_forms',
+            ),
             'actions' => array('edit', 'trash', 'destroy', 'untrash', 'delete_all', 'duplicate', 'settings', 'style'),
         );
     }
@@ -192,9 +197,7 @@ class HashFormBuilder {
     }
 
     public function create_form() {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
+        HashFormCapabilities::require_cap_ajax('hashform_create_forms');
 
         check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
 
@@ -254,9 +257,7 @@ class HashFormBuilder {
     }
 
     public function update_form() {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
 
         check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
 
@@ -376,6 +377,8 @@ class HashFormBuilder {
         if (!wp_verify_nonce($nonce, 'duplicate_form_' . $id)) {
             wp_die(esc_html__('Error ! Refresh the page and try again.', 'hash-form'));
         }
+
+        static::require_list_cap('create');
 
         $values = self::get_form_vars($id);
 
@@ -585,8 +588,7 @@ class HashFormBuilder {
     }
 
     public function save_form_settings() {
-        if (!current_user_can('manage_options'))
-            return;
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
 
         $json_vars = htmlspecialchars_decode(nl2br(str_replace('&quot;', '"', HashFormHelper::get_post('hashform_compact_fields'))));
         $vars = HashFormHelper::parse_json_array($json_vars);
@@ -616,9 +618,7 @@ class HashFormBuilder {
     }
 
     public function save_form_style() {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
 
         check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
 
@@ -632,9 +632,7 @@ class HashFormBuilder {
     }
 
     public function form_preview() {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
 
         check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
 
@@ -810,9 +808,7 @@ class HashFormBuilder {
     }
 
     public function add_more_condition_block() {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
 
         check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
 
@@ -902,24 +898,51 @@ class HashFormBuilder {
 
         // The request controls the shape of this value; a scalar would emit a
         // warning into the middle of the JSON response below.
-        if (is_array($allowedExtensions) && $allowedExtensions) {
-            $filtered_allowed_extenstions = array();
-            foreach ($allowedExtensions as $ext) {
-                if (in_array($ext, $default_allowed_extenstions)) {
-                    $filtered_allowed_extenstions[] = $ext;
-                }
+        $allowedExtensions = is_array($allowedExtensions) ? $allowedExtensions : array();
+
+        $filtered_allowed_extenstions = array();
+        foreach ($allowedExtensions as $ext) {
+            if (in_array($ext, $default_allowed_extenstions, true)) {
+                $filtered_allowed_extenstions[] = $ext;
             }
-
-            // Never trust the request for the size limit beyond what the
-            // server would accept anyway.
-            $sizeLimit = min(absint($sizeLimit), wp_max_upload_size());
-
-            $uploader = new HashFormFileUploader($filtered_allowed_extenstions, $sizeLimit);
-            $result = $uploader->handleUpload($upload_dir['basedir'] . HASHFORM_UPLOAD_DIR, $replaceOldFile = false, $upload_dir['baseurl'] . HASHFORM_UPLOAD_DIR);
-
-            echo json_encode($result);
         }
-        die();
+
+        /*
+         * Tested after filtering rather than before. A request naming only
+         * extensions this plugin does not recognise used to satisfy a check on
+         * the raw list and then hand the uploader an empty one, which it read
+         * as "no restriction configured".
+         *
+         * Answered rather than dropped: an empty body left the uploader
+         * waiting on a response it could not parse, so the file appeared
+         * to hang instead of failing.
+         */
+        if (!$filtered_allowed_extenstions) {
+            wp_send_json(array('error' => esc_html__('This type of file is not allowed.', 'hash-form')));
+        }
+
+        // Never trust the request for the size limit beyond what the
+        // server would accept anyway.
+        $sizeLimit = min(absint($sizeLimit), wp_max_upload_size());
+
+        $uploader = new HashFormFileUploader($filtered_allowed_extenstions, $sizeLimit);
+
+        /*
+         * Anything the upload machinery prints - a php notice from a host
+         * with a hardened open_basedir, a warning out of the mime sniffing -
+         * would land in front of the json and leave the browser unable to
+         * parse the reply. Whatever gets emitted is captured and dropped so
+         * the response is only ever the json below.
+         */
+        ob_start();
+        $result = $uploader->handleUpload($upload_dir['basedir'] . HASHFORM_UPLOAD_DIR, false, $upload_dir['baseurl'] . HASHFORM_UPLOAD_DIR);
+        $stray_output = ob_get_clean();
+
+        if ($stray_output && defined('WP_DEBUG') && WP_DEBUG) {
+            HashFormHelper::log('Upload handler produced unexpected output: ' . $stray_output);
+        }
+
+        wp_send_json($result);
     }
 
     public function file_delete_action() {
@@ -1012,11 +1035,11 @@ class HashFormBuilder {
                     <?php
                     printf(
                         /* translators: %1$s is link start tag, %2$s is link end tag. */
-                        esc_html__('Great to see that you have been using Hash Form for some time. We hope you love it, and we would really appreciate it if you would %1$sgive us a 5 stars rating%2$s and spread your words to the world.', 'hash-form'), '<a target="_blank" href="https://wordpress.org/support/plugin/hash-form/reviews/?filter=5">', '</a>'
+                        esc_html__('Great to see that you have been using Hash Form for some time. We hope you love it, and we would really appreciate it if you would %1$sleave a review%2$s and spread your words to the world.', 'hash-form'), '<a target="_blank" href="https://wordpress.org/support/plugin/hash-form/reviews/">', '</a>'
                     );
                     ?>
                 </p>
-                <a target="_blank" class="button button-primary button-large" href="https://wordpress.org/support/plugin/hash-form/reviews/?filter=5"><span class="dashicons dashicons-thumbs-up"></span><?php echo esc_html__('Yes, of course', 'hash-form') ?></a> &nbsp;
+                <a target="_blank" class="button button-primary button-large" href="https://wordpress.org/support/plugin/hash-form/reviews/"><span class="dashicons dashicons-thumbs-up"></span><?php echo esc_html__('Yes, of course', 'hash-form') ?></a> &nbsp;
                 <a class="button button-large" href="<?php echo esc_url(wp_nonce_url(add_query_arg('hashform-hide-notice', 'review'), 'review', 'hashform_notice_nonce')); ?>"><span class="dashicons dashicons-yes"></span><?php echo esc_html__('I have already rated', 'hash-form') ?></a>
             </div>
         </div>
@@ -1076,6 +1099,7 @@ class HashFormBuilder {
 
             foreach ($string_array as $title => $strings) {
                 if (has_action('wpml_register_single_string')) {
+                    // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WPML's own hook, not one this plugin owns.
                     do_action('wpml_register_single_string', 'Hash Form', $form_title . ' - ' . $title, $strings);
                 }
             }
@@ -1138,6 +1162,7 @@ class HashFormBuilder {
 
                 foreach ($string_array as $title => $strings) {
                     if (has_action('wpml_register_single_string')) {
+                        // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WPML's own hook, not one this plugin owns.
                         do_action('wpml_register_single_string', 'Hash Form', $form_title . ' - ' . $field->id . ' - ' . $title, $strings);
                     }
                 }
@@ -1146,6 +1171,7 @@ class HashFormBuilder {
     }
 
     public function translate_string($original_value, $domain, $name = '') {
+        // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WPML's own hook, not one this plugin owns.
         $wpml_translation = apply_filters('wpml_translate_single_string', $original_value, $domain, $name);
         if ($wpml_translation === $original_value && function_exists('pll__')) {
             return pll__($original_value);

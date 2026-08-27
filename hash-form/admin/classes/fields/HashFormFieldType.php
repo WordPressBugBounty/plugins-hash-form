@@ -60,8 +60,26 @@ abstract class HashFormFieldType {
         ?>
 
         <div class="hf-field-container" style="<?php echo esc_attr($this->container_inner_style()); ?>">
-            <?php if ($display['label'] && !empty(trim($field['name'])) && (!($field['type'] == 'captcha' && $settings['re_type'] === 'v3'))) { ?>
-                <label class="hf-field-label <?php echo (!$field['name'] || ((isset($field['hide_label']) && $field['hide_label']))) ? 'hf-hidden' : ''; ?>">
+            <?php
+            $show_label = $display['label'] && !empty(trim($field['name'])) && (!($field['type'] == 'captcha' && $settings['re_type'] === 'v3'));
+            $is_group = $this->is_group_field();
+            $has_description = isset($display['description']) && $display['description'] && !empty(trim($field['description']));
+
+            if ($show_label) {
+                /*
+                 * The label carries an id and, for a field that owns a single
+                 * control, a matching for. Until now it had neither, so no
+                 * label on the form was actually tied to the input beside it:
+                 * a screen reader announced an unnamed edit box, and clicking
+                 * a label did not focus its field. Fields that render a set of
+                 * controls rather than one - radios, checkboxes, a name split
+                 * into parts - cannot use for at all, and name the group
+                 * below instead.
+                 */
+                ?>
+                <label class="hf-field-label <?php echo (!$field['name'] || ((isset($field['hide_label']) && $field['hide_label']))) ? 'hf-hidden' : ''; ?>"
+                       id="<?php echo esc_attr($this->label_id()); ?>"
+                       <?php if (!$is_group) { ?>for="<?php echo esc_attr($this->html_id()); ?>"<?php } ?>>
                     <?php
                     echo esc_html(apply_filters('hashform_translate_string', $field['name'], 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Label'));
                     ?>
@@ -69,16 +87,22 @@ abstract class HashFormFieldType {
                         <span class="hf-field-required" aria-hidden="true">
                             <?php echo isset($field['required_indicator']) ? esc_html($field['required_indicator']) : '*'; ?>
                         </span>
+                        <span class="hf-screen-reader-text"><?php esc_html_e('(required)', 'hash-form'); ?></span>
                     <?php } ?>
                 </label>
             <?php } ?>
-            <div class="hf-field-content">
+            <div class="hf-field-content"<?php
+            if ($is_group && $show_label) {
+                // A group takes its name from the label instead of a for.
+                echo ' role="group" aria-labelledby="' . esc_attr($this->label_id()) . '"';
+            }
+            ?>>
                 <?php
                 $this->input_html();
 
-                if (isset($display['description']) && $display['description'] && !empty(trim($field['description']))) {
+                if ($has_description) {
                     ?>
-                    <div class="hf-field-desc">
+                    <div class="hf-field-desc" id="<?php echo esc_attr($this->description_id()); ?>">
                         <?php
                         echo esc_html(apply_filters('hashform_translate_string', $field['description'], 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Description'));
                         ?>
@@ -220,7 +244,7 @@ abstract class HashFormFieldType {
             <?php
             if (isset($display['description']) && $display['description']) {
                 ?>
-                <div class="hf-field-desc" id="hf-field-desc-<?php echo esc_attr($id); ?>">
+                <div class="hf-field-desc" id="<?php echo esc_attr($this->description_id()); ?>">
                     <?php
                     echo esc_html($field['description']);
                     ?>
@@ -239,6 +263,61 @@ abstract class HashFormFieldType {
 
     protected function html_id($plus = '') {
         return 'hf-field-' . $this->get_field_column('field_key') . $plus;
+    }
+
+    /** Id of this field's visible label, for aria-labelledby. */
+    protected function label_id() {
+        return 'hf-label-' . $this->get_field_column('field_key');
+    }
+
+    /** Id of this field's help text, for aria-describedby. */
+    protected function description_id() {
+        return 'hf-desc-' . $this->get_field_column('field_key');
+    }
+
+    /**
+     * Does this field render a set of controls rather than a single one?
+     *
+     * A group cannot be named with a label's for, because there is no one
+     * control for it to point at. Those fields are wrapped in a named group
+     * instead, so the question is announced once and each choice keeps its
+     * own label.
+     *
+     * @return bool
+     */
+    protected function is_group_field() {
+        $groups = array(
+            'radio',
+            'checkbox',
+            'image_select',
+            'star',
+            'name',
+            'address',
+            'captcha',
+            'h_captcha',
+            'turnstile',
+            'checkbox_grid',
+            'matrix_input',
+            'like_dislike',
+            'sortable',
+            'yesno',
+            'chained_select',
+            'signature',
+            'product',
+            'payment',
+            'repeater_field',
+            'date_time',
+        );
+
+        /**
+         * Field types whose label names a group of controls.
+         *
+         * An add-on adding a multi-control field should register it here so
+         * it is announced the same way.
+         */
+        $groups = apply_filters('hashform_group_field_types', $groups);
+
+        return in_array($this->get_field_column('type'), $groups, true);
     }
 
     public function display_field_settings() {
@@ -290,6 +369,17 @@ abstract class HashFormFieldType {
 
         if (isset($display['id']) && $display['id']) {
             $default_attrs['id'] = $this->html_id();
+        }
+
+        /*
+         * Tie the field's help text to the control, so a screen reader reads
+         * the guidance with the field instead of leaving it stranded after
+         * it. Only set when there is something to point at.
+         */
+        $description = $this->get_field_column('description');
+
+        if (isset($display['description']) && $display['description'] && '' !== trim((string) $description)) {
+            $default_attrs['aria-describedby'] = $this->description_id();
         }
 
         if (isset($display['value']) && $display['value']) {

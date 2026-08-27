@@ -50,7 +50,8 @@ class HashFormCreateTable {
         }
 
         global $wpdb;
-        $wpdb->query("UPDATE {$this->entries} SET is_read = 1 WHERE is_read = 0"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $this->entries is $wpdb->prefix concatenated with a table name literal in this class; the query carries no values at all.
+        $wpdb->query("UPDATE {$this->entries} SET is_read = 1 WHERE is_read = 0");
 
         update_option('hashform_entries_read_migrated', 1);
     }
@@ -125,7 +126,8 @@ class HashFormCreateTable {
                 dbDelta($q . $charset_collate . ';');
             } else {
                 global $wpdb;
-                $wpdb->query($q . $charset_collate); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.SchemaChange -- $q is one of the CREATE TABLE literals defined immediately above and $charset_collate comes from $wpdb; neither can carry input. Only reached where dbDelta() is unavailable.
+                $wpdb->query($q . $charset_collate);
             }
             unset($q);
         }

@@ -151,9 +151,40 @@ class HashFormFieldUpload extends HashFormFieldType {
         ));
 
         if (apply_filters('hashform_store_local', true)) {
+            /*
+             * The extension is checked again here. What reaches this point is
+             * the name the browser was told to post back, and the temp
+             * directory is a staging area rather than a trusted one, so a file
+             * that got in under a different set of rules does not become
+             * permanent on the strength of having been uploaded once.
+             *
+             * Falls back to the shared list when the field carries no explicit
+             * setting, so a field saved before that option existed is still
+             * held to something rather than to nothing.
+             */
+            $field_extensions = hashform_sanitize_allowed_file_extensions((string) HashFormFields::get_option($field, 'extensions'));
+            $allowed_extensions = array_filter(array_map('trim', explode(',', $field_extensions)));
+
+            if (!$allowed_extensions) {
+                $allowed_extensions = hashform_allowed_file_extensions();
+            }
+
             foreach ($files_arr as $file) {
                 $file_info = pathinfo($file);
-                $file_name = $file_info['basename'];
+
+                // pathinfo() drops any directory part; sanitize_file_name() is
+                // idempotent against the name handleUpload() already stored.
+                $file_name = isset($file_info['basename']) ? sanitize_file_name(wp_basename($file_info['basename'])) : '';
+                $extension = isset($file_info['extension']) ? strtolower($file_info['extension']) : '';
+
+                if ('' === $file_name || '' === $extension) {
+                    continue;
+                }
+
+                if (!in_array($extension, $allowed_extensions, true)) {
+                    continue;
+                }
+
                 $upload_dir = wp_upload_dir();
 
                 $file_path = $upload_dir['basedir'] . HASHFORM_UPLOAD_DIR;
@@ -161,6 +192,10 @@ class HashFormFieldUpload extends HashFormFieldType {
                 $temp_file_path = $file_path . '/temp/' . $file_name;
                 $to_path = $file_path . '/' . $file_name;
                 $to_url = $file_url . '/' . $file_name;
+
+                if (!file_exists($temp_file_path)) {
+                    continue;
+                }
 
                 if (copy($temp_file_path, $to_path)) {
                     $new_files[] = $to_url;

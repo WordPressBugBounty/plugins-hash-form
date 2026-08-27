@@ -1,5 +1,11 @@
 <?php
 defined('ABSPATH') || die();
+/*
+ * A template, included from inside a class method - never loaded on its own.
+ * The variables below are locals of the method that includes it, not globals,
+ * which is what the prefix sniff assumes about a file-scope assignment.
+ */
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
 
 // Settings saved before this section existed have none of these keys.
 $settings = array_merge(HashFormHelper::get_form_settings_default(), (array) $settings);

@@ -262,6 +262,10 @@
     outline: 0;
 }
 
+.hf-container select{
+    padding-right: 40px !important;
+}
+
 .hf-form-custom-style .hf-container input[type="text"],
 .hf-form-custom-style .hf-container input[type="email"],
 .hf-form-custom-style .hf-container input[type="url"],
@@ -1696,6 +1700,7 @@ select.ui-timepicker-select.ui-timepicker-select {
     top: 0;
     transition: background-color var(--hf-pick-transition);
     width: var(--hf-pick-tap);
+    text-decoration: none;
 }
 
 #ui-datepicker-div .ui-datepicker-prev {
@@ -2707,4 +2712,39 @@ body > .hf-form-tempate {
     border-radius: 4px;
     color: #50575e;
     padding: 16px 20px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Accessibility helpers
+ * ------------------------------------------------------------------------ */
+
+/*
+ * Visible to assistive technology, not on screen. Used for the "(required)"
+ * that sits beside the asterisk, which is aria-hidden because a lone "*"
+ * reads as nothing useful.
+ *
+ * Deliberately not display:none or visibility:hidden - both remove the text
+ * from the accessibility tree, which is the opposite of what is wanted.
+ */
+.hf-container .hf-screen-reader-text {
+    border: 0;
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+/* Keyboard focus must never be invisible. */
+.hf-container .hf-screen-reader-text:focus {
+    clip-path: none;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    position: static;
+    white-space: normal;
+    width: auto;
 }

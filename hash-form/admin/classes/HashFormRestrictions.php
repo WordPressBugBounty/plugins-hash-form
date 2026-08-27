@@ -30,7 +30,7 @@ class HashFormRestrictions {
         // Someone who can edit forms is allowed through, otherwise a scheduled
         // form could not be tested before it opens. Filterable for sites that
         // would rather see exactly what visitors see.
-        if (apply_filters('hashform_restrictions_bypass', current_user_can('manage_options'), $form)) {
+        if (apply_filters('hashform_restrictions_bypass', HashFormCapabilities::user_can('hashform_edit_forms'), $form)) {
             return $allowed;
         }
 

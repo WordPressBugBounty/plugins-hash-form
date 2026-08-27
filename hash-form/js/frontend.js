@@ -105,18 +105,120 @@ jQuery(function ($) {
             : hashform_vars.generic_error;
     }
 
+    /**
+     * Tie an error message to the control it belongs to.
+     *
+     * The message used to be appended as raw html with no relationship to the
+     * input at all, so a screen reader never announced it: the field stayed
+     * "valid" as far as assistive technology was concerned and the only sign
+     * anything had gone wrong was a red line someone had to see. The message
+     * now gets an id, the control points at it and is marked invalid, and the
+     * message is announced when it appears.
+     */
+    function attachError(container, key, message) {
+        const errorId = 'hf-error-' + key;
+        const msg = $('<span/>', {
+            'class': 'hf-error-msg',
+            id: errorId,
+            role: 'alert'
+        }).text(message);
+
+        container.addClass('hashform-error-container').append(msg);
+
+        // Every control the field owns - a composite field has several.
+        const inputs = container.find('input, select, textarea')
+            .not('[type="hidden"], [type="submit"], [type="button"]');
+
+        inputs.attr('aria-invalid', 'true');
+
+        // Keep any describedby the field already had; the help text is still
+        // relevant when the answer is wrong.
+        inputs.each(function () {
+            const input = $(this);
+            const described = (input.attr('aria-describedby') || '').split(/\s+/).filter(Boolean);
+
+            if (described.indexOf(errorId) === -1) {
+                described.push(errorId);
+                input.attr('aria-describedby', described.join(' '));
+            }
+        });
+
+        return inputs.first();
+    }
+
     function showValidationErrors(errors) {
+        let firstInput = $();
+
         $.each(errors, function (key, message) {
-            $('#hf-field-container-' + key.replace('field', ''))
-                .addClass('hashform-error-container')
-                .append('<span class="hf-error-msg">' + message + '</span>');
+            const container = $('#hf-field-container-' + key.replace('field', ''));
+
+            if (!container.length) {
+                return;
+            }
+
+            const input = attachError(container, key, message);
+
+            if (!firstInput.length) {
+                firstInput = input;
+            }
         });
 
         resetRecaptcha();
 
+        const target = firstErrorField(errors);
+
+        if (!target || !target.length) {
+            return;
+        }
+
         $('html, body').animate({
-            scrollTop: firstErrorField(errors).offset().top - 300
-        }, 300);
+            scrollTop: target.offset().top - 300
+        }, 300, function () {
+            // Put the caret where the problem is, so a keyboard user is not
+            // dropped back at the top of the form to hunt for it.
+            if (firstInput.length && firstInput.is(':visible')) {
+                firstInput.trigger('focus');
+            }
+        });
+    }
+
+    /**
+     * Clear the previous attempt's error state, markers included.
+     */
+    function clearErrors(form) {
+        const scope = form && form.length ? form : $(document);
+
+        scope.find('.hf-error-msg, .hf-success-msg, .hf-failed-msg').remove();
+        scope.find('.hashform-error-container').removeClass('hashform-error-container');
+        scope.find('[aria-invalid]').removeAttr('aria-invalid');
+
+        // Drop only the ids this script added, leaving the field's own help
+        // text still linked.
+        scope.find('[aria-describedby]').each(function () {
+            const input = $(this);
+            const kept = (input.attr('aria-describedby') || '')
+                .split(/\s+/)
+                .filter(function (id) {
+                    return id && id.indexOf('hf-error-') !== 0;
+                });
+
+            if (kept.length) {
+                input.attr('aria-describedby', kept.join(' '));
+            } else {
+                input.removeAttr('aria-describedby');
+            }
+        });
+    }
+
+    /**
+     * A whole-form notice, announced rather than merely drawn.
+     */
+    function appendNotice(form, cls, message, assertive) {
+        $('<span/>', {
+            'class': cls,
+            role: assertive ? 'alert' : 'status',
+            'aria-live': assertive ? 'assertive' : 'polite'
+        }).text(message).appendTo(form);
     }
 
     function resetForm(form) {
@@ -168,8 +270,7 @@ jQuery(function ($) {
         }
         submitButton.addClass('hf-button-loading');
 
-        $('.hf-error-msg, .hf-success-msg, .hf-failed-msg').remove();
-        $(document).find('.hashform-error-container').removeClass('hashform-error-container');
+        clearErrors(form);
 
         /*
          * Wait for the token itself rather than for a second on the clock.
@@ -205,14 +306,34 @@ jQuery(function ($) {
                 success: function (response) {
                     submitButton.removeClass('hf-button-loading');
 
+                    if (!response || typeof response !== 'object') {
+                        resetRecaptcha();
+                        form.trigger('hashform:failed');
+                        appendNotice(form, 'hf-failed-msg', failureText(''), true);
+                        return;
+                    }
+
+                    /*
+                     * Announce the outcome on the form itself. An add-on -
+                     * the payment script is the one that needs this - can
+                     * then follow a submission it does not own, instead of
+                     * having to wrap or replace this handler.
+                     */
+                    form.trigger('hashform:' + response.status, [response]);
+
                     if (response.status === 'redirect') {
                         window.location.replace(response.message);
                     } else if (response.status === 'success') {
                         resetForm(form);
-                        form.append('<span class="hf-success-msg">' + response.message + '</span>');
+
+                        // An empty confirmation means the server already said
+                        // its piece; do not draw an empty box for it.
+                        if (typeof response.message === 'string' && response.message.trim()) {
+                            appendNotice(form, 'hf-success-msg', response.message, false);
+                        }
                     } else if (response.status === 'failed') {
                         resetRecaptcha();
-                        form.append('<span class="hf-failed-msg">' + failureText(response.message) + '</span>');
+                        appendNotice(form, 'hf-failed-msg', failureText(response.message), true);
                     } else if (response.message && typeof response.message === 'object') {
                         /*
                          * A captcha that was not passed comes back as a field
@@ -230,8 +351,20 @@ jQuery(function ($) {
                         // left the visitor looking at a form that appeared to do
                         // nothing at all.
                         resetRecaptcha();
-                        form.append('<span class="hf-failed-msg">' + failureText(response.message) + '</span>');
+                        appendNotice(form, 'hf-failed-msg', failureText(response.message), true);
                     }
+                },
+                /*
+                 * There was no error handler at all, so a request that never
+                 * came back - a 500, a dropped connection, a security plugin
+                 * eating the post - left the button spinning for good with no
+                 * explanation and no way to try again.
+                 */
+                error: function () {
+                    submitButton.removeClass('hf-button-loading');
+                    resetRecaptcha();
+                    form.trigger('hashform:failed');
+                    appendNotice(form, 'hf-failed-msg', failureText(''), true);
                 }
             });
         });

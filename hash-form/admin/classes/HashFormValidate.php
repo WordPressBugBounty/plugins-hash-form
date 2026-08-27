@@ -209,7 +209,7 @@ class HashFormValidate {
             $errors['field' . $field_id] = HashFormFields::get_error_msg($field, 'blank');
         }
 
-        self::validate_field_types($errors, $field, $value, $values);
+        self::validate_field_types($errors, $field, $value, $values, $is_field_visible);
     }
 
     /**
@@ -236,7 +236,7 @@ class HashFormValidate {
         return '' === trim((string) $value);
     }
 
-    public static function validate_field_types(&$errors, $field, $value, $values = array()) {
+    public static function validate_field_types(&$errors, $field, $value, $values = array(), $is_field_visible = true) {
         $field_obj = HashFormFields::get_field_object($field);
         $args['errors'] = $errors;
         $args['value'] = $value;
@@ -258,6 +258,14 @@ class HashFormValidate {
          * its own and can only be found here.
          */
         $args['values'] = $values;
+
+        /*
+         * Whether a conditional rule is showing this field. The required check
+         * above has always honoured it; a field class asking its own version of
+         * that question had no way to, so anything it insisted on would be
+         * insisted on for a field the visitor could not see.
+         */
+        $args['is_visible'] = $is_field_visible;
 
         $new_errors = $field_obj->validate($args);
 

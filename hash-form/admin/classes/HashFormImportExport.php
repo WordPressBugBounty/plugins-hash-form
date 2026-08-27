@@ -24,7 +24,7 @@ class HashFormImportExport {
      * is JSON so the panel can stay on screen when a file is rejected.
      */
     public function ajax_import_form_settings() {
-        if (!current_user_can('manage_options')) {
+        if (!HashFormCapabilities::user_can('hashform_edit_forms')) {
             wp_send_json_error(array('message' => esc_html__('You are not allowed to import forms.', 'hash-form')), 403);
         }
 
@@ -51,7 +51,13 @@ class HashFormImportExport {
     }
 
     public function process_settings_export() {
-        if (!current_user_can('manage_options')) {
+        /*
+         * These four run on admin_init, so they see every admin page load and
+         * must fall through quietly when the request is not theirs. Dying here
+         * would take out the whole of wp-admin for anyone without the
+         * capability.
+         */
+        if (!HashFormCapabilities::user_can('hashform_edit_forms')) {
             return;
         }
 
@@ -117,7 +123,13 @@ class HashFormImportExport {
     }
 
     public function process_style_export() {
-        if (!current_user_can('manage_options')) {
+        /*
+         * These four run on admin_init, so they see every admin page load and
+         * must fall through quietly when the request is not theirs. Dying here
+         * would take out the whole of wp-admin for anyone without the
+         * capability.
+         */
+        if (!HashFormCapabilities::user_can('hashform_edit_forms')) {
             return;
         }
 
@@ -159,6 +171,7 @@ class HashFormImportExport {
      * @param string $file_key Key within $_FILES.
      * @return array|WP_Error
      */
+    // phpcs:disable WordPress.Security.NonceVerification.Missing -- every call site verifies its own nonce immediately before calling this; see import_form(), import_form_submit() and the Pro plugin's run_file_import().
     public static function read_uploaded_export($file_key) {
         $upload_error = isset($_FILES[$file_key]['error']) ? (int) $_FILES[$file_key]['error'] : UPLOAD_ERR_NO_FILE;
 
@@ -185,6 +198,7 @@ class HashFormImportExport {
         if (empty($tmp) || !is_uploaded_file($tmp)) {
             return new WP_Error('hashform_no_file', esc_html__('Please upload a file to import', 'hash-form'));
         }
+        // phpcs:enable
 
         $contents = file_get_contents($tmp);
         $imdat = (false === $contents) ? null : json_decode($contents, true);
@@ -279,7 +293,13 @@ class HashFormImportExport {
      * Plain POST entry point for the per-form Import/Export panel.
      */
     public function process_settings_import() {
-        if (!current_user_can('manage_options')) {
+        /*
+         * These four run on admin_init, so they see every admin page load and
+         * must fall through quietly when the request is not theirs. Dying here
+         * would take out the whole of wp-admin for anyone without the
+         * capability.
+         */
+        if (!HashFormCapabilities::user_can('hashform_edit_forms')) {
             return;
         }
 
@@ -309,7 +329,13 @@ class HashFormImportExport {
     }
 
     public function process_style_import() {
-        if (!current_user_can('manage_options')) {
+        /*
+         * These four run on admin_init, so they see every admin page load and
+         * must fall through quietly when the request is not theirs. Dying here
+         * would take out the whole of wp-admin for anyone without the
+         * capability.
+         */
+        if (!HashFormCapabilities::user_can('hashform_edit_forms')) {
             return;
         }
 

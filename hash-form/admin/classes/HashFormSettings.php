@@ -18,9 +18,9 @@ class HashFormSettings {
         // (Pro's OAuth callbacks still run on admin_init and exit before the
         // page would render, so their registered redirect URIs keep working.)
         if (!defined('HASH_FORM_PRO_VERSION')) {
-            add_submenu_page('hashform', 'Hash Form | ' . esc_html__('Settings', 'hash-form'), esc_html__('Settings', 'hash-form'), 'manage_options', 'hashform-settings', array($this, 'route'));
+            add_submenu_page('hashform', 'Hash Form | ' . esc_html__('Settings', 'hash-form'), esc_html__('Settings', 'hash-form'), 'hashform_manage_settings', 'hashform-settings', array($this, 'route'));
         }
-        add_submenu_page('hashform', esc_html__('Documentation', 'hash-form'), esc_html__('Documentation', 'hash-form'), 'manage_options', esc_url_raw(self::DOCS_URL));
+        add_submenu_page('hashform', esc_html__('Documentation', 'hash-form'), esc_html__('Documentation', 'hash-form'), 'hashform_view_forms', esc_url_raw(self::DOCS_URL));
     }
 
     /**
@@ -260,8 +260,7 @@ class HashFormSettings {
     }
 
     public function send_test_email() {
-        if (!current_user_can('manage_options'))
-            return;
+        HashFormCapabilities::require_cap_ajax('hashform_manage_settings');
 
         check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
 

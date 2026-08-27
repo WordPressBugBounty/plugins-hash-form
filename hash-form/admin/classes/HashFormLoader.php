@@ -5,18 +5,11 @@ defined('ABSPATH') || die();
 class HashFormLoader {
 
     public function __construct() {
-        add_action('init', array($this, 'load_plugin_textdomain'));
         add_filter('admin_body_class', array($this, 'add_admin_class'), 999);
         add_action('admin_enqueue_scripts', array($this, 'admin_init'), 11);
         add_action('wp_enqueue_scripts', array($this, 'enqueue_styles'), 11);
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('elementor/editor/after_enqueue_styles', array($this, 'elementor_editor_styles'));
-    }
-
-    public function load_plugin_textdomain() {
-        // The path is relative to the plugins directory; this file lives in
-        // admin/classes/, so it must be derived from the main plugin file.
-        load_plugin_textdomain('hash-form', false, dirname(plugin_basename(HASHFORM_FILE)) . '/languages');
     }
 
     public static function add_admin_class($classes) {
@@ -164,7 +157,6 @@ class HashFormLoader {
         wp_localize_script('hashform-file-uploader', 'hashform_file_vars', array(
             'remove_txt' => esc_html__('Remove', 'hash-form')
         ));
-        wp_register_script('moment', HASHFORM_URL . 'js/moment.js', array(), HASHFORM_VERSION, true);
         wp_register_script('frontend', HASHFORM_URL . 'js/frontend.js', array('jquery', 'jquery-ui-datepicker', 'jquery-timepicker', 'hashform-file-uploader'), HASHFORM_VERSION, true);
         wp_localize_script('frontend', 'hashform_vars', array(
             'ajaxurl' => admin_url('admin-ajax.php'),
@@ -186,6 +178,10 @@ class HashFormLoader {
         wp_enqueue_script('jquery-ui-slider');
         wp_enqueue_script('jquery-timepicker');
         wp_enqueue_script('hashform-file-uploader');
+        // Core's own copy, registered by WordPress since 4.6. The plugin used
+        // to ship an identical build of the same version, which WordPress
+        // ignored anyway: wp_register_script() will not take a handle that is
+        // already registered.
         wp_enqueue_script('moment');
         wp_enqueue_script('frontend');
     }

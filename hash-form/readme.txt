@@ -2,8 +2,8 @@
 Contributors: hashthemes
 Tags: form, form builder, drag and drop, contact form
 Requires at least: 6.3
-Tested up to: 7.0
-Stable tag: 1.4.2
+Tested up to: 7.1
+Stable tag: 1.4.3
 Requires PHP: 7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -120,11 +120,18 @@ The easy way to install the plugin is via WordPress.org plugin directory.
 11. Global Email Settings Page
 
 == Changelog ==
-= 1.4.2 - 20 Aug, 2026 =
+= 1.4.3 - 27 Aug, 2026 =
+* Unauthenticated file upload: a request naming only unrecognised extensions cleared the guard and left the uploader with an empty allowlist, which it treated as no restriction, allowing a file outside the form's configured types to be stored and served from the uploads folder - Fixed (Security)
+* An empty upload allowlist is now treated as nothing permitted rather than everything permitted - Fixed (Security)
+* Uploaded files are now checked against the site's allowed types and their actual contents, not an extension blocklist - Fixed (Security)
+* A file's extension is re-checked against the field's allowlist before the temporary upload is made permanent - Fixed (Security)
+* The protective .htaccess is now written whenever it is missing, not only when the upload folder is first created - Fixed (Security)
 * PHP object injection: a crafted entry value was deserialized when an administrator opened the Entries list - Fixed (Security)
 * Form submissions are now rejected unless the per-form nonce verifies and the submitted form key matches the stored one - Fixed (Security)
 * Serialized strings are no longer accepted into an entry field's stored value - Fixed (Security)
 * Entry values passed to integrations are now decoded without instantiating objects - Fixed (Security)
+
+= 1.4.2 - 20 Aug, 2026 =
 * Settings screen redesigned to match the rest of the admin - shared header bar, and the navigation and panel rebuilt on the plugin's design tokens
 * Saving from any section other than Captcha returned to Captcha instead of the section in use - Fixed
 * Send Test Email showed no message at all when the address was invalid - Fixed
