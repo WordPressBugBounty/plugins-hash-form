@@ -16,6 +16,25 @@ Hash Form is a free drag and drop form builder for WordPress. Build a form, styl
 
 Use it for contact, feedback, survey, registration and quote forms. Drag fields onto a row and column canvas, set the styling, add conditional logic, and publish. The full field set, entry storage, styling and email tools are all in the free plugin, not held back for a paid tier.
 
+<h3>Forms You Can Build</h3>
+Hash Form is not tied to one type of form. The same canvas and field set cover a two field contact box and a long, multi section application.
+
+<ul>
+<li><strong>Contact and enquiry forms: </strong>name, email, phone and message, with the built in captcha keeping spam out.</li>
+<li><strong>Feedback and review forms: </strong>star ratings alongside open comments, so you collect a score and the reason behind it.</li>
+<li><strong>Surveys and questionnaires: </strong>radio, checkbox, dropdown, image choice and range slider questions, with conditional logic revealing follow up questions only when they apply.</li>
+<li><strong>Registration and sign up forms: </strong>events, memberships, courses, workshops or a simple newsletter opt in.</li>
+<li><strong>Quote and estimate requests: </strong>number, dropdown and slider fields that size a job properly before you reply to it.</li>
+<li><strong>Booking and appointment requests: </strong>date and time fields for reservations, consultations and callback slots.</li>
+<li><strong>Job applications: </strong>address and date fields with a file upload for a CV, cover letter or portfolio.</li>
+<li><strong>Support and helpdesk tickets: </strong>category dropdowns, priority options and screenshot uploads.</li>
+<li><strong>File submission forms: </strong>collect documents, images or artwork through an upload field limited to the types you allow.</li>
+<li><strong>Order and request forms: </strong>quantity spinners and product choices for made to order, wholesale or catering enquiries.</li>
+<li><strong>Polls and votes: </strong>single choice questions, including image based options.</li>
+</ul>
+
+Whatever the form, every submission is stored as an entry on your own site and can be emailed to whoever needs to see it.
+
 <h3>What You Get</h3>
 <ul>
 <li><strong>Free, and not limited: </strong>27 field types, unlimited forms and unlimited entries, with no upgrade wall on everyday features.</li>
@@ -121,6 +140,7 @@ The easy way to install the plugin is via WordPress.org plugin directory.
 
 == Changelog ==
 = 1.4.3 - 27 Aug, 2026 =
+* Readme now sets out the kinds of forms the plugin builds - Updated
 * Unauthenticated file upload: a request naming only unrecognised extensions cleared the guard and left the uploader with an empty allowlist, which it treated as no restriction, allowing a file outside the form's configured types to be stored and served from the uploads folder - Fixed (Security)
 * An empty upload allowlist is now treated as nothing permitted rather than everything permitted - Fixed (Security)
 * Uploaded files are now checked against the site's allowed types and their actual contents, not an extension blocklist - Fixed (Security)
