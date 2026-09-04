@@ -1619,6 +1619,11 @@ var hashFormBuilder = hashFormBuilder || {};
                         if (type === 'multi_step') {
                             hashFormBuilder.renumberMultiSteps();
                         }
+
+                        // A deleted field must stop being offered as something
+                        // to match, and anything that was matching it falls
+                        // back to None.
+                        hashFormAdmin.refreshMatchFieldOptions();
                     });
                 }
             });
@@ -1883,6 +1888,23 @@ var hashFormBuilder = hashFormBuilder || {};
 
         setupTinyMceEventHandlers: function (editor) {
             editor.on('Change', () => hashFormBuilder.handleTinyMceChange(editor));
+
+            /*
+             * The Text tab already updates the canvas as it is typed into: its
+             * textarea carries data-changeme and the builder listens for input.
+             * Change alone fires on blur and on undo levels, so the Visual tab
+             * lagged behind and the same field behaved differently depending on
+             * which tab you happened to be in. Settled rather than immediate, so
+             * a long paragraph is not re-rendered on every keystroke.
+             */
+            let typing;
+
+            editor.on('input', function () {
+                clearTimeout(typing);
+                typing = setTimeout(() => hashFormBuilder.handleTinyMceChange(editor), 200);
+            });
+
+            editor.on('remove', () => clearTimeout(typing));
         },
 
         handleTinyMceChange: function (editor) {

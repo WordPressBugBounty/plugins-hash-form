@@ -4,15 +4,49 @@
     $(function () {
         let alertTimer;
 
+        function notify(message, tone) {
+            const $alert = $('.hf-alert');
+
+            if (!$alert.length) {
+                return;
+            }
+
+            $alert
+                .removeClass('hf-alert-success hf-alert-warning hf-alert-neutral')
+                .addClass('hf-alert-active hf-alert-' + tone);
+            // text, not html: this is a message, never markup.
+            $alert.find('span').text(message);
+
+            clearTimeout(alertTimer);
+            alertTimer = setTimeout(function () {
+                $alert.removeClass('hf-alert-active hf-alert-success hf-alert-warning hf-alert-neutral');
+            }, 3500);
+        }
+
         // Style templates are saved over AJAX instead of the normal post save,
         // so the page (and the live preview) stays put.
         $('form#post').on('submit', function (e) {
             e.preventDefault();
 
-            const $formBtn = $(this).find('#publishing-action button');
-            $formBtn.addClass('hf-button-loader');
+            const $form = $(this);
+            const $button = $form.find('.hf-style-save');
 
-            const postId = $('#post_ID').val();
+            /*
+             * A second save while the first is in flight would create a second
+             * template, because a new one still carries an id of 0 until the
+             * answer comes back.
+             */
+            if ($button.prop('disabled')) {
+                return;
+            }
+
+            $button.prop('disabled', true).addClass('hf-button-loader');
+
+            /*
+             * The name field is printed in the header bar, which sits outside
+             * this form; it is tied here with the form attribute, and FormData
+             * collects form-associated controls wherever they are.
+             */
             const formData = new FormData(this);
             formData.append('action', 'hashform_save_style_template');
 
@@ -23,27 +57,28 @@
                 processData: false,
                 contentType: false,
                 success: function (response) {
-                    if (!response.success) {
-                        console.log('Failed to save.');
+                    if (!response || !response.success) {
+                        notify(hf_st_obj.save_failed, 'warning');
                         return;
                     }
 
-                    const $alert = $('.hf-alert');
-                    $alert.addClass('hf-alert-success hf-alert-active');
-                    $alert.find('span').html(response.data.message);
+                    // A template that did not exist before this save does, now,
+                    // and under an id this form has never seen. Reload onto it
+                    // rather than saving a second copy next time.
+                    if (response.data && response.data.redirect) {
+                        window.location.href = response.data.redirect;
+                        return;
+                    }
 
-                    clearTimeout(alertTimer);
-                    alertTimer = setTimeout(function () {
-                        $alert.removeClass('hf-alert-active hf-alert-success hf-alert-warning hf-alert-neutral');
-                    }, 3500);
-
-                    // A freshly created template starts on post-new.php; point
-                    // the URL at the edit screen so a reload doesn't create
-                    // another one.
-                    window.history.pushState(null, '', hf_st_obj.admin_url + '?post=' + postId + '&action=edit');
+                    notify(response.data && response.data.message ? response.data.message : hf_st_obj.saved, 'success');
+                },
+                error: function () {
+                    // Said out loud rather than logged: the request never
+                    // reached the server, and silence reads as a save.
+                    notify(hf_st_obj.save_failed, 'warning');
                 },
                 complete: function () {
-                    $formBtn.removeClass('hf-button-loader');
+                    $button.prop('disabled', false).removeClass('hf-button-loader');
                 }
             });
         });

@@ -442,12 +442,19 @@
 
 /* ---------- Payment field preview ---------- */
 
-/* Every enabled gateway is a radio, and with twenty of them switched on the
-   field ran the height of the canvas and pushed the rest of the form out of
-   view. Only the builder preview is columned — the live form is untouched. */
+/* Every enabled gateway is a method tile, and with twenty of them switched on
+   the field ran the height of the canvas and pushed the rest of the form out
+   of view. The tiles are what gets columned — putting the grid on the
+   container instead spread the summary card, the tiles and the secure note
+   into three columns of their own, which is not the field the visitor sees. */
 .hf-content .hf-editor-field-elements .hf-payment-container {
-        display: grid;
-    gap: 10px;
+    display: block;
+}
+
+.hf-content .hf-editor-field-elements .hf-payment-options {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .hf-content .hf-editor-field-elements .hf-payment-option {
@@ -1262,4 +1269,90 @@
         animation: none;
         box-shadow: 0 0 0 2px var(--hf-accent, #dd823b);
     }
+}
+
+/* ---------- Conditional logic hint ---------- */
+
+/* A field a rule shows, hides, or decides on.
+ *
+ * The rules are set up on the Settings tab, so the canvas gave no sign that a
+ * field is only shown to some visitors - or that a field is the one deciding.
+ *
+ * Built like .hf-header-status: the same sunken pill the rest of the screen
+ * uses for state, with a coloured dot carrying which kind of state it is. It is
+ * positioned rather than in the flow, because .hf-editor-field-container is a
+ * flex row and a child there would push the label and the input across.
+ */
+/* The chip gets a strip of its own at the foot of the field, rather than being
+   dropped on top of the input's bottom edge. Only fields that carry one pay
+   for it.
+   
+   Carries the #hf-editor-fields id because that is what sets the field's
+   padding in admin-style.css, and an id beats any number of classes however
+   late this sheet loads. */
+#hf-editor-fields .hf-editor-form-field:has(> .hf-editor-field-container > .hf-editor-condition-hint) {
+    padding-bottom: 28px;
+}
+
+.hf-content .hf-editor-condition-hint {
+    align-items: center;
+    background: var(--hf-surface-sunken);
+    border: 1px solid var(--hf-border);
+    border-radius: var(--hf-radius-pill);
+    bottom: 4px;
+    color: var(--hf-text-muted);
+    display: inline-flex;
+    font-size: var(--hf-font-xs);
+    gap: var(--hf-space-1);
+    line-height: 1;
+    /* Never wider than the field it belongs to, however long the rule reads. */
+    max-width: calc(100% - 20px);
+    padding: 3px 8px;
+    position: absolute;
+    right: 10px;
+    z-index: 2;
+}
+
+/* The rule is written out here, so it is the part that gives way when there is
+   not enough room. The whole of it stays in the tooltip. */
+.hf-content .hf-editor-condition-hint-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Kept out of the ellipsis, so "+2 more" is not the half that gets trimmed. */
+.hf-content .hf-editor-condition-hint-more {
+    flex: 0 0 auto;
+    opacity: .75;
+}
+
+.hf-content .hf-editor-condition-hint::before {
+    background: var(--hf-accent);
+    border-radius: 50%;
+    content: "";
+    flex: 0 0 auto;
+    height: 6px;
+    width: 6px;
+}
+
+/* The deciding end of a rule is the quieter of the two: that field is always
+   on screen, it just governs another. */
+.hf-content .hf-editor-condition-hint-trigger::before {
+    background: var(--hf-text-faint);
+}
+
+/* The icon is the fork used on the rules panel itself, so the two read as the
+   same feature. */
+.hf-content .hf-editor-condition-hint .mdi {
+    font-size: 13px;
+}
+
+/* The action buttons appear on hover across the top of the field, so the chip
+   sits at the bottom and the two never overlap. It lifts on hover to stay
+   legible against the highlighted field. */
+.hf-content .hf-editor-form-field:hover .hf-editor-condition-hint {
+    background: var(--hf-surface);
+    border-color: var(--hf-text-faint);
+    color: var(--hf-text);
 }

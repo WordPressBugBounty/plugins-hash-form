@@ -25,6 +25,7 @@
 
 #hf-wrap img {
     max-width: 100%;
+    height: auto;
 }
 
 .toplevel_page_hashform.is-fullscreen-mode .notice,
@@ -1199,7 +1200,7 @@ body.hf-dragging #hf-editor-wrap ul.hf-editor-sorting.hf-dropabble:not(:has(.hf-
 }
 
 .hf-editor-field-type-image .hf-image-preview-front {
-    width: var(--hf-width);
+    width: var(--hf-width, 100%);
 }
 
 /* Select */
@@ -4402,9 +4403,6 @@ form.hf-error {
     flex-direction: column;
     gap: 2px;
     max-width: 320px;
-}
-
-.hf-entry-preview-value {
 }
 
 .hf-entry-preview-value:first-child {

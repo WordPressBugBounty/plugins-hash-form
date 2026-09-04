@@ -1,0 +1,593 @@
+<?php
+defined('ABSPATH') || die();
+
+/**
+ * Adding WP List table class if it's not available.
+ */
+if (!class_exists(WP_List_Table::class)) {
+    require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
+}
+
+class HashFormEntryListing extends \WP_List_Table {
+
+    private $status;
+    private $form_names;
+    private $previews;
+    private $page_entry_ids = array();
+
+    public function __construct() {
+        parent::__construct(
+            array(
+                'singular' => 'Entry',
+                'plural' => 'Entries',
+                'ajax' => false,
+            )
+        );
+        $this->status = HashFormHelper::get_var('status', 'sanitize_text_field', 'published');
+    }
+
+    public function no_items() {
+        esc_html_e('No entries found.', 'hash-form');
+    }
+
+    public function column_default($item, $column_name) {
+        return isset($item[$column_name]) ? $item[$column_name] : '';
+    }
+
+    public function get_columns() {
+        $columns = array(
+            'cb' => '<input type="checkbox" />',
+            'is_starred' => '<span class="dashicons dashicons-star-filled" title="' . esc_attr__('Starred', 'hash-form') . '"></span>',
+            'name' => esc_html__('ID', 'hash-form'),
+            'form_id' => esc_html__('Form', 'hash-form'),
+            'preview' => esc_html__('Entry', 'hash-form'),
+            'user_id' => esc_html__('Created By', 'hash-form'),
+            'delivery_status' => esc_html__('Status', 'hash-form'),
+            'ip' => esc_html__('IP', 'hash-form'),
+            'created_at' => esc_html__('Created At', 'hash-form')
+        );
+
+        // Add-ons append their own columns, such as payment status.
+        return apply_filters('hashform_entries_columns', $columns);
+    }
+
+    /**
+     * Unread rows are bold, the way an inbox does it.
+     */
+    public function single_row($item) {
+        $classes = empty($item['is_read']) ? 'hf-entry-unread' : '';
+        echo '<tr class="' . esc_attr($classes) . '">';
+        $this->single_row_columns($item);
+        echo '</tr>';
+    }
+
+    private function get_column_star($item) {
+        $starred = !empty($item['is_starred']);
+
+        return sprintf(
+                '<button type="button" class="hf-entry-star %1$s" data-entry="%2$s" data-starred="%3$s" aria-pressed="%4$s" aria-label="%5$s"><span class="dashicons dashicons-%6$s"></span></button>',
+                $starred ? 'hf-starred' : '',
+                esc_attr($item['id']),
+                $starred ? 1 : 0,
+                $starred ? 'true' : 'false',
+                esc_attr__('Star this entry', 'hash-form'),
+                $starred ? 'star-filled' : 'star-empty'
+        );
+    }
+
+    /**
+     * A couple of values from the entry itself, so the list can be read
+     * without opening every row.
+     */
+    private function get_column_preview($entry_id) {
+        if (null === $this->previews) {
+            $this->previews = $this->load_previews();
+        }
+
+        if (empty($this->previews[$entry_id])) {
+            return '<span class="hf-entry-preview-empty">&mdash;</span>';
+        }
+
+        $parts = array();
+
+        foreach ($this->previews[$entry_id] as $value) {
+            $parts[] = '<span class="hf-entry-preview-value">' . esc_html($value) . '</span>';
+        }
+
+        return '<div class="hf-entry-preview">' . implode('', $parts) . '</div>';
+    }
+
+    /**
+     * Loads the first couple of stored values for every entry on this page in
+     * one query, rather than one query per row.
+     */
+    private function load_previews() {
+        global $wpdb;
+
+        if (empty($this->page_entry_ids)) {
+            return array();
+        }
+
+        $ids = implode(',', array_map('absint', $this->page_entry_ids));
+
+        // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $q['join'] and $q['where'] are built in build_query() from literals and placeholders only; the values they refer to are bound through $q['params']. order_clause() returns a whitelisted column. Interpolated entry ids are run through absint() first.
+        $rows = $wpdb->get_results(
+                "SELECT m.item_id, m.meta_value, f.type
+            FROM {$wpdb->prefix}hashform_entry_meta AS m
+            LEFT JOIN {$wpdb->prefix}hashform_fields AS f ON f.id = m.field_id
+            WHERE m.item_id IN ({$ids})
+            ORDER BY m.id ASC", ARRAY_A);
+        // phpcs:enable
+
+        // Layout only fields hold no answer, so they make a poor preview.
+        $skip = array('heading', 'paragraph', 'separator', 'spacer', 'image', 'html', 'captcha', 'hidden', 'user_id');
+        $previews = array();
+
+        foreach ($rows as $row) {
+            $item_id = $row['item_id'];
+
+            if (isset($previews[$item_id]) && count($previews[$item_id]) >= 2) {
+                continue;
+            }
+
+            if (in_array($row['type'], $skip, true)) {
+                continue;
+            }
+
+            /*
+             * unserialize_or_decode, not maybe_unserialize: meta_value is
+             * visitor-supplied, and maybe_unserialize() would instantiate any
+             * class named in a crafted 'O:'/'C:' payload the moment an admin
+             * opened this list. This path only ever wants an array or a string
+             * for the preview, so object serialization is decoded with native
+             * unserialize disabled (see entry-detail.php and HashFormEmail.php,
+             * which already read this column the same way).
+             */
+            $value = HashFormHelper::unserialize_or_decode($row['meta_value']);
+
+            if (is_array($value)) {
+                $value = implode(', ', array_filter(array_map('strval', $value)));
+            }
+
+            $value = trim(wp_strip_all_tags((string) $value));
+
+            if ('' === $value) {
+                continue;
+            }
+
+            $previews[$item_id][] = wp_html_excerpt($value, 45, '...');
+        }
+
+        return $previews;
+    }
+
+    public function column_cb($item) {
+        return sprintf(
+            '<input type="checkbox" name="%1$s_id[]" value="%2$s" />', esc_attr($this->_args['singular']), esc_attr($item['id'])
+        );
+    }
+
+    public function prepare_items() {
+        $hashform_columns = $this->get_columns();
+        $hashform_sortable = $this->get_sortable_columns();
+        $hashform_hidden = (is_array(get_user_meta(get_current_user_id(), 'managetoplevel_page_hashform-entriescolumnshidden', true))) ? get_user_meta(get_current_user_id(), 'managetoplevel_page_hashform-entriescolumnshidden', true) : array();
+        $hashform_primary = 'id';
+        $this->_column_headers = array($hashform_columns, $hashform_hidden, $hashform_sortable, $hashform_primary);
+
+        $per_page = $this->get_items_per_page('entries_per_page', 10);
+        $current_page = max(1, $this->get_pagenum());
+
+        /*
+         * Counted and fetched separately, so only the rows being shown are
+         * ever loaded. This used to select every entry on the site, sort the
+         * lot in php and throw all but ten of them away, which meant the
+         * screen's cost grew with the number of submissions rather than with
+         * the size of a page.
+         */
+        $total_items = $this->count_rows();
+        $page_rows = $total_items ? $this->get_table_data($per_page, ($current_page - 1) * $per_page) : array();
+
+        $this->set_pagination_args(array(
+            'total_items' => $total_items,
+            'per_page' => $per_page,
+            'total_pages' => (int) ceil($total_items / max(1, $per_page)),
+        ));
+
+        // Collected first so the previews for the whole page load in one
+        // query instead of one per row.
+        $this->page_entry_ids = wp_list_pluck($page_rows, 'id');
+
+        $data = array();
+
+        foreach ($page_rows as $item) {
+            $id = $item['id'];
+            $data[$id] = array(
+                'id' => $item['id'],
+                'is_read' => isset($item['is_read']) ? $item['is_read'] : 1,
+                'is_starred' => $this->get_column_star($item),
+                'name' => $this->get_column_id($item),
+                'form_id' => $this->get_form_link($item['form_id']),
+                'preview' => $this->get_column_preview($item['id']),
+                'user_id' => $this->get_user_link($item['user_id']),
+                'delivery_status' => $item['delivery_status'] ? esc_html__('Success', 'hash-form') : esc_html__('Failed', 'hash-form'),
+                'created_at' => HashFormHelper::convert_date_format($item['created_at']),
+                'ip' => $item['ip']
+            );
+
+            $data[$id] = apply_filters('hashform_entries_column_values', $data[$id], $item);
+        }
+
+        $this->items = $data;
+    }
+
+    public function get_column_id($item) {
+        $entry_id = $item['id'];
+
+        $edit_url = admin_url('admin.php?page=hashform-entries&hashform_action=view&id=' . $entry_id);
+
+        $output = '<strong>';
+        if ('trash' == $this->status) {
+            $output .= esc_html($entry_id);
+        } else {
+            /* translators: 1: entry id */
+            $output .= '<a class="row-title" href="' . esc_url($edit_url) . '" aria-label="' . sprintf(esc_html__('%s (Edit)', 'hash-form'), $entry_id) . '">' . esc_html($entry_id) . '</a>';
+        }
+        $output .= '</strong>';
+
+        // Get actions.
+        $actions = $this->get_action_links($item);
+        $row_actions = array();
+
+        foreach ($actions as $id => $action) {
+            $row_actions[] = '<span class="' . esc_attr($id) . '"><a href="' . $action['url'] . '">' . $action['label'] . '</a></span>';
+        }
+
+
+        $output .= '<div class="row-actions">' . implode(' | ', $row_actions) . '</div>';
+
+        return $output;
+    }
+
+
+    /**
+     * The FROM/WHERE half of the listing query, shared by the count and the
+     * page so the two can never disagree about what is being listed.
+     *
+     * @return array {
+     *     @type string $join
+     *     @type string $where
+     *     @type array  $params
+     * }
+     */
+    private function build_query() {
+        global $wpdb;
+
+        // "unread" and "starred" are filters over published entries rather
+        // than real statuses of their own.
+        $where = array('e.status = %s');
+        $params = array(in_array($this->status, array('unread', 'starred'), true) ? 'published' : $this->status);
+        $join = '';
+
+        if ('unread' === $this->status) {
+            $where[] = 'e.is_read = 0';
+        } else if ('starred' === $this->status) {
+            $where[] = 'e.is_starred = 1';
+        }
+
+        // The form filter and the search box used to be mutually exclusive,
+        // so picking a form and then searching silently ignored the form.
+        $form_id = HashFormHelper::get_var('form_id', 'absint');
+
+        if ($form_id) {
+            $where[] = 'e.form_id = %d';
+            $params[] = $form_id;
+        }
+
+        $search = trim(htmlspecialchars_decode(HashFormHelper::get_var('s')));
+
+        if ('' !== $search) {
+            $like = '%' . $wpdb->esc_like($search) . '%';
+
+            // What was submitted lives in the meta table, which is what people
+            // expect a search to look through.
+            $join = "LEFT JOIN {$wpdb->prefix}hashform_entry_meta AS m ON m.item_id = e.id
+                LEFT JOIN {$wpdb->prefix}hashform_forms AS f ON f.id = e.form_id
+                LEFT JOIN {$wpdb->users} AS u ON u.ID = e.user_id";
+
+            $search_where = array(
+                'm.meta_value LIKE %s',
+                'f.name LIKE %s',
+                'e.ip LIKE %s',
+                'u.display_name LIKE %s',
+                'u.user_email LIKE %s',
+            );
+
+            array_push($params, $like, $like, $like, $like, $like);
+
+            // A bare number is most likely an entry id.
+            if (is_numeric($search)) {
+                $search_where[] = 'e.id = %d';
+                $params[] = absint($search);
+            }
+
+            $where[] = '(' . implode(' OR ', $search_where) . ')';
+        }
+
+        return array(
+            'join' => $join,
+            'where' => implode(' AND ', $where),
+            'params' => $params,
+        );
+    }
+
+    /**
+     * The ORDER BY clause, from a whitelist.
+     *
+     * A tie-break on id is always appended. Without one, two entries sharing
+     * a created_at can swap places between one page and the next, which with
+     * LIMIT/OFFSET means a row shown twice and another never shown at all.
+     *
+     * @return string
+     */
+    private function order_clause() {
+        // The columns a caller may sort by, mapped to what they are in sql.
+        $sortable = array(
+            'id' => 'e.id',
+            'form_id' => 'e.form_id',
+            'user_id' => 'e.user_id',
+            'delivery_status' => 'e.delivery_status',
+            'status' => 'e.status',
+            'ip' => 'e.ip',
+            'created_at' => 'e.created_at',
+        );
+
+        $orderby = HashFormHelper::get_var('orderby', 'sanitize_text_field', 'created_at');
+
+        if (!isset($sortable[$orderby])) {
+            $orderby = 'created_at';
+        }
+
+        $order = 'asc' === strtolower(HashFormHelper::get_var('order', 'sanitize_text_field', 'desc')) ? 'ASC' : 'DESC';
+
+        return $sortable[$orderby] . ' ' . $order . ', e.id ' . $order;
+    }
+
+    /**
+     * How many rows the current filters match.
+     *
+     * @return int
+     */
+    private function count_rows() {
+        global $wpdb;
+
+        $q = $this->build_query();
+
+        // DISTINCT because the meta join returns one row per stored answer.
+        $sql = "SELECT COUNT(DISTINCT e.id) FROM {$wpdb->prefix}hashform_entries AS e {$q['join']} WHERE {$q['where']}";
+
+        // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $q['join'] and $q['where'] are built in build_query() from literals and placeholders only; the values they refer to are bound through $q['params']. order_clause() returns a whitelisted column. Interpolated entry ids are run through absint() first.
+        return (int) ($q['params']
+                ? $wpdb->get_var($wpdb->prepare($sql, $q['params']))
+                : $wpdb->get_var($sql));
+        // phpcs:enable
+    }
+
+    /**
+     * One page of rows, ordered and limited by the database.
+     *
+     * @param int $per_page
+     * @param int $offset
+     * @return array
+     */
+    private function get_table_data($per_page, $offset) {
+        global $wpdb;
+
+        $q = $this->build_query();
+
+        // DISTINCT because the meta join returns one row per stored answer.
+        $sql = "SELECT DISTINCT e.* FROM {$wpdb->prefix}hashform_entries AS e {$q['join']}"
+                . " WHERE {$q['where']}"
+                . ' ORDER BY ' . $this->order_clause()
+                . ' LIMIT %d OFFSET %d';
+
+        $params = $q['params'];
+        $params[] = max(1, (int) $per_page);
+        $params[] = max(0, (int) $offset);
+
+        // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $q['join'] and $q['where'] are built in build_query() from literals and placeholders only; the values they refer to are bound through $q['params']. order_clause() returns a whitelisted column. Interpolated entry ids are run through absint() first.
+        return $wpdb->get_results($wpdb->prepare($sql, $params), ARRAY_A);
+        // phpcs:enable
+    }
+
+    public function get_bulk_actions() {
+        if ($this->status == 'published') {
+            return array(
+                'bulk_trash' => esc_html__('Move to Trash', 'hash-form'),
+            );
+        } else {
+            return array(
+                'bulk_untrash' => esc_html__('Restore', 'hash-form'),
+                'bulk_delete' => esc_html__('Delete Permanently', 'hash-form')
+            );
+        }
+    }
+
+    protected function display_tablenav($which) {
+        if ('top' === $which) {
+            // Signs the bulk actions and "Empty Trash" submits in this form.
+            wp_nonce_field('bulk-' . $this->_args['plural']);
+        }
+        ?>
+        <div class="tablenav <?php echo esc_attr($which); ?>">
+            <?php if ($this->has_items()) { ?>
+                <div class="alignleft actions bulkactions">
+                    <?php $this->bulk_actions($which); ?>
+                </div>
+                <?php
+            }
+
+            $this->extra_tablenav($which);
+
+            $this->pagination($which);
+            ?>
+            <br class="clear" />
+        </div>
+        <?php
+    }
+
+    public function extra_tablenav($which) {
+        if ($this->has_items()) {
+            if ('trash' == $this->status) {
+                ?>
+                <div class="alignleft actions"><?php submit_button(esc_html__('Empty Trash', 'hash-form'), 'apply', 'delete_all', false); ?></div>
+                <?php
+            }
+        }
+
+        if ($which === 'top') {
+            $form_id = HashFormHelper::get_var('form_id', 'absint', 0);
+            ?>
+            <div class="alignleft actions">
+                <?php
+                self::forms_dropdown('form_id', $form_id);
+                submit_button(esc_html__('Filter', 'hash-form'), 'filter_action', '', false, array('id' => 'post-query-submit'));
+
+                /*
+                 * Where add-ons hang their own entry tools. Export to CSV is
+                 * one of them, and it belongs to Pro - the free plugin used to
+                 * put a button of its own here that only led to a sales page,
+                 * which reads as a broken feature rather than an absent one.
+                 */
+                do_action('hashform_entries_tablenav', $this->status, $form_id);
+                ?>
+            </div>
+            <?php
+        }
+    }
+
+    /**
+     * Exporting entries lives in the Pro plugin. Point at it only when it is
+     * not already installed.
+     */
+    public static function forms_dropdown($field_name, $field_value = '') {
+        $forms = HashFormBuilder::get_all_forms();
+        ?>
+        <select name="<?php echo esc_attr($field_name); ?>">
+            <option value=""><?php echo esc_html__('All', 'hash-form'); ?></option>
+            <?php foreach ($forms as $form) { ?>
+                <option value="<?php echo esc_attr($form->id); ?>" <?php selected($field_value, $form->id); ?>>
+                    <?php echo ('' === $form->name ? esc_html__('No Title', 'hash-form') : esc_html($form->name)); ?>
+                </option>
+            <?php } ?>
+        </select>
+        <?php
+    }
+
+    public function get_sortable_columns() {
+        return array(
+            'id' => array('id', false),
+            'form_id' => array('form_id', false),
+            'user_id' => array('user_id', false),
+            'status' => array('status', false),
+            'created_at' => array('created_at', false),
+            'delivery_status' => array('delivery_status', false),
+            'ip' => array('ip', false)
+        );
+    }
+
+    public function get_action_links($item) {
+        $entry_id = $item['id'];
+        $actions = array();
+        $trash_links = self::delete_trash_links($entry_id);
+        if ('trash' == $this->status) {
+            $actions['restore'] = $trash_links['restore'];
+            $actions['delete'] = $trash_links['delete'];
+        } else {
+            $actions['view'] = array(
+                'label' => esc_html__('View', 'hash-form'),
+                'url' => admin_url('admin.php?page=hashform-entries&hashform_action=view&id=' . $entry_id)
+            );
+            $actions['trash'] = $trash_links['trash'];
+        }
+        return $actions;
+    }
+
+    private static function delete_trash_links($id) {
+        $base_url = '?page=hashform-entries&id=' . $id;
+        return array(
+            'restore' => array(
+                'label' => esc_html__('Restore', 'hash-form'),
+                'url' => wp_nonce_url($base_url . '&hashform_action=untrash', 'untrash_entry_' . absint($id)),
+            ),
+            'delete' => array(
+                'label' => esc_html__('Delete Permanently', 'hash-form'),
+                'url' => wp_nonce_url($base_url . '&hashform_action=destroy', 'destroy_entry_' . absint($id)),
+            ),
+            'trash' => array(
+                'label' => esc_html__('Trash', 'hash-form'),
+                'url' => wp_nonce_url($base_url . '&hashform_action=trash', 'trash_entry_' . absint($id)),
+            )
+        );
+    }
+
+    public function get_views() {
+        $statuses = array(
+            'published' => esc_html__('All', 'hash-form'),
+            'unread' => esc_html__('Unread', 'hash-form'),
+            'starred' => esc_html__('Starred', 'hash-form'),
+            'trash' => esc_html__('Trash', 'hash-form'),
+        );
+
+        $links = array();
+
+        $counts = HashFormEntry::get_count();
+
+        foreach ($statuses as $status => $name) {
+            // All and Unread stay visible at zero: "0 unread" is readable as
+            // good news rather than the tab vanishing, and All is the way
+            // back from every other view. Starred and Trash have to earn it.
+            $always_shown = ('published' === $status || 'unread' === $status);
+
+            if (!$always_shown && !$counts[$status]) {
+                continue;
+            }
+
+            $links[$status] = HashFormHelper::view_tab(
+                            admin_url('admin.php?page=hashform-entries&status=' . $status), $name, $counts[$status], $status == $this->status
+            );
+        }
+
+        return $links;
+    }
+
+    public function views() {
+        HashFormHelper::render_view_tabs($this->get_views());
+    }
+
+    private function get_form_link($form_id) {
+        global $wpdb;
+
+        // One query for all form names instead of one per row.
+        if (null === $this->form_names) {
+            $this->form_names = array();
+            $forms = $wpdb->get_results("SELECT id, name FROM {$wpdb->prefix}hashform_forms", ARRAY_A);
+            foreach ($forms as $form) {
+                $this->form_names[$form['id']] = $form['name'];
+            }
+        }
+
+        $form_name = isset($this->form_names[$form_id]) ? $this->form_names[$form_id] : esc_html__('(deleted form)', 'hash-form');
+        return '<a href="' . esc_url(admin_url('admin.php?page=hashform&hashform_action=edit&id=' . $form_id)) . '">' . esc_html($form_name) . '</a>';
+    }
+
+    private function get_user_link($user_id) {
+        if ($user_id) {
+            $user_obj = get_user_by('id', $user_id);
+            if ($user_obj) {
+                return '<a data-id="' . esc_attr($user_id) . '" href="' . get_edit_user_link($user_id) . '">' . esc_html($user_obj->display_name) . '</a>';
+            }
+        }
+        return esc_html__('Guest', 'hash-form');
+    }
+
+}

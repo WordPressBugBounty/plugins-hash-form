@@ -133,6 +133,29 @@ var hashFormAdmin = hashFormAdmin || {};
                         changeMonth: true
                     });
                 }
+
+                /*
+                 * So do the option lists of a choice field. Sorting is set up
+                 * once, over the lists that exist when the builder loads, so a
+                 * checkbox or radio added afterwards had no sortable at all and
+                 * its options would not drag until the page was reloaded.
+                 *
+                 * Found by id rather than inside the field: updateFieldOrder()
+                 * has already run by now and moves the settings panel out of the
+                 * field's own li, so searching the li finds nothing.
+                 */
+                const hfFieldId = e.hfField ? e.hfField.getAttribute('data-fid') : '';
+                const $options = hfFieldId
+                    ? $('#hf-fields-settings-' + hfFieldId).find('.hf-option-list')
+                    : $();
+
+                if ($options.length) {
+                    hashFormAdmin.setupFieldOptionSorting($options);
+                }
+
+                // Must Match Field lists the other fields, so a new one has to
+                // appear in the lists the other fields already carry.
+                hashFormAdmin.refreshMatchFieldOptions();
             }, false);
         },
 
@@ -682,6 +705,14 @@ var hashFormAdmin = hashFormAdmin || {};
             // canvas until the control lost focus.
             $buildForm.on('input change', '[data-changeme]', hashFormAdmin.liveChangesInput);
 
+            /*
+             * Must Match Field lists the other fields by their label, and that
+             * list is drawn once when the builder loads. Renaming a field left
+             * every one of those dropdowns naming it by its old label until the
+             * form was saved and the page came back.
+             */
+            $buildForm.on('input', 'input[name^="field_options[name_"]', hashFormAdmin.syncFieldLabelInLists);
+
             $buildForm.on('click', 'input.hf-form-field-required', hashFormAdmin.markRequired);
 
             $buildForm.on('click', '.hf-add-option', hashFormAdmin.addFieldOption);
@@ -764,6 +795,15 @@ var hashFormAdmin = hashFormAdmin || {};
                 if (newValue !== '') {
                     changes.innerHTML = '<input type="text" value="" disabled />';
                 }
+            } else if (changes.classList.contains('hf-custom-html-field')) {
+                /*
+                 * The HTML field draws what it holds, so the canvas shows what
+                 * the page will. Scrubbed on the way in: the server drops
+                 * script, style and every event attribute when this is saved,
+                 * and a preview that ran them would behave unlike the thing it
+                 * is previewing.
+                 */
+                hashFormAdmin.renderHtmlFieldPreview(changes, newValue);
             } else {
                 // A paragraph field is rendered with wpautop, so the canvas
                 // has to break the text up the same way or the preview shows
@@ -1170,6 +1210,128 @@ var hashFormAdmin = hashFormAdmin || {};
 
             $self.on('mouseup', up);
             $self.one('mouseout', unbind);
+        },
+
+        /**
+         * Draw an HTML field's content on the canvas.
+         *
+         * Mirrors HashFormHelper::sanitize_html_field_content(): script and
+         * style go, then anything that could run. An empty field falls back to
+         * the same note the server prints, so the block never collapses to
+         * nothing while it is being written.
+         */
+        renderHtmlFieldPreview: function (target, html) {
+            const holder = document.createElement('div');
+            holder.innerHTML = html || '';
+
+            holder.querySelectorAll('script, style, iframe, object, embed, link, meta').forEach(
+                el => el.remove()
+            );
+
+            holder.querySelectorAll('*').forEach(function (el) {
+                Array.from(el.attributes).forEach(function (attr) {
+                    const name = attr.name.toLowerCase();
+                    const value = (attr.value || '').replace(/\s+/g, '').toLowerCase();
+
+                    if (name.indexOf('on') === 0 || value.indexOf('javascript:') === 0) {
+                        el.removeAttribute(attr.name);
+                    }
+                });
+            });
+
+            if ('' === holder.textContent.trim() && !holder.querySelector('img, hr, br, input, svg')) {
+                const note = target.getAttribute('data-empty-text') || '';
+                target.innerHTML = '';
+                const empty = document.createElement('div');
+                empty.className = 'hf-custom-html-preview';
+                empty.textContent = note;
+                target.appendChild(empty);
+
+                return;
+            }
+
+            target.innerHTML = holder.innerHTML;
+        },
+
+        /**
+         * Keep the lists that name other fields in step with a renamed one.
+         *
+         * Only Must Match Field today; it takes the field id from the input's
+         * own name, so any list keyed the same way is picked up by adding its
+         * selector here.
+         */
+        syncFieldLabelInLists: function () {
+            const match = /field_options\[name_(\d+)\]/.exec(this.name || '');
+
+            if (!match) {
+                return;
+            }
+
+            const fieldId = match[1];
+            const label = this.value;
+
+            $('select[name^="field_options[match_field_"]')
+                .find('option[value="' + fieldId + '"]')
+                .text(label);
+        },
+
+        /**
+         * Rebuild the Must Match dropdowns from the server.
+         *
+         * Which fields may be offered depends on rules that live in PHP - same
+         * type, or one side with no format constraint - so the list is asked
+         * for rather than worked out again here, where the two would drift.
+         * Called when a field is added or removed; a rename is handled by
+         * syncFieldLabelInLists() without a request.
+         */
+        refreshMatchFieldOptions: function () {
+            const $selects = $('.hf-match-field-select');
+
+            if (!$selects.length) {
+                return;
+            }
+
+            const formId = $('#hf-form-id').val() || $('input[name="id"]').val();
+
+            if (!formId) {
+                return;
+            }
+
+            $.post(ajaxurl, {
+                action: 'hashform_match_field_options',
+                form_id: formId,
+                nonce: hashform_backend_js.nonce
+            }, function (response) {
+                if (!response || !response.success) {
+                    return;
+                }
+
+                $selects.each(function () {
+                    const $select = $(this);
+                    const fieldId = String($select.data('fid'));
+                    const options = response.data[fieldId];
+
+                    if (!options) {
+                        return;
+                    }
+
+                    // Kept across the rebuild: the chosen field is still the
+                    // chosen field unless it has just been deleted.
+                    const chosen = $select.val();
+                    const $none = $select.find('option[value=""]').first();
+                    const noneText = $none.length ? $none.text() : '';
+
+                    $select.empty().append($('<option>', {value: '', text: noneText}));
+
+                    $.each(options, function (id, label) {
+                        $select.append($('<option>', {value: id, text: label}));
+                    });
+
+                    if (chosen && $select.find('option[value="' + chosen + '"]').length) {
+                        $select.val(chosen);
+                    }
+                });
+            });
         },
 
         setupFieldOptionSorting: function (sort) {

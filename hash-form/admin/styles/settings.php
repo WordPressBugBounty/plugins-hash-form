@@ -14,7 +14,7 @@ if (!$hashform_styles) {
 wp_nonce_field('hf-styles-nonce', 'hashform_styles_nonce');
 ?>
 
-<div class="hf-content">
+<div class="hf-content hf-style-panel">
     <div class="hf-body">
         <div class="hf-fields-sidebar hf-style-sidebar">
             <div class="hf-sticky-sidebar">
@@ -44,44 +44,32 @@ wp_nonce_field('hf-styles-nonce', 'hashform_styles_nonce');
     </div>
 
     <?php
-    $hashform_post_class = 'submitbox';
-    $hashform_show_publish_button = false;
-
-    if (HashFormHelper::get_var('post_type') == 'hashform-styles') {
-        $hashform_show_publish_button = true;
-        $hashform_post_class = 'postbox';
-    }
-
-    if (HashFormHelper::get_var('post')) {
-        $hashform_post_id = htmlspecialchars_decode(HashFormHelper::get_var('post'));
-        if ('publish' !== get_post_status($hashform_post_id)) {
-            $hashform_show_publish_button = true;
-            $hashform_post_class = 'postbox';
-        }
-    }
+    /*
+     * A template that has never been published is offered Publish; one that has
+     * is offered Update. Read from the template itself rather than from the
+     * query string, which only carried the answer while this panel lived inside
+     * the post editor.
+     */
+    $hashform_is_published = ($post_id && 'publish' === get_post_status($post_id));
     ?>
     <div class="hf-footer">
-        <div id="submitpost" class="<?php echo esc_attr($hashform_post_class); ?>">
-            <div id="major-publishing-actions">
-                <div id="publishing-action">
-                    <?php
-                    if ($hashform_show_publish_button) {
-                        ?>
-                        <input name="original_publish" type="hidden" id="original_publish" value="Publish">
-                        <button type="submit" name="publish" id="publish" class="button button-primary button-large"><?php esc_html_e('Publish', 'hash-form'); ?></button>
-                        <?php
-                    } else {
-                        ?>
-                        <input name="original_publish" type="hidden" id="original_publish" value="Update">
-                        <button type="submit" name="save" id="publish" class="button button-primary button-large"><?php esc_html_e('Update', 'hash-form'); ?></button>
-                        <?php
-                    }
-                    ?>
-                </div>
-            </div>
-        </div>
+        <?php
+        /*
+         * The buttons, and nothing else. This used to be wrapped in #submitpost
+         * > #major-publishing-actions > #publishing-action with a hidden
+         * original_publish field - the post editor's submit box, reproduced
+         * around a form that is not the post editor's and saved over ajax. The
+         * ids it brought were styled through a .post-type-hashform-styles body
+         * class that only exists on a post screen, so on the builder they drew
+         * nothing at all.
+         */
+        ?>
         <div class="hf-preview-close">
-            <a class="button button-secondary button-large" href="<?php echo esc_url(admin_url('/edit.php?post_type=hashform-styles')); ?>"><?php esc_html_e('Close', 'hash-form'); ?></a>
+            <a class="button button-secondary" href="<?php echo esc_url(admin_url('edit.php?post_type=hashform-styles')); ?>"><?php esc_html_e('Close', 'hash-form'); ?></a>
         </div>
+
+        <button type="submit" class="button button-primary hf-style-save">
+            <?php echo $hashform_is_published ? esc_html__('Update', 'hash-form') : esc_html__('Publish', 'hash-form'); ?>
+        </button>
     </div>
 </div>

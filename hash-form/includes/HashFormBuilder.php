@@ -1,0 +1,1456 @@
+<?php
+defined('ABSPATH') || die();
+
+class HashFormBuilder {
+
+    use HashFormListActions;
+
+    public function __construct() {
+
+        $this->includes();
+
+        add_action('admin_menu', array($this, 'add_menu'), 1);
+        add_filter('set-screen-option', array($this, 'set_screen_option'), 10, 3);
+
+        add_action('wp_ajax_hashform_update_form', array($this, 'update_form'));
+        add_action('wp_ajax_hashform_create_form', array($this, 'create_form'));
+        add_action('wp_ajax_hashform_save_form_settings', array($this, 'save_form_settings'));
+        add_action('wp_ajax_hashform_save_form_style', array($this, 'save_form_style'));
+        add_action('wp_ajax_hashform_form_preview', array($this, 'form_preview'));
+        add_action('wp_ajax_hashform_add_more_condition_block', array($this, 'add_more_condition_block'));
+        add_action('admin_footer', array($this, 'init_overlay_html'));
+
+        // Printed above #wpbody so the bar sits flush under the admin bar and
+        // clear of the Screen Options tab.
+        add_action('in_admin_header', array($this, 'list_header'));
+
+        // Notices are moved inside the screen wrapper; see buffer_notices().
+        add_action('admin_notices', array($this, 'buffer_notices'), -PHP_INT_MAX);
+        add_action('all_admin_notices', array($this, 'capture_notices'), PHP_INT_MAX);
+
+        add_filter('plugin_action_links_' . plugin_basename(HASHFORM_FILE), array($this, 'add_plugin_action_link'), 10, 1);
+
+        add_action('wp_ajax_hashform_file_upload_action', array($this, 'file_upload_action'));
+        add_action('wp_ajax_nopriv_hashform_file_upload_action', array($this, 'file_upload_action'));
+
+        add_action('wp_ajax_hashform_file_delete_action', array($this, 'file_delete_action'));
+        add_action('wp_ajax_nopriv_hashform_file_delete_action', array($this, 'file_delete_action'));
+
+        add_action('wp_loaded', array($this, 'admin_notice'), 20);
+
+        add_action('init', array($this, 'register_translation_strings'));
+        add_filter('hashform_translate_string', array($this, 'translate_string'), 10, 3);
+    }
+
+    public function includes() {
+        include HASHFORM_PATH . 'admin/forms/sanitization.php';
+    }
+
+    public function add_menu() {
+        global $hashform_listing_page;
+        add_menu_page(esc_html__('Hash Form', 'hash-form'), esc_html__('Hash Form', 'hash-form'), 'hashform_view_forms', 'hashform', array($this, 'route'), 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMTcuNjYgMTUyLjI3IiBmaWxsPSIjYTdhYWFkIj48Zz48Zz48cGF0aCBkPSJNMCwzLjQ2QTMuNDYsMy40NiwwLDAsMSwzLjE0LDBoODBBMy41MywzLjUzLDAsMCwxLDg1LjYsMWwzMSwzMWEzLjQ3LDMuNDcsMCwwLDEsMSwyLjQzVjE0OC44MWEzLjQ2LDMuNDYsMCwwLDEtMy40NiwzLjQ2SDMxLjYzYTMuNDYsMy40NiwwLDEsMSwwLTYuOTJoNzkuMTFWMzguMDdIODMuMDVhMy40NiwzLjQ2LDAsMCwxLTMuNDYtMy40NlY2LjkySDYuOTJWMTQ1LjM1SDE0YTMuNDYsMy40NiwwLDEsMSwwLDYuOTJIMy40NkEzLjQ2LDMuNDYsMCwwLDEsMCwxNDguODFaTTEwNiwzMS4xNSw4Ni41MSwxMS42OFYzMS4xNVoiLz48cGF0aCBkPSJNNzguNjYsNTkuM0g5NS4wOXY2LjYxSDc4LjY2Vjg1Ljc1SDcyLjA1VjQyLjg3aDYuNjFabTAsMzkuNjd2MTYuNDJINzIuMDVWOTlINTIuMjJWOTIuMzZIOTUuMDlWOTlaTTM5LDk5SDIyLjU3VjkyLjM2SDM5VjcyLjUyaDYuNjFWMTE1LjRIMzlaTTM5LDU5LjNWNDIuODdoNi42MVY1OS4zSDY1LjQ0djYuNjFIMjIuNTdWNTkuM1oiLz48L2c+PC9nPjwvc3ZnPg==', 29);
+        $hashform_listing_page = add_submenu_page('hashform', esc_html__('Forms', 'hash-form'), esc_html__('Forms', 'hash-form'), 'hashform_view_forms', 'hashform', array($this, 'route'));
+        add_action("load-$hashform_listing_page", array($this, 'listing_page_screen_options'));
+    }
+
+    protected static function list_config() {
+        return array(
+            'page' => 'hashform',
+            'table' => 'hashform_forms',
+            'id_key' => 'form_id',
+            'nonce_item' => 'form',
+            'bulk_nonce' => 'bulk-forms',
+            'caps' => array(
+                'delete' => 'hashform_delete_forms',
+                'edit' => 'hashform_edit_forms',
+                'create' => 'hashform_create_forms',
+            ),
+            'actions' => array('edit', 'trash', 'destroy', 'untrash', 'delete_all', 'duplicate', 'settings', 'style'),
+        );
+    }
+
+    protected static function destroy_item($id) {
+        return self::destroy_form($id);
+    }
+
+    protected static function render_list($message = '', $class = 'updated') {
+        self::display_forms_list($message, $class);
+    }
+
+    protected static function message_trashed($count, $undo_open, $undo_close) {
+        /* translators: 1: form count singular & plural, 2: link open, 3: link close */
+        return sprintf(_n('%1$s form moved to the Trash. %2$sUndo%3$s', '%1$s forms moved to the Trash. %2$sUndo%3$s', $count, 'hash-form'), $count, $undo_open, $undo_close);
+    }
+
+    protected static function message_untrashed($count) {
+        /* translators: 1: form count singular & plural */
+        return sprintf(_n('%1$s form restored from the Trash.', '%1$s forms restored from the Trash.', $count, 'hash-form'), $count);
+    }
+
+    protected static function message_destroyed($count) {
+        /* translators: 1: form count singular & plural */
+        return sprintf(_n('%1$s Form Permanently Deleted', '%1$s Forms Permanently Deleted', $count, 'hash-form'), $count);
+    }
+
+    protected static function message_deleted($count) {
+        /* translators: 1: form count singular & plural */
+        return sprintf(_n('%1$s form permanently deleted.', '%1$s forms permanently deleted.', $count, 'hash-form'), $count);
+    }
+
+    protected static function message_none_specified() {
+        return esc_html__('No forms were specified', 'hash-form');
+    }
+
+    public static function display_forms_list($message = '', $class = 'updated') {
+        ?>
+        <div class="hf-content hf-list-screen">
+
+            <?php // The header bar is printed on in_admin_header; see list_header(). ?>
+            <div class="hf-list-wrap wrap">
+                <h1></h1>
+
+                <?php
+                self::print_notices();
+                self::display_message($message, $class);
+
+                $form_table = new HashFormListing();
+                $form_status = HashFormHelper::get_var('status', 'sanitize_title', 'published');
+
+                // Prepared up front so the screen can tell an empty list from
+                // a search that found nothing before deciding what to print.
+                $form_table->prepare_items();
+                $is_searching = '' !== (string) HashFormHelper::get_var('s');
+                ?>
+                <form id="posts-filter" method="get">
+                    <input type="hidden" name="page" value="<?php echo esc_attr(HashFormHelper::get_var('page', 'sanitize_title')); ?>" />
+                    <input type="hidden" name="status" value="<?php echo esc_attr($form_status); ?>" />
+
+                    <div class="hf-list-toolbar">
+                        <?php
+                        $form_table->views();
+
+                        // A search box over nothing is just noise on a first run.
+                        if ($form_table->has_items() || $is_searching) {
+                            $form_table->search_box(esc_html__('Search', 'hash-form'), 'search');
+                        }
+                        ?>
+                    </div>
+
+                    <?php $form_table->display(); ?>
+                </form>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Totals for the header bar. Empty on a brand new install, where zeroes
+     * say nothing.
+     */
+    private static function list_stats() {
+        $stats = HashFormListing::get_stats();
+
+        if (!$stats['forms'] && !$stats['trash']) {
+            return array();
+        }
+
+        $chips = array(
+            array(
+                'value' => number_format_i18n($stats['forms']),
+                'label' => _n('Form', 'Forms', $stats['forms'], 'hash-form'),
+            ),
+            array(
+                'value' => number_format_i18n($stats['entries']),
+                'label' => _n('Entry', 'Entries', $stats['entries'], 'hash-form'),
+                'url' => admin_url('admin.php?page=hashform-entries'),
+            ),
+        );
+
+        if ($stats['trash']) {
+            $chips[] = array(
+                'value' => number_format_i18n($stats['trash']),
+                'label' => esc_html__('In Trash', 'hash-form'),
+                'url' => admin_url('admin.php?page=hashform&status=trash'),
+            );
+        }
+
+        return $chips;
+    }
+
+    /**
+     * The bar across the top of the Forms list, through the shared renderer.
+     */
+    public function list_header() {
+        if (!self::is_list_view()) {
+            return;
+        }
+
+        HashFormHelper::render_list_header(array(
+            'title' => esc_html__('Forms', 'hash-form'),
+            'stats' => self::list_stats(),
+            'action' => array(
+                'label' => esc_html__('Add New', 'hash-form'),
+                'url' => '#',
+                'class' => 'hf-trigger-modal',
+            ),
+        ));
+    }
+
+    public function create_form() {
+        HashFormCapabilities::require_cap_ajax('hashform_create_forms');
+
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
+
+        $name = trim(HashFormHelper::get_post('name'));
+
+        // The dialog checks this too, but a form with no name is only ever
+        // reachable as "No Title" in the list, so do not create one.
+        if ('' === $name) {
+            echo wp_json_encode(array('error' => esc_html__('Please give the form a name.', 'hash-form')));
+            wp_die();
+        }
+
+        $new_values = array(
+            'name' => esc_html($name),
+            'description' => '',
+            'form_key' => sanitize_text_field($name),
+            'options' => array(
+                'submit_value' => esc_html__('Submit', 'hash-form'),
+                'show_description' => 'on',
+                'show_title' => 'on',
+            ),
+            'settings' => HashFormHelper::get_form_settings_default($name)
+        );
+        $form_id = self::create($new_values);
+        $response = array('redirect' => admin_url('admin.php?page=hashform&hashform_action=edit&id=' . absint($form_id)));
+        echo wp_json_encode($response);
+        wp_die();
+    }
+
+    public static function create($values) {
+        global $wpdb;
+        $options = isset($values['options']) && is_array($values['options']) ? $values['options'] : array();
+        $options = HashFormHelper::recursive_parse_args($options, HashFormHelper::get_form_options_default());
+        $options = HashFormHelper::sanitize_array($options, HashFormHelper::get_form_options_sanitize_rules());
+
+        $settings = isset($values['settings']) && is_array($values['settings']) ? $values['settings'] : array();
+        $settings = HashFormHelper::recursive_parse_args($settings, HashFormHelper::get_form_settings_default());
+        $settings = HashFormHelper::sanitize_array($settings, HashFormHelper::get_form_settings_sanitize_rules());
+
+        $styles = isset($values['styles']) && is_array($values['styles']) ? $values['styles'] : array();
+        $styles = HashFormHelper::recursive_parse_args($styles, array('form_style' => 'default-style', 'form_style_template' => ''));
+        $styles = HashFormHelper::sanitize_array($styles, HashFormHelper::get_form_styles_sanitize_rules());
+
+        $new_values = array(
+            'form_key' => HashFormHelper::get_unique_key('hashform_forms', 'form_key'),
+            'name' => esc_html($values['name']),
+            'description' => esc_html($values['description']),
+            'status' => isset($values['status']) ? sanitize_text_field($values['status']) : 'published',
+            'created_at' => isset($values['created_at']) ? sanitize_text_field($values['created_at']) : current_time('mysql'),
+            'options' => serialize($options),
+            'settings' => serialize($settings),
+            'styles' => serialize($styles),
+        );
+        $wpdb->insert($wpdb->prefix . 'hashform_forms', $new_values);
+        $id = $wpdb->insert_id;
+        return $id;
+    }
+
+    public function update_form() {
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
+
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
+
+        $fields_array = $settings_array = array();
+
+        $fields = htmlspecialchars_decode(nl2br(str_replace('&quot;', '"', HashFormHelper::get_post('hashform_fields', 'esc_html'))));
+
+        if ($fields) {
+            $fields_array = HashFormHelper::parse_json_array($fields);
+        }
+
+        $settings = htmlspecialchars_decode(nl2br(str_replace('&quot;', '"', HashFormHelper::get_post('hashform_settings', 'esc_html'))));
+        if ($settings) {
+            $settings_array = HashFormHelper::parse_json_array($settings);
+        }
+
+        self::update($fields_array, $settings_array);
+    }
+
+    public static function update($fields_values, $settings_values) {
+        $id = isset($fields_values['id']) ? absint($fields_values['id']) : '';
+
+        self::update_form_options($id, $settings_values);
+        HashFormFields::update_form_fields($id, $fields_values);
+
+        $message = '<span class="mdi mdi-check-circle"></span>' . esc_html__('Form was successfully updated.', 'hash-form');
+
+        if (defined('DOING_AJAX')) {
+            /*
+             * The span is allowed a class: without one, kses stripped it and
+             * the tick that goes with the message never reached the page —
+             * only the empty element it should have been drawn in.
+             */
+            wp_die(wp_kses($message, array(
+                'a' => array('href' => array(), 'target' => array()),
+                'span' => array('class' => array()),
+            )));
+        }
+    }
+
+    public static function update_form_options($id, $args) {
+        global $wpdb;
+        $options = HashFormHelper::recursive_parse_args($args, HashFormHelper::get_form_options_checkbox_settings());
+        $options = HashFormHelper::sanitize_array($options, HashFormHelper::get_form_options_sanitize_rules());
+
+        $query_results = $wpdb->update($wpdb->prefix . 'hashform_forms', array(
+            'name' => esc_html(isset($args['title']) ? $args['title'] : ''),
+            'description' => esc_html(isset($args['description']) ? $args['description'] : ''),
+            'options' => maybe_serialize($options)
+        ), array('id' => $id));
+        return $query_results;
+    }
+
+    public static function edit() {
+        require(HASHFORM_PATH . 'admin/forms/build/edit.php');
+    }
+
+    public static function settings() {
+        require HASHFORM_PATH . 'admin/forms/settings/settings.php';
+    }
+
+    public static function style() {
+        require HASHFORM_PATH . 'admin/forms/style/style.php';
+    }
+
+    public function listing_page_screen_options() {
+
+        global $hashform_listing_page;
+
+        $screen = get_current_screen();
+
+        // get out of here if we are not on our settings page
+        if (!is_object($screen) || $screen->id != $hashform_listing_page) {
+            return;
+        }
+
+        $args = array(
+            'label' => esc_html__('Forms per page', 'hash-form'),
+            'default' => 10,
+            'option' => 'forms_per_page'
+        );
+        add_screen_option('per_page', $args);
+
+        new HashFormListing();
+    }
+
+    public function set_screen_option($status, $option, $value) {
+        return ('forms_per_page' === $option) ? $value : $status;
+    }
+
+    public static function destroy_form($id) {
+        global $wpdb;
+        $form = self::get_form_vars($id);
+        if (!$form) {
+            return false;
+        }
+
+        $id = $form->id;
+        $entries = $wpdb->get_col($wpdb->prepare("SELECT id FROM {$wpdb->prefix}hashform_entries WHERE form_id=%d", $id));
+
+        foreach ($entries as $entry_id) {
+            HashFormEntry::destroy_entry($entry_id);
+        }
+
+        $wpdb->query($wpdb->prepare('DELETE hfi FROM ' . $wpdb->prefix . 'hashform_fields AS hfi LEFT JOIN ' . $wpdb->prefix . 'hashform_forms hfm ON (hfi.form_id = hfm.id) WHERE hfi.form_id=%d', $id));
+
+        $results = $wpdb->query($wpdb->prepare('DELETE FROM ' . $wpdb->prefix . 'hashform_forms WHERE id=%d', $id));
+        return $results;
+    }
+
+    public static function duplicate() {
+        global $wpdb;
+        $message = '';
+        $nonce = HashFormHelper::get_var('_wpnonce');
+        $id = HashFormHelper::get_var('id', 'absint');
+
+        if (!wp_verify_nonce($nonce, 'duplicate_form_' . $id)) {
+            wp_die(esc_html__('Error ! Refresh the page and try again.', 'hash-form'));
+        }
+
+        static::require_list_cap('create');
+
+        $values = self::get_form_vars($id);
+
+        if (!$values) {
+            return false;
+        }
+
+        $options = HashFormHelper::recursive_parse_args($values->options, HashFormHelper::get_form_options_default());
+        $options = HashFormHelper::sanitize_array($options, HashFormHelper::get_form_options_sanitize_rules());
+
+        $settings = HashFormHelper::recursive_parse_args($values->settings, HashFormHelper::get_form_settings_default());
+        $settings = HashFormHelper::sanitize_array($settings, HashFormHelper::get_form_settings_sanitize_rules());
+
+        $styles = HashFormHelper::recursive_parse_args($values->styles, array('form_style' => 'default-style', 'form_style_template' => ''));
+        $styles = HashFormHelper::sanitize_array($styles, HashFormHelper::get_form_styles_sanitize_rules());
+
+        $new_values = array(
+            'form_key' => HashFormHelper::get_unique_key('hashform_forms', 'form_key'),
+            'name' => esc_html($values->name) . ' - ' . esc_html__('Copy', 'hash-form'),
+            'description' => esc_html($values->description),
+            'status' => $values->status ? sanitize_text_field($values->status) : 'published',
+            'created_at' => sanitize_text_field(current_time('mysql')),
+            'options' => serialize($options),
+            'settings' => serialize($settings),
+            'styles' => serialize($styles),
+        );
+
+        $query_results = $wpdb->insert($wpdb->prefix . 'hashform_forms', $new_values);
+
+        $form_id = 0;
+        if ($query_results) {
+            $form_id = $wpdb->insert_id;
+            $map = HashFormFields::duplicate_fields($id, $form_id);
+
+            /*
+             * The rules were written above with the source form's field ids,
+             * which the copy does not have. Rewritten here, once the copy's own
+             * fields exist and the two can be matched up.
+             */
+            self::remap_calculation_formulas($form_id, $map);
+
+            if (!empty($settings['condition_action'])) {
+                $settings = self::remap_conditions($settings, $map, $dropped);
+
+                $wpdb->update(
+                        $wpdb->prefix . 'hashform_forms',
+                        array('settings' => serialize($settings)),
+                        array('id' => $form_id)
+                );
+
+                if ($dropped) {
+                    HashFormHelper::log(sprintf(
+                                    'copying form %d: %d show/hide rule(s) named a field the form no longer has and were not copied',
+                                    absint($id),
+                                    $dropped
+                    ));
+                }
+            }
+        }
+
+        if ($form_id) {
+            $message = esc_html__('Form was Successfully Copied', 'hash-form');
+            $class = 'updated';
+        } else {
+            $message = esc_html__('Error! Form Can not be Copied', 'hash-form');
+            $class = 'error';
+        }
+
+        self::display_forms_list($message, $class);
+    }
+
+    public static function get_admin_header($atts = array()) {
+        $class = isset($atts['class']) ? $atts['class'] : '';
+        $form = $atts['form'];
+        $form_title = $form->name;
+        ?>
+        <?php
+        /*
+         * Two rows: what is being edited and what can be done to it on top,
+         * where you are underneath. A single row had the form name, four tabs
+         * and four actions competing for the same line, which left no room for
+         * a long form title and no hierarchy between them.
+         */
+        $status = isset($form->status) ? $form->status : 'published';
+        $is_published = ('published' === $status);
+        ?>
+        <div id="hf-header" class="<?php echo esc_attr($class); ?>">
+            <div class="hf-header-top">
+                <a class="hf-header-back" href="<?php echo esc_url(admin_url('admin.php?page=hashform')); ?>" aria-label="<?php esc_attr_e('Back to forms', 'hash-form'); ?>">
+                    <span class="mdi mdi-arrow-left"></span>
+                </a>
+
+                <div class="hf-header-identity">
+                    <span class="hf-header-mark" aria-hidden="true">
+                        <span class="mdi mdi-file-document-outline"></span>
+                    </span>
+
+                    <h1 class="hf-header-title"><?php echo esc_html($form_title); ?></h1>
+                    <span class="hf-header-status<?php echo $is_published ? ' hf-is-published' : ''; ?>">
+                        <?php echo $is_published ? esc_html__('Published', 'hash-form') : esc_html__('Draft', 'hash-form'); ?>
+                    </span>
+                </div>
+
+                <div class="hf-header-actions">
+                    <a class="hf-preview-button" href="<?php echo esc_url(admin_url('admin-ajax.php?action=hashform_preview&form=' . absint($form->id))); ?>" target="_blank">
+                        <span class="mdi mdi-eye-outline"></span><?php esc_html_e('Preview', 'hash-form'); ?>
+                    </a>
+
+                    <button class="hf-embed-button" type="button">
+                        <span class="mdi mdi-code-brackets"></span><?php esc_html_e('Embed', 'hash-form'); ?>
+                    </button>
+
+                    <button class="hashform-ajax-udpate-button" type="button" id="hf-update-button">
+                        <span class="mdi mdi-check-circle-outline"></span><?php esc_html_e('Save', 'hash-form'); ?>
+                    </button>
+                </div>
+            </div>
+
+            <div class="hf-header-bottom">
+                <?php self::get_form_nav($form); ?>
+            </div>
+        </div>
+        <?php
+    }
+
+    public static function get_form_nav($form) {
+        if (!$form) {
+            return;
+        }
+        $id = $form->id;
+        $nav_items = self::get_form_nav_items($id);
+        ?>
+        <ul class="hf-main-nav">
+            <?php foreach ($nav_items as $nav_item) { ?>
+                <li>
+                    <a href="<?php echo esc_url($nav_item['link']); ?>" class="<?php echo self::is_current_page($nav_item['page'], $nav_item['current']) ? 'hf-active-nav' : ''; ?>">
+                        <?php echo esc_html($nav_item['label']); ?>
+                    </a>
+                </li>
+            <?php } ?>
+        </ul>
+        <?php
+    }
+
+    public static function get_form_nav_items($id) {
+        $nav_items = array(
+            array(
+                'link' => admin_url('admin.php?page=hashform&hashform_action=edit&id=' . absint($id)),
+                'label' => esc_html__('Build', 'hash-form'),
+                'current' => array('edit', 'new', 'duplicate'),
+                'page' => 'hashform'
+            ),
+            array(
+                'link' => admin_url('admin.php?page=hashform&hashform_action=settings&id=' . absint($id)),
+                'label' => esc_html__('Settings', 'hash-form'),
+                'current' => array('settings'),
+                'page' => 'hashform'
+            ),
+            array(
+                'link' => admin_url('admin.php?page=hashform&hashform_action=style&id=' . absint($id)),
+                'label' => esc_html__('Style', 'hash-form'),
+                'current' => array('style'),
+                'page' => 'hashform'
+            ),
+            array(
+                'link' => admin_url('admin.php?page=hashform-entries&form_id=' . absint($id)),
+                'label' => esc_html__('Entries', 'hash-form'),
+                'current' => array(),
+                'page' => 'hashform-entries'
+            ),
+        );
+        return $nav_items;
+    }
+
+    public static function is_current_page($page, $action = array()) {
+        $current_page = HashFormHelper::get_var('page');
+        $hashform_action = HashFormHelper::get_var('hashform_action');
+
+        if (($page == $current_page) && (!empty($hashform_action) && in_array($hashform_action, $action))) {
+            return true;
+        }
+        return false;
+    }
+
+    public static function get_all_forms() {
+        global $wpdb;
+        $results = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}hashform_forms WHERE id!=%d", 0));
+        return $results;
+    }
+
+    /**
+     * The forms a visitor could actually be shown.
+     *
+     * get_all_forms() means all of them, trashed included, which is right for
+     * anything looking back at what exists. It is wrong for a chooser: every
+     * dropdown that offers a form to display was listing forms their owner had
+     * thrown away, and picking one rendered it on the page.
+     *
+     * @return array
+     */
+    public static function get_published_forms() {
+        global $wpdb;
+
+        return $wpdb->get_results($wpdb->prepare(
+                        "SELECT * FROM {$wpdb->prefix}hashform_forms WHERE status = %s ORDER BY name",
+                        'published'
+        ));
+    }
+
+    public static function get_form_vars($id) {
+        global $wpdb;
+
+        /**
+         * Supply a form without one being stored.
+         *
+         * Return anything other than null and the query below is skipped. It is
+         * what lets a form be rendered from a definition held in memory - the
+         * template demos read their forms out of a json file rather than
+         * writing one row per template into the database just to look at it.
+         *
+         * @param object|null $form null to load it as usual.
+         * @param int         $id
+         */
+        $pre = apply_filters('hashform_pre_get_form_vars', null, $id);
+
+        if (null !== $pre) {
+            return $pre;
+        }
+
+        $results = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}hashform_forms WHERE id=%d", $id));
+
+        if (!$results) {
+            return;
+        }
+
+        foreach ($results as $key => $value) {
+            $results->$key = maybe_unserialize($value);
+        }
+
+        return $results;
+    }
+
+    public static function get_form_title($id) {
+        global $wpdb;
+
+        // Rendering calls this once or twice per field; cache per request.
+        static $titles = array();
+        if (array_key_exists($id, $titles)) {
+            return $titles[$id];
+        }
+
+        $name = $wpdb->get_var($wpdb->prepare("SELECT name FROM {$wpdb->prefix}hashform_forms WHERE id=%d", $id));
+        $titles[$id] = (null === $name) ? null : maybe_unserialize($name);
+
+        return $titles[$id];
+    }
+
+    public function init_overlay_html() {
+        $plugin_path = HASHFORM_PATH;
+        $new_form_overlay = apply_filters('hashform_new_form_overlay_template', $plugin_path . 'admin/forms/new-form-overlay.php');
+
+        if (HashFormHelper::is_form_listing_page()) {
+            include $new_form_overlay;
+        }
+
+        if (HashFormHelper::is_form_builder_page()) {
+            include $plugin_path . 'admin/forms/shortcode-overlay.php';
+        }
+    }
+
+    public function save_form_settings() {
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
+
+        $json_vars = htmlspecialchars_decode(nl2br(str_replace('&quot;', '"', HashFormHelper::get_post('hashform_compact_fields'))));
+        $vars = HashFormHelper::parse_json_array($json_vars);
+
+        if (!isset($vars['hashform_process_form_nonce']) || !wp_verify_nonce($vars['hashform_process_form_nonce'], 'hashform_process_form_action')) {
+            wp_die(esc_html__('Sorry, Nonce did not verify.', 'hash-form'));
+        }
+
+        $email_to_array = array();
+        $email_to_rows = isset($vars['email_to']) ? (array) $vars['email_to'] : array();
+        foreach ($email_to_rows as $row) {
+            $email_to_val = trim($row);
+            if ($email_to_val) {
+                $email_to_array[] = $email_to_val;
+            }
+        }
+
+        $vars['email_to'] = implode(',', $email_to_array);
+        $vars = self::drop_incomplete_conditions($vars);
+        $id = isset($vars['id']) ? absint($vars['id']) : HashFormHelper::get_var('id', 'absint');
+        unset($vars['id'], $vars['hashform_process_form_nonce'], $vars['_wp_http_referer']);
+
+        self::update_settings($id, $vars);
+        $message = '<span class="mdi mdi-check-circle"></span>' . esc_html__('Form was successfully updated.', 'hash-form');
+        wp_die(wp_kses_post($message));
+
+    }
+
+    public function save_form_style() {
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
+
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
+
+        $json_vars = htmlspecialchars_decode(nl2br(str_replace('&quot;', '"', HashFormHelper::get_post('hashform_compact_fields'))));
+        $vars = HashFormHelper::parse_json_array($json_vars);
+        $id = isset($vars['id']) ? absint($vars['id']) : HashFormHelper::get_var('id', 'absint');
+
+        self::update_style($id, $vars);
+        $message = '<span class="mdi mdi-check-circle"></span>' . esc_html__('Form was successfully updated.', 'hash-form');
+        wp_die(wp_kses_post($message));
+    }
+
+    public function form_preview() {
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
+
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
+
+        ob_start();
+        remove_action('wp_head', 'print_emoji_detection_script', 7);
+        remove_action('wp_print_styles', 'print_emoji_styles');
+        wp_head();
+
+        $form_id = HashFormHelper::get_post('form_id', 'absint');
+
+        HashFormPreview::show_form($form_id);
+        wp_footer();
+        wp_send_json_success(ob_get_clean());
+
+    }
+
+    public static function update_settings($id, $values) {
+        global $wpdb;
+        $values = HashFormHelper::recursive_parse_args($values, HashFormHelper::get_form_settings_checkbox_settings());
+        $values = HashFormHelper::sanitize_array($values, HashFormHelper::get_form_settings_sanitize_rules());
+
+        $new_values = array(
+            'settings' => serialize($values)
+        );
+        if (!empty($new_values)) {
+            $query_results = $wpdb->update($wpdb->prefix . 'hashform_forms', $new_values, array('id' => $id));
+        }
+        return $query_results;
+    }
+
+    public static function update_style($id, $value) {
+        global $wpdb;
+        $new_values = array(
+            'styles' => serialize(HashFormHelper::sanitize_array($value))
+        );
+        if (!empty($new_values)) {
+            $query_results = $wpdb->update($wpdb->prefix . 'hashform_forms', $new_values, array('id' => $id));
+        }
+        return $query_results;
+    }
+
+    /**
+     * What a rule does when it matches.
+     */
+    public static function condition_actions() {
+        return array(
+            'show' => esc_html__('Show', 'hash-form'),
+            'hide' => esc_html__('Hide', 'hash-form'),
+        );
+    }
+
+    /**
+     * How a rule compares the answer it watches.
+     */
+    public static function condition_operators() {
+        return array(
+            'equal' => esc_html__('Equals to', 'hash-form'),
+            'not_equal' => esc_html__('Not Equals to', 'hash-form'),
+            'greater_than' => esc_html__('Greater Than', 'hash-form'),
+            'greater_than_or_equal' => esc_html__('Greater Than Or Equals to', 'hash-form'),
+            'less_than' => esc_html__('Less Than', 'hash-form'),
+            'less_than_or_equal' => esc_html__('Less Than Or Equals to', 'hash-form'),
+            'is_like' => esc_html__('Is Like', 'hash-form'),
+            'is_not_like' => esc_html__('Is Not Like', 'hash-form'),
+        );
+    }
+
+    /**
+     * Fields a rule can point at.
+     *
+     * Layout fields hold no answer, so they can neither be watched nor be
+     * usefully shown and hidden. The trigger side excludes a little more:
+     * name and address post several values under one id, which the comparison
+     * has no way to pick between.
+     *
+     * This list used to be written out four times — twice in the panel and
+     * twice in the AJAX handler that appends a row — and the copies had
+     * already drifted.
+     *
+     * @param object[] $fields Form fields.
+     * @param bool     $trigger Whether this is the watched side of a rule.
+     * @return object[]
+     */
+    public static function condition_fields($fields, $trigger = false) {
+        $skip = array('heading', 'paragraph', 'separator', 'spacer', 'image', 'captcha');
+
+        if ($trigger) {
+            // html and multi_step post nothing, so a rule watching one could
+            // never match. They stay available on the other side, where a
+            // rule can still show and hide them.
+            $skip = array_merge($skip, array('name', 'address', 'html', 'multi_step'));
+        }
+
+        $usable = array();
+
+        foreach ($fields as $field) {
+            if (!in_array($field->type, $skip, true)) {
+                $usable[] = $field;
+            }
+        }
+
+        return $usable;
+    }
+
+    /**
+     * One rule, as shown in the Conditional Logic panel.
+     *
+     * The panel and the AJAX handler that appends a row both render through
+     * here, so a newly added rule cannot look different from a saved one —
+     * which it did: the saved rows carried untranslated English labels.
+     *
+     * @param object[] $fields Form fields.
+     * @param array    $row    Saved rule, or empty for a new one.
+     */
+    public static function condition_row_html($fields, $row = array()) {
+        $value = isset($row['compare_value']) ? $row['compare_value'] : '';
+        ?>
+        <div class="hf-condition-row">
+            <div class="hf-condition-head">
+                <span class="hf-condition-index" aria-hidden="true"></span>
+                <button type="button" class="hf-condition-remove" title="<?php esc_attr_e('Delete this rule', 'hash-form'); ?>">
+                    <span class="mdi mdi-trash-can-outline" aria-hidden="true"></span>
+                    <span class="screen-reader-text"><?php esc_html_e('Delete this rule', 'hash-form'); ?></span>
+                </button>
+            </div>
+
+            <div class="hf-condition-grid">
+                <label class="hf-condition-cell hf-condition-cell-action">
+                    <span><?php esc_html_e('Action', 'hash-form'); ?></span>
+                    <select name="condition_action[]">
+                        <?php foreach (self::condition_actions() as $key => $label) { ?>
+                            <option value="<?php echo esc_attr($key); ?>" <?php selected(isset($row['condition_action']) ? $row['condition_action'] : '', $key); ?>><?php echo esc_html($label); ?></option>
+                        <?php } ?>
+                    </select>
+                </label>
+
+                <label class="hf-condition-cell hf-condition-cell-target">
+                    <span><?php esc_html_e('This field', 'hash-form'); ?></span>
+                    <select name="compare_from[]">
+                        <option value=""><?php esc_html_e('Select a field', 'hash-form'); ?></option>
+                        <?php foreach (self::condition_fields($fields) as $field) { ?>
+                            <option value="<?php echo esc_attr($field->id); ?>" <?php selected(isset($row['compare_from']) ? $row['compare_from'] : '', $field->id); ?>><?php echo esc_html($field->name . ' (ID: ' . $field->id . ')'); ?></option>
+                        <?php } ?>
+                    </select>
+                </label>
+
+                <label class="hf-condition-cell hf-condition-cell-trigger">
+                    <span><?php esc_html_e('When', 'hash-form'); ?></span>
+                    <select name="compare_to[]">
+                        <option value=""><?php esc_html_e('Select a field', 'hash-form'); ?></option>
+                        <?php foreach (self::condition_fields($fields, true) as $field) { ?>
+                            <option value="<?php echo esc_attr($field->id); ?>" <?php selected(isset($row['compare_to']) ? $row['compare_to'] : '', $field->id); ?>><?php echo esc_html($field->name . ' (ID: ' . $field->id . ')'); ?></option>
+                        <?php } ?>
+                    </select>
+                </label>
+
+                <label class="hf-condition-cell hf-condition-cell-operator">
+                    <span><?php esc_html_e('Is', 'hash-form'); ?></span>
+                    <select name="compare_condition[]">
+                        <?php foreach (self::condition_operators() as $key => $label) { ?>
+                            <option value="<?php echo esc_attr($key); ?>" <?php selected(isset($row['compare_condition']) ? $row['compare_condition'] : '', $key); ?>><?php echo esc_html($label); ?></option>
+                        <?php } ?>
+                    </select>
+                </label>
+
+                <label class="hf-condition-cell hf-condition-cell-value">
+                    <span><?php esc_html_e('Value', 'hash-form'); ?></span>
+                    <input type="text" name="compare_value[]" value="<?php echo esc_attr($value); ?>" placeholder="<?php esc_attr_e('Answer to compare against', 'hash-form'); ?>" />
+                </label>
+            </div>
+        </div>
+        <?php
+    }
+
+    public function add_more_condition_block() {
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
+
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
+
+        $form_id = HashFormHelper::get_post('form_id', 'absint', 0);
+        self::condition_row_html(HashFormFields::get_form_fields($form_id));
+        die();
+    }
+
+    /**
+     * Discards conditional logic rules that name no fields.
+     *
+     * The panel is saved over AJAX from serializeArray(), so the browser's
+     * own required checks never run — a rule left half-filled used to be
+     * stored, then read back on every page load as a rule that can never
+     * match. The five columns are parallel arrays, so they are rebuilt
+     * together or they fall out of step.
+     *
+     * @param array $vars Posted settings.
+     * @return array
+     */
+    private static function drop_incomplete_conditions($vars) {
+        if (!isset($vars['condition_action']) || !is_array($vars['condition_action'])) {
+            return $vars;
+        }
+
+        $columns = array('condition_action', 'compare_from', 'compare_to', 'compare_condition', 'compare_value');
+        $kept = array_fill_keys($columns, array());
+
+        foreach (array_keys($vars['condition_action']) as $key) {
+            $from = isset($vars['compare_from'][$key]) ? trim($vars['compare_from'][$key]) : '';
+            $to = isset($vars['compare_to'][$key]) ? trim($vars['compare_to'][$key]) : '';
+
+            if ('' === $from || '' === $to) {
+                continue;
+            }
+
+            foreach ($columns as $column) {
+                $kept[$column][] = isset($vars[$column][$key]) ? $vars[$column][$key] : '';
+            }
+        }
+
+        return array_merge($vars, $kept);
+    }
+
+    public static function get_show_hide_conditions($id) {
+        $form = HashFormBuilder::get_form_vars($id);
+        $settings = isset($form->settings) ? $form->settings : array();
+        $conditions = array();
+        if (isset($settings['condition_action']) && $settings['condition_action']) {
+            foreach ($settings['condition_action'] as $key => $row) {
+                $condition = array(
+                    'condition_action' => $settings['condition_action'][$key],
+                    'compare_from' => $settings['compare_from'][$key],
+                    'compare_to' => $settings['compare_to'][$key],
+                    'compare_condition' => $settings['compare_condition'][$key],
+                    'compare_value' => $settings['compare_value'][$key],
+                );
+                $conditions[] = $condition;
+            }
+        }
+        return $conditions;
+    }
+
+    /**
+     * Point a copied form's rules at the copy's own fields.
+     *
+     * A rule stores field ids. Duplicating a form, importing one, or starting
+     * from a template all build fresh fields with fresh ids, and the rules
+     * were carried across untouched - so every one of them named a field that
+     * did not exist on the new form. Nothing was shown or hidden, and the
+     * Conditional Logic panel offered "Select a field" for both ends.
+     *
+     * A rule whose ends cannot both be mapped is dropped rather than kept
+     * pointing at a stranger: the id it holds may since have been handed to an
+     * unrelated field on another form, and a rule that silently governs the
+     * wrong field is worse than no rule.
+     *
+     * @param array $settings The new form's settings, conditions included.
+     * @param array $map      old field id => new field id.
+     * @param int   $dropped  Set to the number of rules that could not be kept.
+     * @return array The settings, with the rules rewritten.
+     */
+    public static function remap_conditions($settings, $map, &$dropped = 0) {
+        $dropped = 0;
+
+        if (empty($settings['condition_action']) || !is_array($settings['condition_action'])) {
+            return $settings;
+        }
+
+        $columns = array('condition_action', 'compare_from', 'compare_to', 'compare_condition', 'compare_value');
+        $kept = array_fill_keys($columns, array());
+
+        foreach (array_keys($settings['condition_action']) as $key) {
+            $from = isset($settings['compare_from'][$key]) ? (int) $settings['compare_from'][$key] : 0;
+            $to = isset($settings['compare_to'][$key]) ? (int) $settings['compare_to'][$key] : 0;
+
+            if (!isset($map[$from], $map[$to])) {
+                $dropped++;
+                continue;
+            }
+
+            foreach ($columns as $column) {
+                $value = isset($settings[$column][$key]) ? $settings[$column][$key] : '';
+
+                if ('compare_from' === $column) {
+                    $value = (string) $map[$from];
+                } else if ('compare_to' === $column) {
+                    $value = (string) $map[$to];
+                }
+
+                $kept[$column][] = $value;
+            }
+        }
+
+        foreach ($columns as $column) {
+            $settings[$column] = $kept[$column];
+        }
+
+        return $settings;
+    }
+
+    /**
+     * Point a copied form's calculation formulas at the copy's own fields.
+     *
+     * A formula refers to its inputs as #field_id_12, and a repeater column as
+     * #repeater_12_0 - field ids again, with the same problem the show and hide
+     * rules had: copy the form and every tag names a field that is not there,
+     * so the total silently stops adding up.
+     *
+     * Runs over the new form's own fields once they exist, so it is given the
+     * form to walk rather than the values to rewrite.
+     *
+     * @param int   $form_id The form that has just been built.
+     * @param array $map     old field id => new field id.
+     * @return int How many formulas were rewritten.
+     */
+    public static function remap_calculation_formulas($form_id, $map) {
+        global $wpdb;
+
+        if (!$map) {
+            return 0;
+        }
+
+        $rewritten = 0;
+
+        foreach (HashFormFields::get_form_fields($form_id) as $field) {
+            $options = $field->field_options;
+
+            if (!is_array($options) || empty($options['formula'])) {
+                continue;
+            }
+
+            $formula = $options['formula'];
+
+            // Both tag shapes in one pass, so a formula that mixes them cannot
+            // half-update. The id is looked up as it is met; anything the map
+            // does not know is left exactly as it was rather than guessed at.
+            $updated = preg_replace_callback(
+                    '/#(field_id|repeater)_(\d+)(_\d+)?/',
+                    function ($m) use ($map) {
+                        $old = (int) $m[2];
+
+                        if (!isset($map[$old])) {
+                            return $m[0];
+                        }
+
+                        return '#' . $m[1] . '_' . $map[$old] . (isset($m[3]) ? $m[3] : '');
+                    },
+                    $formula
+            );
+
+            if ($updated === $formula) {
+                continue;
+            }
+
+            $options['formula'] = $updated;
+            $wpdb->update(
+                    $wpdb->prefix . 'hashform_fields',
+                    array('field_options' => serialize($options)),
+                    array('id' => (int) $field->id)
+            );
+            $rewritten++;
+        }
+
+        return $rewritten;
+    }
+
+    /**
+     * Which fields a form's rules touch, and what each rule says.
+     *
+     * A rule names two fields: compare_from is the one shown or hidden, and
+     * compare_to is the one whose answer decides it. Both ends are worth
+     * marking on the canvas - a field that disappears for some visitors, and a
+     * field that is doing the deciding - so this returns an entry for each,
+     * keyed by field id.
+     *
+     * Read once per form and held for the request, because it is called from
+     * inside the loop that renders every field.
+     *
+     * @param int $form_id
+     * @return array field id => array( 'target' => string[], 'trigger' => string[] )
+     */
+    public static function get_condition_hints($form_id) {
+        static $cache = array();
+
+        $form_id = absint($form_id);
+
+        if (isset($cache[$form_id])) {
+            return $cache[$form_id];
+        }
+
+        $conditions = self::get_show_hide_conditions($form_id);
+
+        if (!$conditions) {
+            $cache[$form_id] = array();
+            return $cache[$form_id];
+        }
+
+        $names = array();
+
+        foreach (HashFormFields::get_form_fields($form_id) as $field) {
+            $names[(int) $field->id] = $field->name;
+        }
+
+        $operators = self::condition_operators();
+        $hints = array();
+
+        foreach ($conditions as $row) {
+            $target = isset($row['compare_from']) ? (int) $row['compare_from'] : 0;
+            $trigger = isset($row['compare_to']) ? (int) $row['compare_to'] : 0;
+
+            // A half-filled rule does nothing on the front end, so it says
+            // nothing here either.
+            if (!$target || !$trigger) {
+                continue;
+            }
+
+            /*
+             * Raw strings here, escaped where they are printed. Building them
+             * with esc_html__() turned the quotes into entities before the
+             * sentence was assembled, which then had to survive a second pass
+             * to come out right.
+             */
+            $is_show = !isset($row['condition_action']) || 'hide' !== $row['condition_action'];
+            $operator = isset($operators[$row['compare_condition']])
+                    ? strtolower($operators[$row['compare_condition']])
+                    : $row['compare_condition'];
+            $unknown = __('a deleted field', 'hash-form');
+            $trigger_name = isset($names[$trigger]) ? $names[$trigger] : $unknown;
+            $target_name = isset($names[$target]) ? $names[$target] : $unknown;
+            $value = isset($row['compare_value']) ? $row['compare_value'] : '';
+
+            // "Show"/"Hide" name the rule on the settings panel, where they are
+            // an instruction. Here they describe a field, so they need the
+            // participle: "Shown when ...", not "Show when ...".
+            $hints[$target]['target'][] = $is_show
+                    /* translators: 1: the field being watched, 2: the comparison, 3: the value compared against. */
+                    ? sprintf(__('Shown when "%1$s" %2$s "%3$s"', 'hash-form'), $trigger_name, $operator, $value)
+                    /* translators: 1: the field being watched, 2: the comparison, 3: the value compared against. */
+                    : sprintf(__('Hidden when "%1$s" %2$s "%3$s"', 'hash-form'), $trigger_name, $operator, $value);
+
+            $hints[$trigger]['trigger'][] = $is_show
+                    /* translators: %s: the field this one decides. */
+                    ? sprintf(__('Decides whether "%s" is shown', 'hash-form'), $target_name)
+                    /* translators: %s: the field this one decides. */
+                    : sprintf(__('Decides whether "%s" is hidden', 'hash-form'), $target_name);
+        }
+
+        $cache[$form_id] = $hints;
+
+        return $cache[$form_id];
+    }
+
+    public function add_plugin_action_link($links) {
+        $custom['settings'] = sprintf(
+            '<a href="%s" aria-label="%s">%s</a>', esc_url(add_query_arg('page', 'hashform', admin_url('admin.php'))), esc_attr__('Hash Forms', 'hash-form'), esc_html__('Settings', 'hash-form')
+        );
+
+        return array_merge($custom, (array) $links);
+    }
+
+    public function file_upload_action() {
+        if (!wp_verify_nonce(HashFormHelper::get_var('file_uploader_nonce'), 'hashform-upload-ajax-nonce')) {
+            die();
+        }
+
+        $allowedExtensions = HashFormHelper::get_var('allowedExtensions');
+        $sizeLimit = HashFormHelper::get_var('sizeLimit');
+        $upload_dir = wp_upload_dir();
+
+        // One shared list, defined in admin/forms/sanitization.php, so this
+        // and the field's own sanitizer cannot disagree about a format.
+        $default_allowed_extenstions = hashform_allowed_file_extensions();
+
+        // get_allowed_mime_types() is applied again inside HashFormFileUploader,
+        // so anything this site has not actually enabled is still refused.
+
+        // The request controls the shape of this value; a scalar would emit a
+        // warning into the middle of the JSON response below.
+        $allowedExtensions = is_array($allowedExtensions) ? $allowedExtensions : array();
+
+        $filtered_allowed_extenstions = array();
+        foreach ($allowedExtensions as $ext) {
+            if (in_array($ext, $default_allowed_extenstions, true)) {
+                $filtered_allowed_extenstions[] = $ext;
+            }
+        }
+
+        /*
+         * Tested after filtering rather than before. A request naming only
+         * extensions this plugin does not recognise used to satisfy a check on
+         * the raw list and then hand the uploader an empty one, which it read
+         * as "no restriction configured".
+         *
+         * Answered rather than dropped: an empty body left the uploader
+         * waiting on a response it could not parse, so the file appeared
+         * to hang instead of failing.
+         */
+        if (!$filtered_allowed_extenstions) {
+            wp_send_json(array('error' => esc_html__('This type of file is not allowed.', 'hash-form')));
+        }
+
+        // Never trust the request for the size limit beyond what the
+        // server would accept anyway.
+        $sizeLimit = min(absint($sizeLimit), wp_max_upload_size());
+
+        $uploader = new HashFormFileUploader($filtered_allowed_extenstions, $sizeLimit);
+
+        /*
+         * Anything the upload machinery prints - a php notice from a host
+         * with a hardened open_basedir, a warning out of the mime sniffing -
+         * would land in front of the json and leave the browser unable to
+         * parse the reply. Whatever gets emitted is captured and dropped so
+         * the response is only ever the json below.
+         */
+        ob_start();
+        $result = $uploader->handleUpload($upload_dir['basedir'] . HASHFORM_UPLOAD_DIR, false, $upload_dir['baseurl'] . HASHFORM_UPLOAD_DIR);
+        $stray_output = ob_get_clean();
+
+        if ($stray_output && defined('WP_DEBUG') && WP_DEBUG) {
+            HashFormHelper::log('Upload handler produced unexpected output: ' . $stray_output);
+        }
+
+        wp_send_json($result);
+    }
+
+    public function file_delete_action() {
+        if (wp_verify_nonce(HashFormHelper::get_post('_wpnonce'), 'hashform-upload-ajax-nonce')) {
+            $path = str_replace(' ', '+', HashFormHelper::get_post('path', 'wp_kses_post'));
+            $file = HashFormHelper::decrypt($path);
+
+            // An empty name would resolve to the temp directory itself.
+            if ($file) {
+                $upload_dir = wp_upload_dir();
+                $temp_dir = $upload_dir['basedir'] . HASHFORM_UPLOAD_DIR . '/temp';
+
+                // Unlike wp_delete_file(), this confirms the resolved path sits
+                // inside the temp directory and returns a usable bool on every
+                // supported WordPress version.
+                if (wp_delete_file_from_directory($temp_dir . '/' . $file, $temp_dir)) {
+                    die('success');
+                }
+            }
+        }
+        die('error');
+    }
+
+    public static function remove_old_temp_files() {
+        $max_file_age = apply_filters('hashform_temp_file_delete_time', 2 * 3600);
+        $upload_dir = wp_upload_dir();
+        $temp_dir = $upload_dir['basedir'] . HASHFORM_UPLOAD_DIR . '/temp/';
+
+        // Remove old temp files
+        if (is_dir($temp_dir) and ($dir = opendir($temp_dir))) {
+            while (($file = readdir($dir)) !== false) {
+                $temp_file_path = $temp_dir . $file;
+                if (!is_file($temp_file_path)) {
+                    continue;
+                }
+                if ((filemtime($temp_file_path) < time() - $max_file_age)) {
+                    wp_delete_file($temp_file_path);
+                }
+            }
+            closedir($dir);
+        }
+    }
+
+    public function admin_notice() {
+        add_action('admin_notices', array($this, 'admin_notice_content'));
+    }
+
+    public function admin_notice_content() {
+        if (!$this->is_dismissed('review') && !empty(get_option('hashform_first_activation')) && time() > get_option('hashform_first_activation') + 15 * DAY_IN_SECONDS) {
+            $this->review_notice();
+        }
+    }
+
+    public static function is_dismissed($notice) {
+        $dismissed = get_option('hashform_dismissed_notices', array());
+
+        // Handle legacy user meta
+        $dismissed_meta = get_user_meta(get_current_user_id(), 'hashform_dismissed_notices', true);
+        if (is_array($dismissed_meta)) {
+            if (array_diff($dismissed_meta, $dismissed)) {
+                $dismissed = array_merge($dismissed, $dismissed_meta);
+                update_option('hashform_dismissed_notices', $dismissed);
+            }
+            if (!is_multisite()) {
+                // Don't delete on multisite to avoid the notices to appear in other sites.
+                delete_user_meta(get_current_user_id(), 'hashform_dismissed_notices');
+            }
+        }
+
+        return in_array($notice, $dismissed);
+    }
+
+    public function review_notice() {
+        ?>
+        <div class="hashform-notice notice notice-info">
+            <?php $this->dismiss_button('review'); ?>
+            <div class="hashform-notice-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 117.66 152.27">
+                    <g>
+                        <g>
+                            <path d="M0,3.46A3.46,3.46,0,0,1,3.14,0h80A3.53,3.53,0,0,1,85.6,1l31,31a3.47,3.47,0,0,1,1,2.43V148.81a3.46,3.46,0,0,1-3.46,3.46H31.63a3.46,3.46,0,1,1,0-6.92h79.11V38.07H83.05a3.46,3.46,0,0,1-3.46-3.46V6.92H6.92V145.35H14a3.46,3.46,0,1,1,0,6.92H3.46A3.46,3.46,0,0,1,0,148.81ZM106,31.15,86.51,11.68V31.15Z" />
+                            <path d="M78.66,59.3H95.09v6.61H78.66V85.75H72.05V42.87h6.61Zm0,39.67v16.42H72.05V99H52.22V92.36H95.09V99ZM39,99H22.57V92.36H39V72.52h6.61V115.4H39ZM39,59.3V42.87h6.61V59.3H65.44v6.61H22.57V59.3Z" />
+                        </g>
+                    </g>
+                </svg>
+            </div>
+
+            <div class="hashform-notice-content">
+                <p>
+                    <?php
+                    printf(
+                        /* translators: %1$s is link start tag, %2$s is link end tag. */
+                        esc_html__('Great to see that you have been using Hash Form for some time. We hope you love it, and we would really appreciate it if you would %1$sleave a review%2$s and spread your words to the world.', 'hash-form'), '<a target="_blank" href="https://wordpress.org/support/plugin/hash-form/reviews/">', '</a>'
+                    );
+                    ?>
+                </p>
+                <a target="_blank" class="button button-primary button-large" href="https://wordpress.org/support/plugin/hash-form/reviews/"><span class="dashicons dashicons-thumbs-up"></span><?php echo esc_html__('Yes, of course', 'hash-form') ?></a> &nbsp;
+                <a class="button button-large" href="<?php echo esc_url(wp_nonce_url(add_query_arg('hashform-hide-notice', 'review'), 'review', 'hashform_notice_nonce')); ?>"><span class="dashicons dashicons-yes"></span><?php echo esc_html__('I have already rated', 'hash-form') ?></a>
+            </div>
+        </div>
+        <?php
+    }
+
+    public function welcome_init() {
+        if (!get_option('hashform_first_activation')) {
+            update_option('hashform_first_activation', time());
+        }
+
+        if (isset($_GET['hashform-hide-notice'], $_GET['hashform_notice_nonce'])) {
+            $notice = sanitize_key($_GET['hashform-hide-notice']);
+            check_admin_referer($notice, 'hashform_notice_nonce');
+            self::dismiss($notice);
+            wp_safe_redirect(remove_query_arg(array('hashform-hide-notice', 'hashform_notice_nonce'), wp_get_referer()));
+            exit;
+        }
+    }
+
+    public function dismiss_button($name) {
+        printf('<a class="notice-dismiss" href="%s"><span class="screen-reader-text">%s</span></a>', esc_url(wp_nonce_url(add_query_arg('hashform-hide-notice', $name), $name, 'hashform_notice_nonce')), esc_html__('Dismiss this notice.', 'hash-form'));
+    }
+
+    public static function dismiss($notice) {
+        $dismissed = get_option('hashform_dismissed_notices', array());
+
+        if (!in_array($notice, $dismissed)) {
+            $dismissed[] = $notice;
+            update_option('hashform_dismissed_notices', array_unique($dismissed));
+        }
+    }
+
+
+    public function register_translation_strings() {
+        // Without WPML there is nothing to register; skip the full forms +
+        // fields scan that would otherwise run on every request.
+        if (!has_action('wpml_register_single_string')) {
+            return;
+        }
+
+        $all_forms = HashFormListing::get_published_table_data();
+
+        foreach ($all_forms as $form) {
+            $form_title = $form['name'];
+            $options = HashFormHelper::unserialize_or_decode($form['options']);
+            $settings = HashFormHelper::unserialize_or_decode($form['settings']);
+            $string_array = array(
+                'Name' => $form_title,
+                'Description' => $form['description'],
+                'Email Auto Responder Subject' => isset($settings['email_subject_ar']) ? $settings['email_subject_ar'] : '',
+                'Email Auto Responder Message' => isset($settings['email_message_ar']) ? $settings['email_message_ar'] : '',
+                'Confirmation Message' => isset($settings['confirmation_message']) ? $settings['confirmation_message'] : '',
+                'Error Message' => isset($settings['error_message']) ? $settings['error_message'] : '',
+                'Submit Button Text' => isset($options['submit_value']) ? $options['submit_value'] : ''
+            );
+
+            foreach ($string_array as $title => $strings) {
+                if (has_action('wpml_register_single_string')) {
+                    // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WPML's own hook, not one this plugin owns.
+                    do_action('wpml_register_single_string', 'Hash Form', $form_title . ' - ' . $title, $strings);
+                }
+            }
+
+            $form_fields = HashFormFields::get_form_fields($form['id']);
+            foreach ($form_fields as $field) {
+                $string_array = array(
+                    'Field Label' => $field->name,
+                    'Field Description' => $field->description,
+                    'Field Validation Message' => isset($field->field_options['invalid']) ? $field->field_options['invalid'] : '',
+                );
+
+                if ($field->type == 'paragraph' && isset($field->field_options['content'])) {
+                    $string_array['Field Content'] = $field->field_options['content'];
+                }
+
+                if ($field->type == 'name') {
+                    $name_arrs = array('full', 'first', 'middle', 'last');
+                    foreach ($name_arrs as $name) {
+                        $value = isset($field->default_value[$name]) ? $field->default_value[$name] : '';
+                        $placeholder = isset($field->placeholder[$name]) ? $field->placeholder[$name] : '';
+                        $label = isset($field->field_options['desc'][$name]) ? $field->field_options['desc'][$name] : '';
+                        $string_array[ucwords($name) . ' Label'] = $label;
+                        $string_array[ucwords($name) . ' Value'] = $value;
+                        $string_array[ucwords($name) . ' Placeholder'] = $placeholder;
+                    }
+                }
+
+                if ($field->type == 'address') {
+                    $address_arrs = array('line1', 'line2', 'city', 'state', 'zip', 'country');
+                    foreach ($address_arrs as $address) {
+                        $value = isset($field->default_value[$address]) ? $field->default_value[$address] : '';
+                        $placeholder = isset($field->placeholder[$address]) ? $field->placeholder[$address] : '';
+                        $label = isset($field->field_options['desc'][$address]) ? $field->field_options['desc'][$address] : '';
+                        $string_array[ucwords($address) . ' Label'] = $label;
+                        $string_array[ucwords($address) . ' Value'] = $value;
+                        $string_array[ucwords($address) . ' Placeholder'] = $placeholder;
+                    }
+                }
+
+                if (isset($field->default_value) && $field->type != 'name') {
+                    if (is_array($field->default_value)) {
+                        foreach ($field->default_value as $key => $defval) {
+                            $string_array['Field Default ' . $key] = $defval;
+                        }
+                    } else {
+                        $string_array['Field Default'] = $field->default_value;
+                    }
+                }
+
+                if (isset($field->field_options['placeholder'])) {
+                    if (is_array($field->field_options['placeholder'])) {
+                        foreach ($field->field_options['placeholder'] as $key => $defval) {
+                            $string_array['Field Placeholder ' . $key] = $defval;
+                        }
+                    } else {
+                        $string_array['Field Placeholder'] = $field->field_options['placeholder'];
+                    }
+                }
+
+                foreach ($string_array as $title => $strings) {
+                    if (has_action('wpml_register_single_string')) {
+                        // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WPML's own hook, not one this plugin owns.
+                        do_action('wpml_register_single_string', 'Hash Form', $form_title . ' - ' . $field->id . ' - ' . $title, $strings);
+                    }
+                }
+            }
+        }
+    }
+
+    public function translate_string($original_value, $domain, $name = '') {
+        // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WPML's own hook, not one this plugin owns.
+        $wpml_translation = apply_filters('wpml_translate_single_string', $original_value, $domain, $name);
+        if ($wpml_translation === $original_value && function_exists('pll__')) {
+            return pll__($original_value);
+        }
+        return $wpml_translation;
+    }
+
+}
+
+new HashFormBuilder();

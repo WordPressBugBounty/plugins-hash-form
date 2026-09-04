@@ -3,7 +3,7 @@ Contributors: hashthemes
 Tags: form, form builder, drag and drop, contact form
 Requires at least: 6.3
 Tested up to: 7.1
-Stable tag: 1.4.3
+Stable tag: 1.4.4
 Requires PHP: 7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -126,19 +126,56 @@ The easy way to install the plugin is via WordPress.org plugin directory.
 </ol>
 
 == Screenshots ==
+== Screenshots ==
 1. Form Builder Screen
 2. Form Builder Screen With Fields
-3. Email Settings Page
-4. Auto Responder Page
-5. Confirmation Page
-6. Conditional Logic Page
-7. Import/Export Page
-8. Form Style Selector Page
-9. Form Designer Page
-10. ReCaptcha v2 & v3 Integration Page
-11. Global Email Settings Page
+3. Email Settings
+4. Auto Responder
+5. Confirmation
+6. Conditional Logic
+7. Restriction
+8. Import/Export
+9. Form Style Selector
+10. Entries Listing Page
+11. ReCaptcha v2 & v3 Integration
+12. Global Email Settings
+13. General Settings
+14. Form Style Builder
 
 == Changelog ==
+= 1.4.4 - 3 Sep, 2026 =
+* Elementor widget: the widget's key had a space in it, so Elementor built the class "elementor-widget-Hash Form" - which a browser reads as two classes, leaving a stray global "Form" on the element and nothing able to target the widget. It is now elementor-widget-hashform; pages already built keep working through an alias registered under the old name - Fixed
+* Elementor widget: registering the widget used require rather than require_once, so a second pass over the elementor/widgets/register hook was a fatal "Cannot declare class" - Fixed
+* Elementor widget: the selected form id is cast to an integer before it is built into the shortcode
+* Elementor widget: "Cick Here" in the Select Form panel - Fixed
+* Elementor widget: the Validation section's Text Alignment control had a stray brace in its selector, so it generated no css at all and the setting did nothing - Fixed
+* Elementor widget: the form's stylesheet never loaded inside the editor's preview, because Elementor builds widgets there client-side and the render that enqueues the form assets never runs. The form appeared unstyled while editing and every style control looked like it did nothing, though the page itself was fine - Fixed
+* Gutenberg block: the form's stylesheet never reached the block in the editor. The block is rendered for the editor through the block-renderer endpoint, which returns markup and nothing else, and the editor canvas is an iframe - so a stylesheet enqueued for the editor dressed the screen around the canvas and never got inside it. It is enqueued on enqueue_block_assets now, which is the one WordPress carries into the canvas - Fixed
+* Gutenberg block: with Enable Custom Style on, the block's own generated css was queued for wp_footer, which never runs on that endpoint. In the editor the block lost its default styling and got nothing in place of it; the css now travels with the markup when the render is for the editor - Fixed
+* Gutenberg block: with Enable Custom Style off, the block saved a rule reading "#block-id{undefined}" into the post, because the editor stringified the switch itself into the css. No style is written at all now - Fixed
+* The Entries list no longer shows an Export to CSV button that only leads to a sales page. Export belongs to Pro, and a button that does not export reads as a broken feature rather than an absent one - the button now appears only when Pro is there to answer it
+* Conditional logic survived neither duplicating a form nor importing one: the rules store field ids, the copy built fields with new ids, and nothing was rewritten - so every rule pointed at a field the new form did not have and no field was ever shown or hidden. Rules are now pointed at the copy's own fields - Fixed
+* Exported forms carry a reference id for each field, which is what lets an import match a rule to the field it means. A file exported before this has nothing to match on, so its rules are dropped on import rather than kept in a state where they can never fire
+* Calculation formulas refer to their inputs by field id and were left untouched by a copy or an import, so the sum stopped working on the new form. They are rewritten alongside the rules now - Fixed
+* Two filters, hashform_pre_get_form_vars and hashform_pre_get_form_fields, let a form be rendered from a definition held in memory rather than one stored in the database - which is what lets Pro preview a template without importing it first
+* Conditional logic is now visible where the form is built: a field a rule shows or hides is marked "Conditional" on the canvas, the field deciding it is marked "Controls a field", and the rule itself is in the tooltip
+* The preview marks the same fields and says how many are hidden by a rule at that moment, so a field that is simply not there is no longer a mystery
+* The form preview endpoint answered visitors who were not logged in, so any form could be rendered by walking the ids; it now requires a login and permission to view forms - Fixed (Security)
+* Style templates now open in a builder of their own rather than the post editor - full height, the same header bar the other screens carry, the template name editable in that bar, and its own save bar
+* Opening Add New for a style template no longer writes an empty draft into the templates list before anything has been saved
+* Style builder now sits on the same workspace as the form builder, with the panel and the preview as cards on a shaded ground instead of flush to the edges of the screen
+* The admin bar drew across the top of the style builder's header, taking the first 32 pixels off the template name and the actions beside it - Fixed
+* The style builder's header hung 20 pixels off the left of the screen and ran its actions off the right - Fixed
+* Choosing a font style in the style builder applied the weight but not the style itself, because the weight declaration closed the rule before the style was reached - Fixed
+* Changing a style control before the preview had finished loading threw, and that control's change went unapplied - Fixed
+* Field description changes now show on the builder canvas as they are typed, rather than only after saving and reloading - Fixed
+* HTML field content now renders on the builder canvas instead of an empty block
+* Checkbox and radio options could only be reordered after saving the form and reloading the page - Fixed
+* Must Match Field now follows a field's label as it is renamed and picks up fields as they are added or deleted, without a reload - Fixed
+* Icon font dropped in favour of the svg icons already in use, taking a font request and four files out of the install
+* Unused stylesheets and dead code removed
+* Plugin classes moved from admin/classes to includes, since the shortcode, the front-end loader and the public ajax endpoints are not admin code
+
 = 1.4.3 - 27 Aug, 2026 =
 * Readme now sets out the kinds of forms the plugin builds - Updated
 * Unauthenticated file upload: a request naming only unrecognised extensions cleared the guard and left the uploader with an empty allowlist, which it treated as no restriction, allowing a file outside the form's configured types to be stored and served from the uploads folder - Fixed (Security)

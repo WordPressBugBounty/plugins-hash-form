@@ -170,6 +170,18 @@
     // setting is reflected immediately without a round trip.
     function hfDynamicCss(control, style, val) {
         const iframe = $('#hf-template-preview-iframe')[0];
+
+        /*
+         * The preview is fetched over ajax, so for the first second of the
+         * page there is no iframe to write into. Reading .contentDocument off
+         * nothing threw, which killed the handler for the control that was
+         * touched. The value is picked up anyway: the whole form is
+         * serialised when the preview is built.
+         */
+        if (!iframe) {
+            return;
+        }
+
         let doc = iframe.contentDocument || iframe.contentWindow.document;
         if (doc.document) {
             doc = doc.document;
@@ -201,9 +213,9 @@
             const weight = to.replace(/\D/g, '');
             const style = to.replace(/\d+/g, '') || 'normal';
             css = '--' + id.replace('style', 'weight') + ':' + weight + ';';
-            css += '--' + id + ':' + style + '}';
+            css += '--' + id + ':' + style + ';';
         } else {
-            css = '--' + id + ':' + to + unit + '}';
+            css = '--' + id + ':' + to + unit + ';';
         }
 
         hfDynamicCss(id, css, to);

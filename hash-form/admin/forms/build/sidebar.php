@@ -95,16 +95,9 @@ defined('ABSPATH') || die();
                                         echo esc_attr(sprintf(__('Drag %s into your form', 'hash-form'), $field_type['name']));
                                         ?>">
                                             <?php
-                                            $field_icon = HashFormFieldIcons::render($field_key);
-
-                                            if ($field_icon) {
-                                                echo wp_kses($field_icon, HashFormFieldIcons::allowed_svg());
-                                            } else {
-                                                // Anything that has not registered an svg keeps its icon font glyph.
-                                                ?>
-                                                <i class="<?php echo esc_attr($field_type['icon']); ?>"></i>
-                                                <?php
-                                            }
+                                            // render() covers an unregistered type with a
+                                            // neutral mark, so there is no font branch left.
+                                            echo wp_kses(HashFormFieldIcons::render($field_key), HashFormFieldIcons::allowed_svg());
                                             ?>
                                             <span><?php echo esc_html($field_type['name']); ?></span>
                                         </a>

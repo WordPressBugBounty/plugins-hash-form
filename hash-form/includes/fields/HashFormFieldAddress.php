@@ -1,0 +1,195 @@
+<?php
+defined('ABSPATH') || die();
+
+class HashFormFieldAddress extends HashFormFieldType {
+
+    protected $type = 'address';
+
+    protected function field_settings_for_type() {
+        return array(
+            'default' => false
+        );
+    }
+
+    protected function sub_fields() {
+        return array(
+            'line1' => array(
+                'type' => 'text',
+                'label' => esc_html__('Line 1', 'hash-form')
+            ),
+            'line2' => array(
+                'type' => 'text',
+                'label' => esc_html__('Line 2', 'hash-form')
+            ),
+            'city' => array(
+                'type' => 'text',
+                'label' => esc_html__('City', 'hash-form')
+            ),
+            'state' => array(
+                'type' => 'text',
+                'label' => esc_html__('State/Province', 'hash-form')
+            ),
+            'postal' => array(
+                'type' => 'number',
+                'label' => esc_html__('Zip/Postal', 'hash-form')
+            ),
+            'country' => array(
+                'type' => 'select',
+                'label' => esc_html__('Country', 'hash-form')
+            ));
+    }
+
+    protected function show_after_default() {
+        $sub_fields = $this->sub_fields();
+        foreach ($sub_fields as $name => $sub_field) {
+            $this->single_field($name, $sub_field);
+        }
+    }
+
+    protected function single_field($name, $sub_field) {
+        $field = $this->get_field();
+        $field_id = $field['id'];
+        $field_key = $field['field_key'];
+        $label = $sub_field['label'];
+        $type = $sub_field['type'];
+        $desc = isset($field['desc'][$name]) ? $field['desc'][$name] : '';
+        $placeholder = isset($field['placeholder'][$name]) ? $field['placeholder'][$name] : '';
+        $value = isset($field['default_value'][$name]) ? $field['default_value'][$name] : '';
+        $disable = isset($field['disable'][$name]) ? $field['disable'][$name] : 'on';
+        $country_grid_class = $name !== 'country' ? ' hf-grid-2' : '';
+        ?>
+        <div class="hf-form-row hf-sub-field-<?php echo esc_attr($name); ?>" data-sub-field-name="<?php echo esc_attr($name); ?>" data-field-id="<?php echo esc_attr($field_id); ?>">
+            <div class="hf-sub-field-label">
+                <?php echo esc_html($label); ?>
+                <label class="hf-field-show-hide">
+                    <input type="checkbox" name="field_options[disable_<?php echo esc_attr($field_id); ?>][<?php echo esc_attr($name); ?>]" id="hf-disable-<?php echo esc_attr($name); ?>-<?php echo esc_attr($field_id); ?>" value="off" data-disablefield="hf-subfield-container-<?php echo esc_attr($name); ?>-<?php echo esc_attr($field_id); ?>" <?php checked(($disable == 'off'), true) ?>>
+                    <label for="hf-disable-<?php echo esc_attr($name); ?>-<?php echo esc_attr($field_id); ?>"></label>
+                </label>
+            </div>
+
+            <div class="hf-grid-container">
+                <?php if ($name !== 'country') { ?>
+                    <div class="hf-form-row hf-grid-2">
+                        <input type="<?php echo esc_attr($type); ?>" name="default_value_<?php echo esc_attr($field_id); ?>[<?php echo esc_attr($name); ?>]" value="<?php echo esc_attr($value); ?>" data-changeme="hf-field-<?php echo esc_attr($field_key); ?>-<?php echo esc_attr($name); ?>" data-changeatt="value">
+                        <label class="hf-field-desc"><?php esc_html_e('Default Value', 'hash-form'); ?></label>
+                    </div>
+                    <div class="hf-form-row hf-grid-2">
+                        <input type="text" name="field_options[placeholder_<?php echo esc_attr($field_id); ?>][<?php echo esc_attr($name); ?>]" value="<?php echo esc_attr($placeholder); ?>" data-changeme="hf-field-<?php echo esc_attr($field_key); ?>-<?php echo esc_attr($name); ?>" data-changeatt="placeholder">
+                        <label class="hf-field-desc"><?php esc_html_e('Placeholder', 'hash-form'); ?></label>
+                    </div>
+                <?php } ?>
+                <div class="hf-form-row<?php echo esc_attr($country_grid_class); ?>">
+                    <input type="text" name="field_options[desc_<?php echo esc_attr($field_id); ?>][<?php echo esc_attr($name); ?>]" value="<?php echo esc_html($desc); ?>" data-changeme="hf-subfield-desc-<?php echo esc_attr($name); ?>-<?php echo esc_attr($field_id); ?>">
+                    <label class="hf-field-desc"><?php esc_html_e('Description', 'hash-form'); ?></label>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+
+    protected function extra_field_default_opts() {
+        $sub_fields = $this->sub_fields();
+        $field_options = array();
+        foreach ($sub_fields as $name => $fields) {
+            $field_options['desc'][$name] = $fields['label'];
+        }
+        return $field_options;
+    }
+
+    public function validate($args) {
+        $errors = isset($args['errors']) ? $args['errors'] : array();
+        $field = $this->get_field();
+
+        if ($field->required == '1') {
+            $sub_fields = $this->sub_fields();
+            unset($sub_fields['line2']);
+
+            foreach ($sub_fields as $name => $sub_field) {
+                if (isset($args['value'][$name]) && empty($args['value'][$name])) {
+                    $errors['field' . $args['id']] = HashFormFields::get_error_msg($this->field, 'blank');
+                }
+            }
+        }
+        return $errors;
+    }
+
+    protected function input_html() {
+        $field = $this->get_field();
+        $field_id = $field['id'];
+        $field_key = $field['field_key'];
+        ?>
+        <div class="hf-grouped-field" id="hf-grouped-field-<?php echo esc_attr($field_id); ?>">
+            <?php
+            $sub_fields = $this->sub_fields();
+            foreach ($sub_fields as $name => $sub_field) {
+                $value = isset($field['default_value'][$name]) ? $field['default_value'][$name] : '';
+                $placeholder = isset($field['placeholder'][$name]) ? $field['placeholder'][$name] : '';
+                $disable = isset($field['disable'][$name]) ? $field['disable'][$name] : 'on';
+                $class = $disable == 'off' ? ' hf-hidden' : ' ';
+
+                $label = isset($field['desc'][$name]) ? $field['desc'][$name] : '';
+                $type = $sub_field['type'];
+
+                if (is_admin() || !($disable == 'off')) {
+                    ?>
+                    <div id="hf-subfield-container-<?php echo esc_attr($name) . '-' . esc_attr($field_id); ?>" class="hf-subfield-element hf-subfield-element-<?php echo esc_attr($name); ?> hf-grid-6 <?php echo esc_attr($class); ?>" data-sub-field-name="<?php echo esc_attr($name); ?>">
+                        <?php
+                        /*
+                         * Every line of the address is announced by name.
+                         * Without this each box read as the field's own label,
+                         * so city, state and postcode were indistinguishable
+                         * to anyone not looking at the caption beneath them.
+                         */
+                        $sub_label = ('' !== trim((string) $label)) ? $label : $sub_field['label'];
+                        $sub_label = trim((string) $sub_label);
+                        $aria_label = $sub_label ? $field['name'] . ' ' . $sub_label : $field['name'];
+
+                        if ($type !== 'select') {
+                            ?>
+                            <input type="<?php echo esc_attr($type); ?>" id="hf-field-<?php echo esc_attr($field_key); ?>-<?php echo esc_attr($name); ?>" aria-label="<?php echo esc_attr($aria_label); ?>"<?php echo !empty($field['required']) ? ' aria-required="true"' : ''; ?> value="<?php echo esc_attr(apply_filters('hashform_translate_string', $value, 'Hash Form', $field['id'] . ' - ' . ucwords($name) . ' Value')); ?>" name="<?php echo esc_attr($this->html_name()) . '[' . esc_attr($name) . ']'; ?>" placeholder="<?php echo esc_attr(apply_filters('hashform_translate_string', $placeholder, 'Hash Form', $field['id'] . ' - ' . ucwords($name) . ' Placeholder')); ?>">
+                            <?php
+                        } else {
+                            $this->get_country_select(HashFormHelper::get_countries(), $aria_label, $value);
+                        }
+                        ?>
+                        <div class="hf-field-desc" id="hf-subfield-desc-<?php echo esc_attr($name); ?>-<?php echo esc_attr($field_id); ?>">
+                            <?php
+                            echo esc_html(apply_filters('hashform_translate_string', $label, 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . ucwords($name) . ' Label'));
+                            ?>
+                        </div>
+                    </div>
+                    <?php
+                }
+            }
+            ?>
+        </div>
+        <?php
+    }
+
+    /**
+     * @param array  $args       Country names.
+     * @param string $aria_label Accessible name for the control.
+     * @param string $selected   Country to preselect.
+     */
+    protected function get_country_select($args, $aria_label = '', $selected = '') {
+        $field = $this->get_field();
+        $field_key = $field['field_key'];
+        ?>
+        <select id="<?php echo 'hf-field-' . esc_attr($field_key) . '-country'; ?>" name="<?php echo esc_attr($this->html_name()) . '[country]'; ?>"<?php echo $aria_label ? ' aria-label="' . esc_attr($aria_label) . '"' : ''; ?><?php echo !empty($field['required']) ? ' aria-required="true"' : ''; ?>>
+            <?php
+            foreach ($args as $arg) {
+                /*
+                 * The stray "';" that used to sit after this tag was left
+                 * over from string-built markup and printed as literal text
+                 * after every country in the list.
+                 */
+                ?>
+                <option value="<?php echo esc_attr($arg); ?>"<?php selected($selected, $arg); ?>><?php echo esc_html($arg); ?></option>
+                <?php
+            }
+            ?>
+        </select>
+        <?php
+    }
+
+}

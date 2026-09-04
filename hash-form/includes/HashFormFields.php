@@ -1,0 +1,872 @@
+<?php
+
+defined('ABSPATH') || die();
+
+class HashFormFields {
+
+    public function __construct() {
+        self::include_field_class();
+        add_action('wp_ajax_hashform_insert_field', array($this, 'create'));
+        add_action('wp_ajax_hashform_delete_field', array($this, 'destroy'));
+        add_action('wp_ajax_hashform_import_options', array($this, 'import_options'));
+        add_action('wp_ajax_hashform_match_field_options', array($this, 'match_field_options'));
+        add_action('wp_ajax_hashform_duplicate_field', array($this, 'duplicate'));
+    }
+
+    public static function get_form_fields($form_id) {
+        global $wpdb;
+
+        /**
+         * Supply a form's fields without them being stored.
+         *
+         * The companion to hashform_pre_get_form_vars: between them a caller
+         * can render a form it holds in memory. Return anything but null and
+         * the query below is skipped.
+         *
+         * @param array|null $fields null to load them as usual.
+         * @param int        $form_id
+         */
+        $pre = apply_filters('hashform_pre_get_form_fields', null, $form_id);
+
+        if (null !== $pre) {
+            return $pre;
+        }
+
+        // After the filter, so a caller supplying a form in memory is asked
+        // with the id it passed rather than a sanitised version of it.
+        $form_id = absint($form_id);
+
+        $results = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}hashform_fields WHERE form_id=%d ORDER BY field_order", $form_id));
+
+        foreach ($results as $value) {
+            foreach ($value as $key => $val) {
+                $value->$key = maybe_unserialize($val);
+            }
+        }
+        return $results;
+    }
+
+    public static function create() {
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
+
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
+        $field_type = HashFormHelper::get_post('field_type', 'sanitize_text_field');
+        $form_id = HashFormHelper::get_post('form_id', 'absint', 0);
+        self::include_new_field($field_type, $form_id);
+        wp_die();
+    }
+
+    public static function destroy() {
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
+
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
+        $field_id = HashFormHelper::get_post('field_id', 'absint', 0);
+        self::destroy_row($field_id);
+        wp_die();
+    }
+
+    public static function duplicate() {
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
+
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
+        $field_id = HashFormHelper::get_post('field_id', 'absint', 0);
+        self::duplicate_field($field_id);
+        wp_die();
+    }
+
+    /**
+     * Copy one field, place the copy directly after the original and render it.
+     *
+     * Echoes the new field's builder markup so the caller can drop it into the
+     * editor, matching what include_new_field() returns for a brand new field.
+     */
+    public static function duplicate_field($field_id) {
+        global $wpdb;
+
+        // Read the row raw: fill_field() expects the serialized columns, the
+        // same way duplicate_fields() feeds it when copying a whole form.
+        $field = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}hashform_fields WHERE id=%d", absint($field_id)));
+
+        if (!$field) {
+            return false;
+        }
+
+        // Sections own the fields nested inside them, so copying one on its own
+        // would leave the copy empty and its end marker orphaned.
+        if (in_array($field->type, array('divider', 'end_divider'), true)) {
+            return false;
+        }
+
+        $values = array();
+        self::fill_field($values, $field, $field->form_id);
+
+        // Make room so the copy sorts immediately after its original instead of
+        // tying with it, which would leave the order down to the database.
+        $wpdb->query($wpdb->prepare(
+                "UPDATE {$wpdb->prefix}hashform_fields SET field_order = field_order + 1 WHERE form_id = %d AND field_order > %d", absint($field->form_id), absint($field->field_order)
+        ));
+
+        $values['field_order'] = absint($field->field_order) + 1;
+
+        $new_id = self::create_row($values);
+
+        if (!$new_id) {
+            return false;
+        }
+
+        $new_field = self::get_field_vars($new_id);
+        $field_array = self::covert_field_obj_to_array($new_field);
+        $field_obj = self::get_field_class($field_array['type'], $field_array);
+        $field_obj->load_single_field();
+
+        return $new_id;
+    }
+
+    public static function include_new_field($field_type, $form_id) {
+        $field_values = self::setup_new_field_vars($field_type, $form_id);
+        $field_id = HashFormFields::create_row($field_values);
+
+        if (!$field_id) {
+            return false;
+        }
+
+        $field = self::get_field_vars($field_id);
+        $field_array = self::covert_field_obj_to_array($field);
+        $field_obj = HashFormFields::get_field_class($field_array['type'], $field_array);
+        $field_obj->load_single_field();
+
+        // The row was created and its markup printed, but the function fell
+        // off the end and handed every caller null, so nothing downstream
+        // could tell a successful insert from a refused one.
+        return $field_id;
+    }
+
+    public static function setup_new_field_vars($type = '', $form_id = '') {
+        global $wpdb;
+
+        $field_count = $wpdb->get_var($wpdb->prepare("SELECT field_order FROM {$wpdb->prefix}hashform_fields WHERE form_id=%d ORDER BY field_order DESC", $form_id));
+        $values = self::get_default_field($type);
+        $values['field_key'] = HashFormHelper::get_unique_key('hashform_fields', 'field_key');
+        $values['form_id'] = $form_id;
+        $values['field_order'] = $field_count + 1;
+        return $values;
+    }
+
+    public static function covert_field_obj_to_array($field) {
+        $field_array = json_decode(wp_json_encode($field), true);
+        $field_options = $field_array['field_options'];
+        unset($field_array['field_options']);
+        return array_merge($field_array, $field_options);
+    }
+
+    public static function get_default_field($type) {
+        $field_obj = HashFormFields::get_field_class($type);
+        return $field_obj->get_new_field_defaults();
+    }
+
+    public static function import_options() {
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
+
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
+
+        $field_id = HashFormHelper::get_post('field_id', 'absint');
+        $field = self::get_field_vars($field_id);
+        if (!in_array($field->type, apply_filters('hash_form_choices_fields', array('radio', 'checkbox', 'select')))) {
+            return;
+        }
+
+        $field_array = self::covert_field_obj_to_array($field);
+        $field_array['type'] = $field->type;
+        $field_array['value'] = $field->default_value;
+
+        $opts = htmlspecialchars_decode(HashFormHelper::get_post('opts', 'esc_html'));
+        $opts = explode("\n", rtrim($opts, "\n"));
+        $opts = array_map('trim', $opts);
+
+        foreach ($opts as $opt_key => $opt) {
+            $opts[$opt_key] = array(
+                'label' => $opt
+            );
+        }
+
+        $field_array['options'] = $opts;
+        $field_obj = HashFormFields::get_field_class($field_array['type'], $field_array);
+        $field_obj->show_single_option();
+        wp_die();
+    }
+
+    public static function field_selection() {
+        $hashform_fields = array(
+            'name' => array(
+                'name' => esc_html__('Name', 'hash-form'),
+            ),
+            'email' => array(
+                'name' => esc_html__('Email', 'hash-form'),
+            ),
+            'phone' => array(
+                'name' => esc_html__('Phone', 'hash-form'),
+            ),
+            'url' => array(
+                'name' => esc_html__('Website/URL', 'hash-form'),
+            ),
+            'address' => array(
+                'name' => esc_html__('Address', 'hash-form'),
+            ),
+            'text' => array(
+                'name' => esc_html__('Text', 'hash-form'),
+            ),
+            'textarea' => array(
+                'name' => esc_html__('Text Area', 'hash-form'),
+            ),
+            'select' => array(
+                'name' => esc_html__('Dropdown', 'hash-form'),
+            ),
+            'checkbox' => array(
+                'name' => esc_html__('Checkboxes', 'hash-form'),
+            ),
+            'radio' => array(
+                'name' => esc_html__('Radio Buttons', 'hash-form'),
+            ),
+            'image_select' => array(
+                'name' => esc_html__('Image Selector', 'hash-form'),
+            ),
+            'number' => array(
+                'name' => esc_html__('Number', 'hash-form'),
+            ),
+            'range_slider' => array(
+                'name' => esc_html__('Range Slider', 'hash-form'),
+            ),
+            'star' => array(
+                'name' => esc_html__('Star', 'hash-form'),
+            ),
+            'spinner' => array(
+                'name' => esc_html__('Spinner', 'hash-form'),
+            ),
+            'date' => array(
+                'name' => esc_html__('Date', 'hash-form'),
+            ),
+            'time' => array(
+                'name' => esc_html__('Time', 'hash-form'),
+            ),
+            'upload' => array(
+                'name' => esc_html__('Upload', 'hash-form'),
+            ),
+            'user_id' => array(
+                'name' => esc_html__('User ID', 'hash-form'),
+            ),
+            'hidden' => array(
+                'name' => esc_html__('Hidden', 'hash-form'),
+            ),
+            'heading' => array(
+                'name' => esc_html__('Heading', 'hash-form'),
+            ),
+            'paragraph' => array(
+                'name' => esc_html__('Paragraph', 'hash-form'),
+            ),
+            'separator' => array(
+                'name' => esc_html__('Separator', 'hash-form'),
+            ),
+            'spacer' => array(
+                'name' => esc_html__('Spacer', 'hash-form'),
+            ),
+            'image' => array(
+                'name' => esc_html__('Image', 'hash-form'),
+            ),
+            'html' => array(
+                'name' => esc_html__('HTML', 'hash-form'),
+            ),
+            'captcha' => array(
+                'name' => esc_html__('reCAPTCHA', 'hash-form'),
+            )
+        );
+        return apply_filters('hashform_field_selection', $hashform_fields);
+    }
+
+    /**
+     * The groups the field palette is divided into, in display order.
+     *
+     * Add-ons can add a group here and put their own types in it through
+     * hashform_field_group_map.
+     */
+    public static function field_groups() {
+        return apply_filters('hashform_field_groups', array(
+            'basic' => esc_html__('Basic', 'hash-form'),
+            'choice' => esc_html__('Choice', 'hash-form'),
+            'advanced' => esc_html__('Advanced', 'hash-form'),
+            'layout' => esc_html__('Layout', 'hash-form'),
+            'spam' => esc_html__('Spam Protection', 'hash-form'),
+            'payment' => esc_html__('Payment', 'hash-form'),
+        ));
+    }
+
+    /**
+     * Which group each field type belongs to.
+     *
+     * A type missing from this map is not dropped — the palette collects
+     * anything unlisted into a trailing group, so a field from an add-on that
+     * has not registered itself still appears.
+     */
+    public static function field_group_map() {
+        return apply_filters('hashform_field_group_map', array(
+            // Basic
+            'name' => 'basic',
+            'email' => 'basic',
+            'phone' => 'basic',
+            'url' => 'basic',
+            'address' => 'basic',
+            'text' => 'basic',
+            'textarea' => 'basic',
+            'number' => 'basic',
+
+            // Choice
+            'select' => 'choice',
+            'checkbox' => 'choice',
+            'radio' => 'choice',
+            'image_select' => 'choice',
+            'star' => 'choice',
+            'range_slider' => 'choice',
+            'spinner' => 'choice',
+
+            // Advanced
+            'date' => 'advanced',
+            'time' => 'advanced',
+            'upload' => 'advanced',
+            'user_id' => 'advanced',
+            'hidden' => 'advanced',
+
+            // Layout
+            'heading' => 'layout',
+            'paragraph' => 'layout',
+            'separator' => 'layout',
+            'spacer' => 'layout',
+            'image' => 'layout',
+            'html' => 'layout',
+
+            // Spam protection
+            'captcha' => 'spam',
+        ));
+    }
+
+    /**
+     * The palette, arranged into its groups.
+     *
+     * @return array group key => array('name' => label, 'fields' => types)
+     */
+    public static function grouped_field_selection() {
+        $fields = apply_filters('hashform_field_selection_palette', self::field_selection());
+        $groups = self::field_groups();
+        $map = self::field_group_map();
+        $grouped = array();
+
+        foreach ($groups as $key => $label) {
+            $grouped[$key] = array('name' => $label, 'fields' => array());
+        }
+
+        foreach ($fields as $type => $field) {
+            $group = isset($map[$type]) ? $map[$type] : 'other';
+
+            if (!isset($grouped[$group])) {
+                $grouped[$group] = array(
+                    'name' => ('other' === $group) ? esc_html__('Other', 'hash-form') : $group,
+                    'fields' => array(),
+                );
+            }
+
+            $grouped[$group]['fields'][$type] = $field;
+        }
+
+        // Groups nothing landed in are not worth a heading.
+        return array_filter($grouped, function ($group) {
+            return !empty($group['fields']);
+        });
+    }
+
+    public static function create_row($values, $return = true) {
+        global $wpdb;
+
+        $new_values = array();
+        $key = isset($values['field_key']) ? sanitize_text_field($values['field_key']) : sanitize_text_field($values['name']);
+
+        $new_values['field_key'] = sanitize_text_field(HashFormHelper::get_unique_key('hashform_fields', 'field_key'));
+        $new_values['name'] = sanitize_text_field($values['name']);
+        $new_values['type'] = sanitize_text_field($values['type']);
+        // Sanitized for the field's own kind: duplicating a field or a form,
+        // importing one and starting from a template all come through here,
+        // and none of them used to carry an HTML field's markup across.
+        $new_values['description'] = HashFormHelper::sanitize_field_description($values['description'], $new_values['type']);
+        $new_values['field_order'] = isset($values['field_order']) ? absint($values['field_order']) : '';
+        $new_values['required'] = $values['required'] ? true : false;
+        $new_values['form_id'] = isset($values['form_id']) ? absint($values['form_id']) : '';
+        $new_values['created_at'] = sanitize_text_field(current_time('mysql'));
+
+        $new_values['options'] = is_array($values['options']) ? HashFormHelper::sanitize_array($values['options']) : sanitize_text_field($values['options']);
+
+        $new_values['field_options'] = HashFormHelper::sanitize_array($values['field_options'], HashFormHelper::get_field_options_sanitize_rules());
+
+        if (isset($values['default_value'])) {
+            $field_obj = HashFormFields::get_field_class($new_values['type']);
+            $new_values['default_value'] = $field_obj->sanitize_value($values['default_value']);
+        }
+
+        self::preserve_format_option_backslashes($new_values);
+
+        foreach ($new_values as $key => $val) {
+            if (is_array($val)) {
+                $new_values[$key] = serialize($val);
+            }
+        }
+
+        $query_results = $wpdb->insert($wpdb->prefix . 'hashform_fields', $new_values);
+        $new_id = 0;
+        if ($query_results) {
+            $new_id = $wpdb->insert_id;
+        }
+
+        if (!$return) {
+            return false;
+        }
+
+        return $query_results ? $new_id : false;
+    }
+
+    public static function update_form_fields($id, $values) {
+        global $wpdb;
+        $all_fields = self::get_form_fields($id);
+
+        foreach ($all_fields as $fid) {
+            $field_id = absint($fid->id);
+            if ($field_id && (isset($values['hf-form-submitted']) && in_array($field_id, $values['hf-form-submitted']))) {
+                $values['edited'][] = $field_id;
+            }
+
+            $field_array[$field_id] = $fid;
+        }
+
+        if (isset($values['edited'])) {
+            foreach ($values['edited'] as $field_id) {
+                $default_field_cols = HashFormHelper::get_form_fields_default();
+
+                if (isset($field_array[$field_id])) {
+                    $field = $field_array[$field_id];
+                } else {
+                    $field = self::get_field_vars($field_id);
+                }
+
+                if (!$field) {
+                    continue;
+                }
+
+                //updating the fields
+                $field_obj = self::get_field_object($field);
+                $update_options = $field_obj->get_default_field_options();
+                foreach ($update_options as $opt => $default) {
+                    $field->field_options[$opt] = isset($values['field_options'][$opt . '_' . absint($field_id)]) ? $values['field_options'][$opt . '_' . absint($field_id)] : $default;
+                }
+
+                $new_field = array(
+                    'field_options' => $field->field_options,
+                    'default_value' => isset($values['default_value_' . absint($field_id)]) ? $values['default_value_' . absint($field_id)] : '',
+                );
+
+                foreach ($default_field_cols as $col => $default) {
+                    $default = ($default === '') ? $field->{$col} : $default;
+                    $new_field[$col] = isset($values['field_options'][$col . '_' . absint($field->id)]) ? $values['field_options'][$col . '_' . absint($field->id)] : $default;
+                }
+
+                if (is_array($new_field['options']) && isset($new_field['options']['000'])) {
+                    unset($new_field['options']['000']);
+                }
+
+                self::update_fields($field_id, $new_field);
+            }
+        }
+    }
+
+    public static function update_fields($id, $values) {
+        global $wpdb;
+
+        $values['required'] = $values['required'] ? true : false;
+
+        $values['options'] = serialize(is_array($values['options']) ? HashFormHelper::sanitize_array($values['options']) : sanitize_text_field($values['options']));
+
+        /*
+         * get_field_vars() runs wp_unslash() over everything it reads, so a
+         * regex has to go in carrying an extra level of backslashes to come
+         * back out intact. create_row() has always done this; update_fields()
+         * never did, so editing a field stripped the backslashes out of its
+         * Format and left a pattern that would not compile — which rejects
+         * every value submitted to it.
+         */
+        self::preserve_format_option_backslashes($values);
+
+        $values['field_options'] = serialize(HashFormHelper::sanitize_array($values['field_options'], HashFormHelper::get_field_options_sanitize_rules()));
+
+        if (isset($values['description']) && isset($values['type'])) {
+            $values['description'] = HashFormHelper::sanitize_field_description($values['description'], $values['type']);
+        }
+
+        if (isset($values['default_value'])) {
+            $field_obj = HashFormFields::get_field_class($values['type']);
+            $values['default_value'] = serialize($field_obj->sanitize_value($values['default_value']));
+        }
+
+        $query_results = $wpdb->update($wpdb->prefix . 'hashform_fields', $values, array('id' => $id));
+        return $query_results;
+    }
+
+    /**
+     * Copy one form's fields onto another.
+     *
+     * @param int $old_form_id
+     * @param int $form_id
+     * @return array old field id => new field id, for anything that refers to a
+     *               field by id and has to be pointed at the copy - the show
+     *               and hide rules above all.
+     */
+    public static function duplicate_fields($old_form_id, $form_id) {
+        global $wpdb;
+
+        $fields = $wpdb->get_results($wpdb->prepare("SELECT hfi.*, hfm.name AS form_name 
+            FROM {$wpdb->prefix}hashform_fields hfi 
+            LEFT OUTER JOIN {$wpdb->prefix}hashform_forms hfm 
+            ON hfi.form_id = hfm.id 
+            WHERE hfi.form_id=%d
+            ORDER BY hfi.field_order", $old_form_id
+        ));
+
+        $map = array();
+
+        foreach ((array) $fields as $field) {
+            $values = array();
+            self::fill_field($values, $field, $form_id);
+            $new_id = self::create_row($values);
+
+            if ($new_id) {
+                $map[(int) $field->id] = (int) $new_id;
+            }
+        }
+
+        return $map;
+    }
+
+    public static function fill_field(&$values, $field, $form_id) {
+        $values['field_key'] = HashFormHelper::get_unique_key('hashform_fields', 'field_key');
+        $values['form_id'] = $form_id;
+        $cols_array = array('name', 'description', 'type', 'field_order', 'field_options', 'options', 'default_value', 'required');
+        foreach ($cols_array as $col) {
+            $values[$col] = maybe_unserialize($field->{$col});
+        }
+    }
+
+    private static function preserve_format_option_backslashes(&$values) {
+        if (isset($values['field_options']['format'])) {
+            $values['field_options']['format'] = self::preserve_backslashes($values['field_options']['format']);
+        }
+    }
+
+    public static function preserve_backslashes($value) {
+        // If backslashes have already been added, don't add them again
+        if (strpos($value, '\\\\') === false) {
+            $value = addslashes($value);
+        }
+
+        return $value;
+    }
+
+    public static function destroy_row($field_id) {
+        global $wpdb;
+        $field = self::get_field_vars($field_id);
+
+        if (!$field) {
+            return false;
+        }
+
+        $wpdb->query($wpdb->prepare('DELETE FROM ' . $wpdb->prefix . 'hashform_entry_meta WHERE field_id=%d', absint($field_id)));
+        return $wpdb->query($wpdb->prepare('DELETE FROM ' . $wpdb->prefix . 'hashform_fields WHERE id=%d', absint($field_id)));
+    }
+
+    public static function get_field_vars($field_id) {
+        if (empty($field_id)) {
+            return;
+        }
+
+        global $wpdb;
+        $results = $wpdb->get_row($wpdb->prepare('SELECT * FROM ' . $wpdb->prefix . 'hashform_fields WHERE id=%d', absint($field_id)));
+        if (empty($results)) {
+            return $results;
+        }
+
+        self::prepare_options($results);
+        return wp_unslash($results);
+    }
+
+    private static function prepare_options(&$results) {
+        $results->field_options = maybe_unserialize($results->field_options);
+        $results->options = maybe_unserialize($results->options);
+        $results->default_value = maybe_unserialize($results->default_value);
+    }
+
+    public static function get_option($field, $option) {
+        return is_array($field) ? self::get_option_in_array($field, $option) : self::get_option_in_object($field, $option);
+    }
+
+    public static function get_option_in_array($field, $option) {
+        if (isset($field[$option])) {
+            $this_option = $field[$option];
+        } elseif (isset($field['field_options']) && is_array($field['field_options']) && isset($field['field_options'][$option])) {
+            $this_option = $field['field_options'][$option];
+        } else {
+            $this_option = '';
+        }
+        return $this_option;
+    }
+
+    public static function get_option_in_object($field, $option) {
+        return isset($field->field_options[$option]) ? $field->field_options[$option] : '';
+    }
+
+    public static function get_error_msg($field, $error) {
+        $field_name = $field->name ? $field->name : '';
+        $max_length = intval(HashFormFields::get_option($field, 'max'));
+
+        $defaults = array(
+            /* translators: 1: field name */
+            'invalid' => sprintf(esc_html__('%s is invalid.', 'hash-form'), $field_name),
+            /* translators: 1: field name */
+            'blank' => sprintf(esc_html__('%s is required.', 'hash-form'), $field_name),
+            /* translators: 1: max length of characters */
+            'max_char' => sprintf(esc_html__('%s characters only allowed.', 'hash-form'), $max_length),
+        );
+        $msg = HashFormFields::get_option($field, $error);
+        $msg = empty($msg) ? $defaults[$error] : $msg;
+        return $msg;
+    }
+
+    /**
+     * The fields a given field could be asked to match.
+     *
+     * Only fields this one could ever equal. Offering an email field the choice
+     * of matching a phone field produced a rule nothing could satisfy: a value
+     * that passes email validation is not one anybody would type into a phone
+     * field, so the form could never be submitted and the error looked like a
+     * bug in the matching itself.
+     *
+     * Two fields are compatible when they are the same type, or when one of
+     * them puts no format constraint on its value.
+     *
+     * @param int    $form_id
+     * @param int    $field_id   The field being configured, which cannot match itself.
+     * @param string $field_type
+     * @param array  $fields     Already-loaded fields, to save a query per panel.
+     * @return array field id => label
+     */
+    public static function get_match_field_options($form_id, $field_id, $field_type, $fields = null) {
+        if (!$form_id) {
+            return array();
+        }
+
+        if (null === $fields) {
+            $fields = self::get_form_fields($form_id);
+        }
+
+        $unconstrained = array('text', 'textarea');
+        $matchable = array_merge($unconstrained, array('email', 'url', 'phone', 'number'));
+        $options = array();
+
+        foreach ((array) $fields as $other_field) {
+            if ($other_field->id == $field_id) {
+                continue;
+            }
+
+            if (!in_array($other_field->type, $matchable, true)) {
+                continue;
+            }
+
+            $compatible = $other_field->type === $field_type
+                    || in_array($other_field->type, $unconstrained, true)
+                    || in_array($field_type, $unconstrained, true);
+
+            if (!$compatible) {
+                continue;
+            }
+
+            $options[$other_field->id] = $other_field->name;
+        }
+
+        return $options;
+    }
+
+    /**
+     * Every field's match options for one form, so the builder can rebuild the
+     * dropdowns after a field is added or deleted without reproducing the rules
+     * above in JavaScript.
+     */
+    public function match_field_options() {
+        HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
+        check_ajax_referer('hashform_backend_ajax', 'nonce');
+
+        $form_id = absint(HashFormHelper::get_post('form_id', 'absint'));
+
+        if (!$form_id) {
+            wp_send_json_error();
+        }
+
+        $fields = self::get_form_fields($form_id);
+        $lists = array();
+
+        foreach ((array) $fields as $field) {
+            $lists[$field->id] = self::get_match_field_options($form_id, $field->id, $field->type, $fields);
+        }
+
+        wp_send_json_success($lists);
+    }
+
+    public static function get_field_object($field) {
+        if (!is_object($field)) {
+            $field = self::get_field_vars($field);
+        }
+        return self::get_field_class($field->type, $field);
+    }
+
+    public static function get_field_class($field_type, $field = 0) {
+        $class = self::get_field_type_class($field_type);
+        $field_obj = new $class($field, $field_type);
+        return $field_obj;
+    }
+
+    private static function get_field_type_class($field_type = '') {
+        $type_classes = apply_filters('hashform_field_type_class', array(
+            'text' => 'HashFormFieldText',
+            'textarea' => 'HashFormFieldTextarea',
+            'select' => 'HashFormFieldSelect',
+            'radio' => 'HashFormFieldRadio',
+            'checkbox' => 'HashFormFieldCheckbox',
+            'image_select' => 'HashFormFieldImageSelect',
+            'number' => 'HashFormFieldNumber',
+            'phone' => 'HashFormFieldPhone',
+            'url' => 'HashFormFieldUrl',
+            'email' => 'HashFormFieldEmail',
+            'user_id' => 'HashFormFieldUserID',
+            'html' => 'HashFormFieldHTML',
+            'hidden' => 'HashFormFieldHidden',
+            'captcha' => 'HashFormFieldCaptcha',
+            'name' => 'HashFormFieldName',
+            'heading' => 'HashFormFieldHeading',
+            'paragraph' => 'HashFormFieldParagraph',
+            'image' => 'HashFormFieldImage',
+            'spacer' => 'HashFormFieldSpacer',
+            'range_slider' => 'HashFormFieldRangeSlider',
+            'address' => 'HashFormFieldAddress',
+            'star' => 'HashFormFieldStar',
+            'separator' => 'HashFormFieldSeparator',
+            'spinner' => 'HashFormFieldSpinner',
+            'date' => 'HashFormFieldDate',
+            'time' => 'HashFormFieldTime',
+            'upload' => 'HashFormFieldUpload',
+        ));
+        if ($field_type) {
+            return isset($type_classes[$field_type]) ? $type_classes[$field_type] : 'HashFormFieldText';
+        } else {
+            return $type_classes;
+        }
+    }
+
+    public static function include_field_class() {
+        $classes = self::get_field_type_class();
+        include HASHFORM_PATH . 'includes/fields/HashFormFieldType.php';
+        foreach ($classes as $class) {
+            if (file_exists(HASHFORM_PATH . 'includes/fields/' . $class . '.php')) {
+                include HASHFORM_PATH . 'includes/fields/' . $class . '.php';
+            }
+        }
+        do_action('hashform_include_field_class');
+    }
+
+    /**
+     * Render the form's fields, stacking any that share a column group.
+     *
+     * Fields carrying the same column_group are wrapped in one grid cell so
+     * they sit under each other. A column nobody put a field into still gets its
+     * cell, so the columns beside it keep the place the form was built with.
+     * Ungrouped fields stay direct children of the form grid.
+     */
+    public static function show_fields($fields) {
+        $open_group = '';
+        $row = array();
+
+        foreach ($fields as $field) {
+            $group = isset($field['column_group']) ? $field['column_group'] : '';
+
+            if ($group !== $open_group) {
+                if ('' !== $open_group) {
+                    echo '</div>';
+                }
+
+                if ('' === $group) {
+                    $row = self::show_empty_columns($row);
+                } else {
+                    if (!self::row_holds_column($row, $group)) {
+                        $row = self::show_empty_columns($row);
+                        $row = HashFormGridHelper::parse_column_row(isset($field['column_row']) ? $field['column_row'] : '');
+                    }
+                    $row = self::open_column($row, $group, $field);
+                }
+
+                $open_group = $group;
+            }
+
+            $field_obj = HashFormFields::get_field_class($field['type'], $field);
+            $field_obj->show_field();
+        }
+
+        if ('' !== $open_group) {
+            echo '</div>';
+        }
+        self::show_empty_columns($row);
+    }
+
+    private static function row_holds_column($row, $group) {
+        foreach ($row as $column) {
+            if ($column['group'] === $group) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Lays down the columns of the row that come before this one and were never
+    // filled, then opens this one. Hands back what is left of the row.
+    private static function open_column($row, $group, $field) {
+        while (!empty($row)) {
+            $column = array_shift($row);
+
+            if ($column['group'] === $group) {
+                echo '<div class="hf-column-group ' . esc_attr($column['width']) . '">';
+                return $row;
+            }
+
+            self::show_empty_column($column['width']);
+        }
+
+        // Saved before the row was written out, so the field's own width stands in.
+        $width = (isset($field['grid_id']) && $field['grid_id']) ? $field['grid_id'] : 'hf-grid-12';
+        echo '<div class="hf-column-group ' . esc_attr($width) . '">';
+        return $row;
+    }
+
+    // Empties out whatever is left of a row, and hands back a row with nothing
+    // waiting in it.
+    private static function show_empty_columns($row) {
+        foreach ($row as $column) {
+            self::show_empty_column($column['width']);
+        }
+        return array();
+    }
+
+    private static function show_empty_column($width) {
+        echo '<div class="hf-column-group ' . esc_attr($width) . '"></div>';
+    }
+
+}
+
+new HashFormFields();

@@ -13,7 +13,9 @@ $id = get_the_ID();
     <label class="hf-setting-label"><?php esc_html_e('Choose Form to Preview', 'hash-form'); ?></label>
     <select id="hf-template-preview-form-id">
         <?php
-        $forms = HashFormBuilder::get_all_forms();
+        // A chooser, so trashed templates' owners do not get offered
+        // forms they threw away.
+        $forms = HashFormBuilder::get_published_forms();
         ?>
         <option value=""><?php esc_html_e('Default Demo Form', 'hash-form'); ?></option>
         <?php

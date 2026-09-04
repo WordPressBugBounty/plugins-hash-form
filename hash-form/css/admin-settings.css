@@ -1,96 +1,136 @@
-.post-type-hashform-styles #post-body.columns-2 #postbox-container-1 {
-    display: none;
-}
-
-.post-type-hashform-styles .postbox {
-    border: 0;
-    box-shadow: none;
-    margin: 0
-}
-
-.post-type-hashform-styles #major-publishing-actions {
-    background: none;
-    padding: 0;
-    border-top: 0;
-}
-
-.post-type-hashform-styles #publishing-action {
-    float: none;
-}
-
-.post-type-hashform-styles #submitpost {
-    min-width: 0;
-}
-
-.post-type-hashform-styles {
-    height: 100vh;
+/* Full screen, the way the form builder is.
+ *
+ * Same mechanism: the screen is laid over the whole viewport, which is what
+ * #hf-wrap does there. The admin menu and toolbar end up behind it rather than
+ * hidden, which comes to the same thing on screen.
+ *
+ * #wpcontent carries it rather than a wrapper of the plugin's own, because
+ * this screen's bar is printed on in_admin_header and so lands between
+ * #wpcontent and #wpbody - the bar and the panel are only siblings. The form
+ * builder has no such problem: its header is inside #hf-wrap.
+ *
+ * The form builder additionally sets the block editor's is-fullscreen-mode.
+ * Not here: that class arrives with wp-edit-post and its dependencies, and all
+ * it would do on this screen is hide two elements already covered over. This
+ * panel's rows and fields have never been under that sheet. Holding the page
+ * behind still is the one thing it was really buying, and the overflow below
+ * does that.
+ */
+body.hf-style-builder-screen {
     overflow: hidden;
 }
 
-.post-type-hashform-styles #poststuff #post-body.columns-2 {
-    margin: 0;
-}
-
-.post-type-hashform-styles.post-new-php .wrap,
-.post-type-hashform-styles.post-php .wrap {
-    position: fixed;
+body.hf-style-builder-screen #wpcontent {
+    /* The ground behind the panel, not a plugin surface: the tokens are scoped
+       to the plugin's own wrappers and this is wp-admin's element. */
+    background: #fff;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
     left: 0;
+    margin: 0;
+    overflow: hidden;
+    padding: 0;
+    position: fixed;
     right: 0;
     top: 0;
-    margin: 0;
-    padding: 30px 30px 0;
-    overflow: hidden;
-    background: #FFF;
     z-index: 99999;
-    height: calc(100vh - 30px);
-    overflow-y: scroll;
 }
 
-.post-type-hashform-styles.post-new-php .wrap .wp-heading-inline,
-.post-type-hashform-styles.post-php .wrap .wp-heading-inline,
-.post-type-hashform-styles.post-new-php .page-title-action,
-.post-type-hashform-styles.post-php .wrap .page-title-action {
+/*
+ * The admin bar goes, because on this screen it cannot be covered.
+ *
+ * The form builder leaves it in place and paints over it: #hf-wrap is fixed
+ * across the viewport with the same z-index the bar has and comes later in the
+ * document, so it wins the tie and the bar is simply never seen.
+ *
+ * That does not transfer here. wp-admin renders the bar on in_admin_header,
+ * which puts it *inside* #wpcontent - and #wpcontent is this screen's fixed
+ * full-viewport element, so it is a stacking context the bar sits within. No
+ * z-index on the parent can lift it over its own child, and the bar drew across
+ * the top of the header: the template name and the actions beside it lost their
+ * first 32 pixels.
+ */
+body.hf-style-builder-screen #wpadminbar {
     display: none;
 }
 
-.post-type-hashform-styles.post-new-php #poststuff,
-.post-type-hashform-styles.post-php .wrap #poststuff {
+/* The bar keeps its own height; everything under it takes the rest. */
+body.hf-style-builder-screen .hf-list-header {
+    flex: 0 0 auto;
+}
+
+/* list-screens.css pulls the bar left by 20px and gives it that width back, to
+   cancel the padding wp-admin puts on #wpcontent. This screen takes that padding
+   off, so the correction had nothing left to correct: the bar hung 20px off the
+   left of the viewport and the actions on its right ran off the other edge. */
+body.hf-style-builder-screen #wpcontent > .hf-list-header {
+    margin-left: 0;
+    width: 100%;
+}
+
+/* Every wrapper between the screen and the panel passes the height straight
+   through.
+ *
+ * Columns, not rows. #wpbody-content is not ours and does not hold the panel
+ * alone - the screen meta, the screen options tabs and any notice are printed
+ * into it first, and #wpbody closes with a clearing div - so a row would stand
+ * them beside the builder rather than above it.
+ *
+ * min-height:0 on each, because a flex item will not shrink below its content
+ * by default. Without it the sidebar sets the height of the screen and pushes
+ * the save bar off the bottom instead of scrolling inside itself.
+ */
+body.hf-style-builder-screen #wpbody,
+body.hf-style-builder-screen #wpbody-content,
+body.hf-style-builder-screen .hf-style-builder,
+body.hf-style-builder-screen .hf-style-panel {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    margin: 0;
+    min-height: 0;
     padding: 0;
+    width: auto;
 }
 
-.post-type-hashform-styles .hf-body {
-    height: calc(100vh - 190px);
-    padding: 0;
-    background: none;
+/* Only the height is this screen's business. The ground behind the columns, the
+   gutter around them and the gap between them are the form builder's, and come
+   from .hf-content .hf-body in builder.css - overriding them here was what left
+   the sidebar and the preview flush against the edges of the screen with no
+   surface under them. */
+.hf-style-panel .hf-body {
+    flex: 1 1 auto;
+    height: auto;
+    margin: 0;
+    min-height: 0;
 }
 
-.post-type-hashform-styles .hf-content,
-.post-type-hashform-styles .hf-fields-sidebar,
-.post-type-hashform-styles #hf-form-panel {
-    background: none;
+/* The screen meta and its toggles are the post editor's chrome, which is what
+   this screen was built to get out of the way; left in, they hold a strip of
+   empty height above the panel. */
+body.hf-style-builder-screen #screen-meta,
+body.hf-style-builder-screen #screen-meta-links {
+    display: none;
 }
 
-.post-type-hashform-styles .hf-footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 99;
-    gap: 20px;
+/* The save bar is the last row rather than something stuck over the content,
+   so it needs no sticky positioning and no pulling back out of a padding that
+   is no longer there. */
+.hf-style-panel .hf-footer {
     align-items: center;
-    border: 1px solid var(--hf-border, #e2e5ea);
-    border-radius: var(--hf-radius-lg);
-    margin-top: 10px;
+    flex: 0 0 auto;
+    gap: 20px;
 }
 
-.post-type-hashform-styles.post-new-php #message,
-.post-type-hashform-styles.post-php #message {
-    position: absolute;
-    right: 30px;
-    top: 0px;
-    width: 300px;
-    z-index: 99;
-    text-align: center;
-    left: 50%;
-    transform: translateX(-50%);
+body.hf-style-builder-screen .notice{
+    display: none !important;
+}
+
+/* Nothing of the admin's own chrome is on screen, and a hidden footer that
+   still reserved its height left a gap under the save bar. */
+.hf-style-builder-screen #wpfooter {
+    display: none;
 }
 
 /* Settings Metabox */
@@ -103,31 +143,13 @@
     margin: 0;
 }
 
-/* The post title is the style template's name, and it was a bare wp-admin
-   field with a focus ring in the admin colour scheme sitting above a screen
-   that is otherwise all plugin. */
-.post-type-hashform-styles #titlediv #title {
-    border: 1px solid var(--hf-border-strong, #d3d8e0);
-    border-radius: var(--hf-radius, 8px);
-    box-shadow: none;
-    font-size: var(--hf-font-xl, 20px);
-    font-weight: 600;
-    padding: var(--hf-space-3, 12px) var(--hf-space-4, 16px);
-}
-
-.post-type-hashform-styles #titlediv #title:focus {
-    border-color: var(--hf-accent, #dd823b);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--hf-accent, #dd823b) 18%, transparent);
-    outline: 0;
-}
-
 /* Style groups
  *
  * Fifteen of these stack down the sidebar, and they were pale blue bars with
  * ALL CAPS bold labels — a colour and a treatment used nowhere else in the
  * plugin. Same accordion as the per-form settings panels now, so a style
  * template is built in the same furniture a form is configured in. */
-#hashform-styles-metabox .hf-settings-heading {
+.hf-style-panel .hf-settings-heading {
     align-items: center;
     background: var(--hf-surface, #fff);
     border: 1px solid var(--hf-border, #e2e5ea);
@@ -145,33 +167,33 @@
     transition: background-color var(--hf-transition, .15s ease), border-color var(--hf-transition, .15s ease);
 }
 
-#hashform-styles-metabox .hf-settings-heading:hover {
+.hf-style-panel .hf-settings-heading:hover {
     background: var(--hf-surface-sunken, #fafbfc);
     border-color: var(--hf-border-strong, #d3d8e0);
 }
 
 /* Open: the heading and its panel read as one block, so the seam between
    them is closed up. */
-#hashform-styles-metabox .hf-settings-heading.hf-active {
+.hf-style-panel .hf-settings-heading.hf-active {
     border-bottom-color: transparent;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
     margin-bottom: 0;
 }
 
-#hashform-styles-metabox .hf-settings-heading .mdi {
+.hf-style-panel .hf-settings-heading .mdi {
     color: var(--hf-text-faint, #8c9196);
     font-size: 20px;
     line-height: 1;
     transition: transform var(--hf-transition-slow, .25s ease);
 }
 
-#hashform-styles-metabox .hf-settings-heading.hf-active .mdi {
+.hf-style-panel .hf-settings-heading.hf-active .mdi {
     color: var(--hf-accent, #dd823b);
     transform: rotate(180deg);
 }
 
-#hashform-styles-metabox .hf-form-settings {
+.hf-style-panel .hf-form-settings {
     background: var(--hf-surface, #fff);
     border: 1px solid var(--hf-border, #e2e5ea);
     border-radius: 0 0 var(--hf-radius, 8px) var(--hf-radius, 8px);
@@ -925,7 +947,8 @@ ul.hf-shadow-fields {
 }
 
 .hf-unit-fields li {
-    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
     margin: 0;
     min-width: 0;
 }
@@ -934,7 +957,7 @@ ul.hf-shadow-fields {
     padding-left: 2px;
     padding-right: 2px;
     text-align: center;
-    width: 100%;
+    width: 50px;
 }
 
 .hf-unit-fields li > label {
@@ -957,13 +980,16 @@ ul.hf-shadow-fields {
    block with a white chain — the heaviest thing in the panel, for the least
    important control in the row. */
 .hf-unit-fields .hf-link-button {
-    align-self: flex-start;
-    background: var(--hf-surface, #fff);
+    width: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: 1px solid var(--hf-border-strong, #d3d8e0);
     border-radius: var(--hf-radius-sm, 4px);
     color: var(--hf-accent, #dd823b);
     cursor: pointer;
     outline: none;
+    background: var(--hf-border-strong, #d3d8e0);
     transition: background-color var(--hf-transition, .15s ease), border-color var(--hf-transition, .15s ease), color var(--hf-transition, .15s ease);
 }
 
@@ -1050,23 +1076,10 @@ ul.hf-shadow-fields {
     position: relative;
 }
 
-/* A colour row is a label and a swatch on one line. It used to be two
-   stacked blocks with the lower one dragged up 35px to sit beside the label,
-   which left the row occupying its old height and the rhythm of the panel
-   uneven. */
-.hf-settings-row:has(> .hf-color-input-field),
-.hf-typography-fields li.hf-typography-color-field:has(> .hf-typography-input-field) {
-    align-items: flex-start;
-    display: flex;
-    gap: var(--hf-space-3, 12px);
-    justify-content: space-between;
-}
 
 .hf-typography-color-field .hf-typography-input-field,
 .hf-color-input-field {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 0;
+    margin-top: -30px;
     min-width: 0;
 }
 
@@ -1114,7 +1127,7 @@ ul.hf-shadow-fields {
     display: flex;
     margin-top: var(--hf-space-2, 8px);
     min-width: 0;
-    width: 100%;
+    width: 258px;
 }
 
 .hf-setting-fields .wp-picker-input-wrap label {

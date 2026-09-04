@@ -16,7 +16,7 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
     exit;
 }
 
-require_once plugin_dir_path(__FILE__) . 'admin/classes/HashFormCapabilities.php';
+require_once plugin_dir_path(__FILE__) . 'includes/HashFormCapabilities.php';
 
 if (class_exists('HashFormCapabilities')) {
     // Take the plugin's capabilities back off every role, so it does not
