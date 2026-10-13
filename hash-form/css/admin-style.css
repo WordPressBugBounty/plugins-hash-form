@@ -352,8 +352,7 @@ body:has(#hf-wrap){
 }
 
 /* Clicking a field does not add it, so the click answers with the hint. */
-/* Advice for an empty form, and only for an empty form: it held a slot above
-   the field categories whatever was on the canvas. */
+/* Advice for an empty form only. */
 body.hf-form-has-fields .hf-drag-hint {
     display: none;
 }
@@ -498,15 +497,13 @@ body.hf-form-has-fields .hf-drag-hint {
     color: #999;
 }
 
-/* A columns row's own controls, shown on hover like a field's. The row is
-   built in the browser, so it never had any. */
+/* A columns row's own controls, shown on hover like a field's. */
 #hf-editor-wrap .hf-editor-columns-wrapper {
     position: relative;
 }
 
 /* Kept together at the top right and lifted clear of the row, so they read as
-   the row's own controls. Spread to the corners — where the inherited rule
-   puts them — they look like they belong to the fields underneath. */
+   the row's own controls rather than the fields'. */
 #hf-editor-wrap .hf-editor-columns-wrapper > .hf-editor-row-actions {
     gap: 4px;
     justify-content: flex-end;
@@ -532,14 +529,8 @@ body.hf-form-has-fields .hf-drag-hint {
     background: #f4f4ff;
 }
 
-/*
- * The row a field is about to join. hf-dropabble is put on the target and on
- * every list above it, so :has() picks out the innermost one — the row that
- * will actually receive the drop — rather than lighting up the whole canvas.
- * Where :has() is unsupported the drop still works; only the tint is missing.
- */
-/* Only while something is actually being dragged, so a stale class can never
-   leave a row tinted after the drop. */
+/* The row a field is about to join: :has() picks the innermost .hf-dropabble,
+   and only while something is being dragged. */
 body.hf-dragging #hf-editor-wrap ul.hf-editor-sorting.hf-dropabble:not(:has(.hf-dropabble)) {
     background: rgba(99, 102, 241, .05);
     border-radius: 8px;
@@ -626,9 +617,8 @@ body.hf-dragging #hf-editor-wrap ul.hf-editor-sorting.hf-dropabble:not(:has(.hf-
     z-index: 99;
 }
 
-/* No hover chrome on something that is only passing through. The id selector
-   matches the weight of #hf-editor-wrap .hf-editor-action-buttons, which sets
-   these to display:flex. */
+/* No hover chrome while dragging. The id matches the weight of
+   #hf-editor-wrap .hf-editor-action-buttons, which sets display:flex. */
 #hf-editor-wrap .hf-drag-ghost .hf-editor-action-buttons {
     display: none;
 }
@@ -701,10 +691,7 @@ body.hf-dragging #hf-editor-wrap ul.hf-editor-sorting.hf-dropabble:not(:has(.hf-
 
 /* Builder */
 
-/* Centred in whatever room is left beside the panel. The width is capped on
-   purpose — a form previewed at 1900px would not represent where it ends up —
-   but with the cap alone every spare pixel piled up on the right, which read
-   as an unfinished layout rather than a measured one. */
+/* Centered in the room beside the panel, with a capped width. */
 .hf-form-wrap {
     margin-left: auto;
     margin-right: auto;
@@ -930,11 +917,6 @@ body.hf-dragging #hf-editor-wrap ul.hf-editor-sorting.hf-dropabble:not(:has(.hf-
 
 /* -----------------------------------------------------------------------------
  * Where a dragged field will land
- *
- * One language for both axes: a solid indigo bar with rounded ends and a soft
- * halo, across for a new row and down for a new column. Deliberately not
- * dashed and not grey — every field on the canvas already rests inside a grey
- * dashed box, so drag chrome drawn that way reads as more of the same.
  * -------------------------------------------------------------------------- */
 #hf-editor-wrap > ul > li.sortable-placeholder {
     background: #6366f1;
@@ -1077,8 +1059,7 @@ body.hf-dragging #hf-editor-wrap ul.hf-editor-sorting.hf-dropabble:not(:has(.hf-
 
 /* =========== Image picker (admin) ===========
  *
- * Shared by the image and image-select field settings and by the email
- * header image. Two states: an empty chooser, and a preview with actions.
+ * Shared by the image and image-select field settings and the email header image.
  */
 
 /* Empty state, drawn like the import dropzone so the two read as the same
@@ -1132,9 +1113,7 @@ body.hf-dragging #hf-editor-wrap ul.hf-editor-sorting.hf-dropabble:not(:has(.hf-
     font-size: var(--hf-font-sm, 12px);
 }
 
-/* Filled state. A bounded box rather than a bare full-width image: the
-   preview used to be width:100% with no height at all, so a tall image
-   stretched the settings panel to whatever the original happened to be. */
+/* Filled state: a bounded box, so a tall image cannot stretch the panel. */
 .hf-image-preview-box {
     align-items: center;
     background: var(--hf-surface-sunken, #fafbfc);
@@ -1229,28 +1208,20 @@ body.hf-dragging #hf-editor-wrap ul.hf-editor-sorting.hf-dropabble:not(:has(.hf-
 
 /* =========== Bulk Edit Options dialog ===========
  *
- * A jQuery UI dialog rather than one of the plugin's own modals, so the shell
- * is not shared with them. These rules give it the same surface, header bar
- * and footer language, and unpick the .postbox styling WP would otherwise
- * apply to the panel inside it.
+ * A jQuery UI dialog, given the plugin's modal look and stripped of .postbox styling.
  */
 
 #hf-bulk-edit-modal {
     display: none;
 }
 
-/* The shell, shared by both jQuery UI dialogs the plugin opens. Deliberately
-   generic: only the surface and the removal of jQuery UI's own chrome, so
-   the info dialog gets a sane panel too rather than inheriting rules written
-   for the bulk editor. */
+/* The shell for both jQuery UI dialogs: the surface, minus jQuery UI's own chrome. */
 .hf-dialog {
     background: var(--hf-surface, #fff);
     border: 0;
     border-radius: var(--hf-radius-lg, 12px);
     box-shadow: var(--hf-shadow-lg, 0 12px 28px -8px rgba(16, 24, 40, .18), 0 4px 10px -4px rgba(16, 24, 40, .1));
-    /* Bounded so a tall dialog cannot grow past the viewport. jQuery UI
-       centres by absolute position, so an over-tall panel would otherwise be
-       given a negative top and take its header and buttons off screen. */
+    /* Bounded so jQuery UI's absolute centering never pushes the header off screen. */
     max-height: calc(100vh - 60px);
     /* Clips the header bar to the rounded top corners. */
     overflow: hidden;
@@ -1313,11 +1284,8 @@ body.hf-dragging #hf-editor-wrap ul.hf-editor-sorting.hf-dropabble:not(:has(.hf-
     outline-offset: 1px;
 }
 
-/* The editor takes the room; the presets sit beside it in a fixed column so
-   they do not squeeze the textarea as the list grows. */
-/* The body is the part that scrolls, so the header bar and the footer
-   buttons stay reachable on a short screen. Kept comfortably inside the
-   shell's own max-height, which the fixed header and footer also eat into. */
+/* The editor takes the room and the presets a fixed column beside it. The body
+   scrolls, so the header bar and footer buttons stay reachable. */
 .hf-bulk-edit-body.hf-editor-grid-container {
     display: grid;
     gap: var(--hf-space-5, 24px);
@@ -1328,14 +1296,7 @@ body.hf-dragging #hf-editor-wrap ul.hf-editor-sorting.hf-dropabble:not(:has(.hf-
     padding: var(--hf-space-5, 24px);
 }
 
-/*
- * The two panels still carry hf-grid-8 and hf-grid-4, and the generic
- * container rule gives every child `grid-column: span 12`. Against the two
- * columns declared above, a span of 8 or 12 makes the grid generate implicit
- * columns to satisfy it, so the editor and the presets ended up on separate
- * rows instead of beside each other. Placing them automatically is what puts
- * them in the two columns.
- */
+/* Auto placement: the panels' hf-grid-8/hf-grid-4 spans would create implicit columns. */
 .hf-bulk-edit-body.hf-editor-grid-container > * {
     grid-column: auto;
     min-width: 0;
@@ -1456,10 +1417,7 @@ body.hf-dragging #hf-editor-wrap ul.hf-editor-sorting.hf-dropabble:not(:has(.hf-
     padding: var(--hf-space-3, 12px) var(--hf-space-5, 24px);
 }
 
-/* The two footer buttons were still plain wp-admin buttons sitting in an
-   otherwise tokened dialog. Prefixed with the id so the accent fill wins
-   against .wp-core-ui .button-primary, which it would otherwise only tie
-   with and beat on stylesheet order. */
+/* The id lets the accent fill beat .wp-core-ui .button-primary outright. */
 #hf-bulk-edit-modal .hf-bulk-edit-modal-footer .button {
     align-items: center;
     border-radius: var(--hf-radius-sm, 4px);
@@ -1848,7 +1806,7 @@ body.hf-dragging #hf-editor-wrap ul.hf-editor-sorting.hf-dropabble:not(:has(.hf-
     width: 100%;
 }
 
-/* #333, not #000: the canvas drew a blacker line than the page ever would. */
+/* #333 to match the line the page draws. */
 .hf-editor-field-type-separator .hf-separator-border {
     border-color: #333;
     border-left: 0;
@@ -1892,9 +1850,7 @@ body.hf-dragging #hf-editor-wrap ul.hf-editor-sorting.hf-dropabble:not(:has(.hf-
 /* -----------------------------------------------------------------------------
  * Spacer, on the canvas
  *
- * A spacer is a gap and nothing else, so the builder showed a blank strip:
- * two of them in one form were indistinguishable, and a short one was hard to
- * click at all. Drawn here only — the page gets the gap on its own.
+ * Drawn in the builder only, so the gap can be seen and clicked.
  * -------------------------------------------------------------------------- */
 .hf-editor-field-type-spacer .hf-spacer-field {
     align-items: center;
@@ -1973,12 +1929,7 @@ body.hf-dragging #hf-editor-wrap ul.hf-editor-sorting.hf-dropabble:not(:has(.hf-
 }
 
 /* Custom HTML FrondEnd Field */
-/*
- * The dashed frame marks the field as your own markup. What is inside it is
- * laid out the way the page will lay it out: this was a fixed 50px centred
- * box with 40px of padding, built for the placeholder that used to be the
- * only thing it ever held, and real content had nowhere to go.
- */
+/* The dashed frame marks custom markup; its content is laid out as on the page. */
 .hf-custom-html-field {
     background: #FFF;
     border: 2px dashed #EEE;
@@ -2118,12 +2069,6 @@ h4.hf-field-heading {
 /* === Settings Tabs === */
 /* -----------------------------------------------------------------------------
  * Settings navigation
- *
- * A left-aligned list with one icon column, so the labels form a column of
- * their own and can be read down. Each row used to be right-aligned inside the
- * sidebar, which left every label starting at a different place, shouted in
- * uppercase, and marked the current section in a pale blue that appears
- * nowhere else in the builder.
  * -------------------------------------------------------------------------- */
 .hf-settings-tab {
     display: flex;
@@ -2211,9 +2156,7 @@ h4.hf-field-heading {
 
 /* =========== Add New Form / Shortcode Modals =========== */
 
-/* The overlay is also the backdrop: the Pro plugin swaps in its own template
-   for the add-form dialog and has no separate backdrop element, so the dim
-   has to live on the container both templates share. */
+/* The overlay is also the backdrop, since Pro's add-form template has none of its own. */
 #hf-shortcode-form-modal,
 #hf-add-form-modal {
     align-items: center;
@@ -2235,10 +2178,8 @@ h4.hf-field-heading {
     display: flex;
 }
 
-/* Centred by the flex parent rather than pinned and translated, so a panel
-   taller than the viewport scrolls instead of overflowing off both edges.
-   width is a bare class selector on purpose: Pro raises it to 800px from a
-   more specific rule and needs to keep winning. */
+/* Centered by the flex parent so a tall panel scrolls. width stays a bare
+   class selector so Pro's 800px rule keeps winning. */
 .hf-shortcode-modal-wrap,
 .hf-add-form-modal-wrap {
     animation: hf-modal-in .2s ease;
@@ -2249,12 +2190,9 @@ h4.hf-field-heading {
     flex-direction: column;
     max-height: 100%;
     max-width: 100%;
-    /* hidden, not auto: the panel itself never scrolls now. The header is
-       pinned and the body below it takes the scrolling, so a long template
-       grid cannot carry the title off the top of the dialog. */
+    /* hidden: the header is pinned and the body below it scrolls. */
     overflow: hidden;
-    /* The padding moved onto the body below, so the header can reach all
-       three edges without negative margins fighting the overflow. */
+    /* The padding is on the body, so the header reaches the edges. */
     padding: 0;
     position: relative;
     width: 480px;
@@ -2292,10 +2230,7 @@ h4.hf-field-heading {
     }
 }
 
-/* A header bar in its own right: flush to the top, left and right edges of
-   the panel, filled so it reads as a bar rather than a line of text with a
-   rule under it. The panel clips to its radius, so the top corners round
-   with it. */
+/* A header bar flush to the panel's top, left and right edges. */
 .hf-shortcode-modal-wrap > h3,
 .hf-add-form-modal-wrap > h3 {
     background: var(--hf-surface-sunken, #fafbfc);
@@ -2310,10 +2245,8 @@ h4.hf-field-heading {
     padding: var(--hf-space-4, 16px) var(--hf-space-7, 48px) var(--hf-space-4, 16px) var(--hf-space-6, 32px);
 }
 
-/* Everything that is not the header or the close button is the body: it
-   carries the panel's padding and does the scrolling. Written as an
-   exclusion because Pro swaps in its own template, where the body is a
-   different element than it is here. */
+/* Everything but the header and close button is the body, which pads and
+   scrolls. An exclusion because Pro's template uses a different body element. */
 .hf-shortcode-modal-wrap > *:not(h3):not(.hf-modal-close),
 .hf-add-form-modal-wrap > *:not(h3):not(.hf-modal-close) {
     flex: 1 1 auto;
@@ -2539,9 +2472,7 @@ body.hf-modal-open {
     margin-top: 0;
 }
 
-/* Actions trail right, dismiss before confirm. Not full-bleed like the
-   header: Pro nests this footer inside a panel, where edge-to-edge rules
-   would break out of the wrong box. */
+/* Actions trail right. Not full-bleed: Pro nests this footer inside a panel. */
 .hf-shortcode-footer,
 .hf-add-form-footer {
     align-items: center;
@@ -2627,11 +2558,6 @@ form.hf-error {
 
 /* -----------------------------------------------------------------------------
  * Save notice
- *
- * A white card with a coloured tick, the same shape as the panels and field
- * boxes around it. It used to be a 300px block of plain CSS `green` — a colour
- * belonging to no part of this interface — with the tick beside it invisible,
- * because the class was being stripped before it reached the page.
  * -------------------------------------------------------------------------- */
 .hf-updated-info {
     align-items: center;
@@ -2688,11 +2614,7 @@ form.hf-error {
     }
 }
 
-/* currentColor, not inherit: inherit takes the button's border-colour, which
-   worked only while that button had no border and fell back to its text
-   colour. Once it gained a border matching its own background the spinner
-   became accent-on-accent and vanished. currentColor follows the label
-   instead, so it stays legible whatever the button is filled with. */
+/* currentColor follows the label, so the spinner stays visible on a filled button. */
 .hashform-ajax-udpate-button.hashform-updating:after,
 .hf-loading-button:after {
     content: "";
@@ -2711,17 +2633,8 @@ form.hf-error {
     }
 }
 
-/*
- * The class three scripts already reach for while a request is in flight —
- * admin-settings.js and backend.js on the style preview, and the pro AI
- * generator on its form preview. Nothing had ever defined it, so every one of
- * those waits looked exactly like a screen that had stopped responding.
- *
- * The panel it lands on keeps its size and its content, dimmed and inert, with
- * a spinner over the middle, so nothing jumps when the answer arrives.
- */
-/* .hf-typography-loading is the same wait by another name, raised by
-   admin-settings.js while the font list is fetched. */
+/* Loading state for a panel (and the typography field while fonts load): dimmed
+   and inert, keeping its size, with a spinner over it. */
 .hf-content-loading,
 .hf-typography-loading {
     pointer-events: none;
@@ -2792,17 +2705,10 @@ form.hf-error {
 /* -----------------------------------------------------------------------------
  * Field-tag picker
  *
- * The "Tags" control beside Subject, Message and the integration mappings.
- * Same markup everywhere — a trigger and a <ul> of fields — so it is styled
- * once here rather than per screen: the email settings, the Pro integration
- * panels and the calculation field all draw from these rules.
+ * Shared by the email settings, Pro integration panels and calculation field.
  * -------------------------------------------------------------------------- */
 
-/* Shrink-wraps the trigger so the list, which is anchored to this element's
-   right edge, lines up under the trigger rather than under whatever width
-   the surrounding label happens to have. In the builder sidebar the label is
-   full width, which left the list floating away from the control that opened
-   it. (As a flex item in the settings label this blockifies, as before.) */
+/* Shrink-wraps the trigger so the right-anchored list lines up under it. */
 .hf-attr-field {
     display: inline-block;
     position: relative;
@@ -2844,10 +2750,7 @@ form.hf-error {
     outline-offset: 2px;
 }
 
-/* The list. Was a three-column grid of fixed 140px cells with no height
-   limit: on a form with 27 fields it opened 400px tall and ran off the
-   bottom of the window, with the last rows unreachable. One column that
-   scrolls instead, and it can open upwards when there is no room below. */
+/* The list: one scrolling column, opening upward when there is no room below. */
 .hf-add-field-attr-to-form {
     background: var(--hf-surface, #fff);
     border: 1px solid var(--hf-border, #e2e5ea);
@@ -2945,8 +2848,7 @@ form.hf-error {
     pointer-events: none;
 }
 
-/* Shown when a search matches nothing, and when a form has no field of the
-   kind this picker offers — which used to open an empty white box. */
+/* Shown when a search matches nothing, or the form has no field of this kind. */
 .hf-add-field-attr-to-form .hf-attr-empty {
     color: var(--hf-text-muted, #646970);
     cursor: default;
@@ -2967,13 +2869,6 @@ form.hf-error {
 /* =========== Entries Page =========== */
 /* -----------------------------------------------------------------------------
  * Entry detail
- *
- * One record, so it reads as a record: a card with its own header, the answers
- * as a plain two column list, and the tools that act on the entry kept apart
- * from the data at the foot. The field names sit on the left in muted small
- * type rather than bold and right aligned against the values, which had made
- * the screen look like a form waiting to be filled in rather than a submission
- * already made.
  * -------------------------------------------------------------------------- */
 
 .hf-form-entry-details-wrap {
@@ -2995,10 +2890,8 @@ form.hf-error {
 }
 
 /*
- * Every control that acts on the screen sits on one row above the title: the
- * way out of the entry on the left, the ones that move between entries on the
- * right. They were a text link and two buttons before, which read as three
- * unrelated things when they are all the same kind of thing.
+ * The controls that act on the screen, on one row above the title: back on the
+ * left, previous/next on the right.
  */
 .hf-entry-toolbar {
     align-items: center;
@@ -3009,8 +2902,6 @@ form.hf-error {
     margin: 0 0 var(--hf-space-4);
 }
 
-/* The screen had no route back to the list other than the browser button or
-   the menu. */
 .hf-entry-back {
     text-decoration: none;
 }
@@ -3037,16 +2928,9 @@ form.hf-error {
 }
 
 /*
- * Scoped to the entry's own table with a child combinator. These were once
- * written against every table on the page, so a field that stores a table of
- * its own — a repeater's rows — had its headers pushed to a fixed width and
- * right aligned, as though each one were a field name in the left-hand column.
- * A repeater table is a descendant, sitting inside a cell, so the combinator is
- * what keeps the two apart and it must stay.
- *
- * Pro answers hf_after_entry_detail_view with tables of its own, and now that
- * the action fires outside this one they are siblings of it, which is to say
- * children of the panel — so the same rules dress them without a second set.
+ * Scoped with a child combinator so a table nested in a cell (repeater rows) is
+ * not styled as the entry table. Pro's hf_after_entry_detail_view tables are
+ * siblings of it and share these rules.
  */
 #hf-form-entry-details > table {
     border-collapse: collapse;
@@ -3058,8 +2942,7 @@ form.hf-error {
     border-top: 1px solid var(--hf-border);
 }
 
-/* Those pro tables carry their heading in a thead as a single spanning cell,
-   which no rule reached before, so it printed flush against the rows. */
+/* Pro tables carry their heading as a single spanning thead cell. */
 #hf-form-entry-details > table > thead > tr > th,
 #hf-form-entry-details > table > thead > tr > td {
     border-bottom: 1px solid var(--hf-border);
@@ -3119,8 +3002,7 @@ form.hf-error {
     max-width: 150px;
 }
 
-/* A field nobody answered. Left as an empty cell it read as a fault in the
-   page rather than as an answer that was never given. */
+/* A field nobody answered. */
 .hf-entry-blank {
     color: var(--hf-text-faint);
 }
@@ -3157,9 +3039,7 @@ form.hf-error {
     text-decoration: none;
 }
 
-/* The outline was dropped here with nothing put back, so tabbing through an
-   entry that carries uploads moved the focus with no way to see where it had
-   gone. */
+/* A visible focus ring on entry links, such as uploads. */
 .hf-form-entry-preview a:focus-visible {
     border-radius: var(--hf-radius-sm);
     outline: 2px solid var(--hf-accent);
@@ -3178,22 +3058,15 @@ form.hf-error {
     gap: var(--hf-space-2);
 }
 
-/*
- * A first or last entry has nowhere to go, and that end of the pair is printed
- * as a span rather than an anchor: a link with href="#" was still focusable
- * and still followed, which took the reader to the top of the same page.
- */
+/* A first or last entry prints that end of the pair as a span, not a link. */
 .hf-form-entry-navigation > .hf-disabled {
     cursor: default;
     opacity: .5;
     pointer-events: none;
 }
 
-/* Matches the buttons beside it rather than sitting among them as a bare
-   glyph. The colours stay on .hf-entry-star so the entries list, which shares
-   them, is untouched. */
-/* Both classes, so this outweighs the bare .hf-entry-star rules further down
-   that strip the background and border for the list's icon-only version. */
+/* The large star matches the buttons beside it. Both classes, to outweigh the
+   list's icon-only .hf-entry-star rules further down. */
 .hf-entry-star.hf-entry-star-large {
     align-items: center;
     background: var(--hf-surface);
@@ -3222,15 +3095,8 @@ form.hf-error {
 /* -----------------------------------------------------------------------------
  * Per-form settings panels
  *
- * The Pro sections render into a .hf-pro-form-settings wrapper with a design
- * of their own (admin/css/form-settings-ui.css). The free sections had none,
- * so the same screen showed two treatments: bold labels and 36px controls on
- * one tab, light labels and shorter controls on the next. These rules give
- * the free sections the same vocabulary.
- *
- * Scoped through > .hf-form-container, which only the free section templates
- * put directly inside their panel, so nothing here reaches the Pro wrapper
- * or the builder's field editor — both of which also use .hf-form-row.
+ * Scoped through > .hf-form-container so the Pro wrapper and the builder's
+ * field editor, which also use .hf-form-row, are not affected.
  * -------------------------------------------------------------------------- */
 
 .hf-panel-head {
@@ -3247,8 +3113,7 @@ form.hf-error {
     padding: 0;
 }
 
-/* One line saying what the tab is for. Every panel used to open straight
-   onto a control with no statement of what it governed. */
+/* One line saying what the tab is for. */
 .hf-panel-desc {
     color: var(--hf-text-muted, #646970);
     font-size: var(--hf-font-sm, 12px);
@@ -3333,17 +3198,13 @@ form.hf-error {
 
 /* ---------- Toggle rows ---------- */
 
-/* The switch used to sit under its label like a text input, which read as a
-   heading with an orphaned control below it. */
 #hf-settings-form > div > .hf-form-container .hf-toggle-input-field {
     margin-top: var(--hf-space-1, 4px);
 }
 
 /* ---------- Import / Export panel ---------- */
 
-/* Two jobs on one screen, so each gets its own card. Previously they were
-   bare h3s in a flat stack, separated by an empty .hf-form-row acting as a
-   spacer, with a stray empty <form> between them. */
+/* Each job gets its own card. */
 .hf-imex-card {
     background: var(--hf-surface, #fff);
     border: 1px solid var(--hf-border, #e2e5ea);
@@ -3383,8 +3244,7 @@ form.hf-error {
     margin: var(--hf-space-3, 12px) 0 var(--hf-space-4, 16px);
 }
 
-/* Import overwrites the form it runs on, which nothing on the old panel
-   mentioned until the fields were already gone. */
+/* Warns that import overwrites the form. */
 .hf-imex-warning {
     align-items: flex-start;
     background: #fcf8ec;
@@ -3406,9 +3266,7 @@ form.hf-error {
     line-height: 1.4;
 }
 
-/* The two actions here are wp-admin buttons so the shared dropzone rules
-   keep matching them, but they should read as part of this panel rather
-   than as the admin colour scheme. */
+/* wp-admin buttons, so the shared dropzone rules match, restyled to fit the panel. */
 .hf-imex-card .button.button-primary {
     align-items: center;
     background: var(--hf-accent, #2271b1);
@@ -3444,9 +3302,8 @@ form.hf-error {
     min-height: 0;
 }
 
-/* Shared by the Import/Export form setting and the Import tab of the Create
-   New Form dialog. No max-width: both containers are the right width already,
-   and capping it left a short box floating in a wide panel. */
+/* Shared by the Import/Export setting and the Import tab of the Create New Form
+   dialog. No max-width: both containers are already the right width. */
 .hf-dropzone-wrapper {
     background: var(--hf-surface-sunken, #fafbfc);
     border: 2px dashed var(--hf-border-strong, #d3d8e0);
@@ -3499,8 +3356,7 @@ form.hf-error {
     transition: color var(--hf-transition, .15s ease);
 }
 
-/* left/top were missing, so the input sat at its static position and only
-   covered part of the box; the rest of it was not clickable. */
+/* left/top so the input covers the whole box, all of it clickable. */
 .hf-dropzone,
 .hf-dropzone:focus {
     cursor: pointer;
@@ -3592,9 +3448,7 @@ form.hf-error {
     display: none;
 }
 
-/* Once a file is chosen the preview above says so, and a full-size "choose a
-   file" target below it reads as though nothing has been picked. It stays,
-   as the way to swap the file, but shrinks out of the way. */
+/* Once a file is chosen the chooser shrinks, staying as the way to swap it. */
 .hf-preview-zone:not(.hidden) + .hf-dropzone-wrapper {
     min-height: 56px;
 }
@@ -3650,23 +3504,10 @@ form.hf-error {
 
 /* -----------------------------------------------------------------------------
  * Settings screen
- *
- * The site-wide Settings page. It used to be a bordered white box under a
- * black bar with the title in uppercase — the one screen in the plugin still
- * dressed that way, and nothing the header, the lists or the builder shared.
- *
- * It is now the shell every other screen uses: the bar from
- * HashFormHelper::render_list_header() above .hf-list-wrap, and the body on
- * the same measure as the Forms and Entries lists, with the nav rail and the
- * panel as two cards on it — the pairing the builder and the per-form
- * settings tab already use.
  * -------------------------------------------------------------------------- */
 
-/* Capped and left-aligned under the title in the header bar. The lists it
-   shares this shell with fill the full 1400px because a table has that much
-   to say; a column of settings does not, and stretched to the same measure it
-   left every control marooned against a third of a screen of white. 900 for
-   the panel is the width the builder gives its canvas. */
+/* Capped and left-aligned under the title; 900 for the panel, as the builder
+   gives its canvas. */
 .hf-settings-screen .hf-settings-layout {
     align-items: flex-start;
     display: flex;
@@ -3702,9 +3543,8 @@ form.hf-error {
     padding: var(--hf-space-5, 24px);
 }
 
-/* The save bar is part of the panel, so it reads as belonging to the section
-   above it rather than floating under the page. Sticky, because the captcha
-   section is long enough to scroll Save off the bottom. */
+/* The save bar is part of the panel, and sticky because the captcha section is
+   long enough to scroll Save off screen. */
 .hf-settings-screen .hf-footer {
     border-radius: 0 0 var(--hf-radius, 8px) var(--hf-radius, 8px);
     bottom: 0;
@@ -3714,8 +3554,7 @@ form.hf-error {
 
 /* ---------- Sections ---------- */
 
-/* The intro copy the captcha section opens with: it was body text at the same
-   weight as a setting's own label, directly above the first control. */
+/* The captcha section's intro copy. */
 .hf-settings-screen .hf-settings-section > p {
     color: var(--hf-text-muted, #646970);
     font-size: var(--hf-font-base, 13px);
@@ -3736,9 +3575,7 @@ form.hf-error {
     margin-bottom: 0;
 }
 
-/* The email section lays its rows out on the 6-column grid, where a gap and a
-   bottom margin stack up and leave it spaced twice as far apart as the
-   captcha section beside it. The gap is the one that carries here. */
+/* The grid gap spaces the email rows; a bottom margin would double it. */
 .hf-settings-screen .hf-grid-container {
     gap: var(--hf-space-5, 24px);
 }
@@ -3747,10 +3584,7 @@ form.hf-error {
     margin-bottom: 0;
 }
 
-/* Help text under a control. .hf-desc is only styled where it sits inside
-   .hf-setting-fields — and italic there — while half the rows on this screen
-   put it directly in the row, where nothing answered it at all. One
-   treatment, whichever way a section writes it. */
+/* Help text under a control, styled the same wherever a section puts it. */
 .hf-settings-screen .hf-settings-row p.hf-desc {
     color: var(--hf-text-muted, #646970);
     font-size: var(--hf-font-sm, 12px);
@@ -3766,8 +3600,7 @@ form.hf-error {
     margin: 0 0 var(--hf-space-3, 12px);
 }
 
-/* The media picker is a control like any other here, and at the panel's full
-   width it was three times the size of the fields under it. */
+/* The media picker, sized like the fields under it. */
 .hf-settings-screen .hf-image-preview {
     max-width: 480px;
 }
@@ -3976,8 +3809,7 @@ form.hf-error {
     display: none;
 }
 
-/* Empty state. Without it the panel was a lone button on white, which said
-   nothing about what the feature does or that nothing is configured. */
+/* Empty state */
 .hf-condition-empty {
     background: var(--hf-surface-sunken, #fafbfc);
     border: 1px dashed var(--hf-border-strong, #d3d8e0);
@@ -4007,9 +3839,7 @@ form.hf-error {
     margin: 0;
 }
 
-/* One rule. Previously a single flex line of five unlabelled controls, so
-   the selects were squeezed to the point of truncating "Select Field" and
-   nothing said what any of them chose. */
+/* One rule */
 .hf-condition-row {
     background: var(--hf-surface, #fff);
     border: 1px solid var(--hf-border, #e2e5ea);
@@ -4066,9 +3896,7 @@ form.hf-error {
     color: var(--hf-danger, #d3383c);
 }
 
-/* Two lines of three: what the rule does, then what it watches. At the
-   width this panel actually gets, five across leaves each control too
-   narrow to read a field name in. */
+/* Two lines of three: what the rule does, then what it watches. */
 .hf-condition-grid {
     display: grid;
     gap: var(--hf-space-3, 12px);
@@ -4112,8 +3940,7 @@ form.hf-error {
     }
 }
 
-/* Add row. The old button was a solid #10a0ff uppercase block that turned
-   black on hover — a colour and a treatment used nowhere else here. */
+/* Add row */
 .hf-add-more-condition {
     align-items: center;
     background: var(--hf-surface-sunken, #fafbfc);
@@ -4206,8 +4033,7 @@ form.hf-error {
     border: none;
 }
 
-/* The save bar on the style template editor. It was ALL CAPS bold in the
-   admin colour scheme, which read as neither wp-admin nor as this plugin. */
+/* The save bar on the style template editor. */
 .hf-footer .button {
     align-items: center;
     border-radius: var(--hf-radius-sm, 4px);
@@ -4272,11 +4098,8 @@ form.hf-error {
 
 /* Alert
  *
- * The save toast on the style template editor. It was a 300px block of solid
- * #42BA96 with white 16px text, sliding in from right:100px — a third design
- * for the one action, alongside the builder's toast and the redirect notice.
- * Same card as .hf-updated-info now; the class API the script toggles
- * (hf-alert-active / -success / -warning) is unchanged.
+ * The save toast on the style template editor, the same card as .hf-updated-info.
+ * The script toggles hf-alert-active / -success / -warning.
  */
 .hf-alert {
     align-items: center;
@@ -4492,13 +4315,8 @@ form.hf-error {
 }
 
 /*
- * Deliberately not hidden while empty. Both carry role="status", and a
- * display:none element is not in the accessibility tree at all, so it is not a
- * live region either — revealing it and filling it in the same operation is
- * the pattern screen readers are known to miss, which would have cost this
- * screen every announcement it makes. An empty span is invisible on its own,
- * and it sits at the end of its row, so the gap it leaves behind falls after
- * the last thing on the line where there is nothing to disturb.
+ * Not hidden while empty: both are role="status" live regions, and display:none
+ * would drop them from the accessibility tree.
  */
 
 .hf-entry-status-error,
@@ -4545,45 +4363,521 @@ form.hf-error {
     color: var(--wp-admin-theme-color, #2271b1);
 }
 
-/*
- * The documentation link in the shared page bar.
- *
- * Matched to the one the Modules screen has carried in its own header since it
- * was built (.hf-version a in the pro plugin's modules-ui.css), so the two read
- * as the same control wherever they appear. It lives here rather than in
- * list-screens.css only to keep this change out of a file being edited
- * elsewhere; the bar itself is a token host, so the values resolve.
- *
- * margin-left:auto rather than a wrapper: the bar is a space-between row, and
- * this pushes the link and the action button that may follow it into one group
- * on the right without changing the markup the other screens share.
- */
-.hf-list-header .hf-list-docs {
-    margin: 0 0 0 auto;
+/* ---------- Upgrade to Pro ---------- */
+
+.hf-upgrade-screen {
+    margin: 0 auto;
+    max-width: 1120px;
+    padding: var(--hf-space-3, 12px);
 }
 
-.hf-list-header .hf-list-docs a {
+.hf-upgrade-hero,
+.hf-up-explorer,
+.hf-upgrade-foot {
+    background: var(--hf-surface, #fff);
+    border: 1px solid var(--hf-border, #e2e5ea);
+    border-radius: var(--hf-radius-lg, 12px);
+    box-shadow: var(--hf-shadow-md, 0 4px 10px -2px rgba(16, 24, 40, .1));
+    margin-bottom: var(--hf-space-3, 12px);
+}
+
+.hf-upgrade-hero {
+    padding: 28px 32px;
+}
+
+.hf-upgrade-hero h2 {
+    font-size: 22px;
+    letter-spacing: -.01em;
+    line-height: 1.25;
+    margin: 0 0 8px;
+}
+
+.hf-upgrade-hero p {
+    color: var(--hf-text-muted, #646970);
+    font-size: var(--hf-font-md, 14px);
+    margin: 0 0 18px;
+    max-width: 78ch;
+}
+
+.hf-upgrade-actions,
+.hf-up-links {
     align-items: center;
-    border: 1px solid var(--hf-border-strong, #d3d8e0);
-    border-radius: var(--hf-radius-sm, 4px);
-    color: var(--hf-text, #1e2327);
-    display: inline-flex;
-    font-size: var(--hf-font-base, 13px);
+    display: flex;
+    flex-wrap: wrap;
     gap: var(--hf-space-2, 8px);
-    min-height: 32px;
-    padding: 0 var(--hf-space-3, 12px);
-    text-decoration: none;
-    transition: background-color var(--hf-transition, .15s ease), border-color var(--hf-transition, .15s ease);
 }
 
-.hf-list-header .hf-list-docs a:hover,
-.hf-list-header .hf-list-docs a:focus {
+.hf-upgrade-screen .hf-upgrade-button { text-decoration: none; }
+
+.hf-upgrade-screen .hf-upgrade-button:not(.button-primary) {
+    background: var(--hf-surface, #fff);
+    border-color: var(--hf-border-strong, #d3d8e0);
+    color: var(--hf-text, #1e2327);
+}
+
+.hf-upgrade-screen .hf-upgrade-button:not(.button-primary):hover,
+.hf-upgrade-screen .hf-upgrade-button:not(.button-primary):focus {
     background: var(--hf-surface-sunken, #fafbfc);
     border-color: var(--hf-text-faint, #8c9196);
     color: var(--hf-text, #1e2327);
 }
 
-.hf-list-header .hf-list-docs a:focus-visible {
+.hf-upgrade-screen .hf-upgrade-button.button-primary {
+    background: var(--hf-accent, #dd823b);
+    border-color: var(--hf-accent, #dd823b);
+    color: #fff;
+}
+
+.hf-upgrade-screen .hf-upgrade-button.button-primary:hover,
+.hf-upgrade-screen .hf-upgrade-button.button-primary:focus {
+    background: var(--hf-accent-hover, #c26f2e);
+    border-color: var(--hf-accent-hover, #c26f2e);
+    color: #fff;
+}
+
+.hf-up-doc-link {
+    color: var(--hf-accent-text, #a3591b);
+    font-weight: 600;
+    margin-left: var(--hf-space-2, 8px);
+}
+
+.hf-up-doc-link:hover { color: var(--hf-accent-hover, #c26f2e); }
+
+/* What Pro ships, as figures. */
+.hf-up-stats {
+    border-top: 1px solid var(--hf-border, #e2e5ea);
+    display: grid;
+    gap: var(--hf-space-3, 12px);
+    grid-template-columns: repeat(5, 1fr);
+    margin: 24px 0 0;
+    padding: 20px 0 0;
+}
+
+.hf-up-stats li {
+    margin: 0;
+}
+
+.hf-up-stats strong {
+    color: var(--hf-accent-text, #a3591b);
+    display: block;
+    font-size: 26px;
+    letter-spacing: -.02em;
+    line-height: 1.1;
+}
+
+.hf-up-stats span {
+    color: var(--hf-text-muted, #646970);
+    font-size: var(--hf-font-base, 13px);
+}
+
+/* Topics on the left, the chosen one on the right. */
+.hf-up-explorer {
+    overflow: hidden;
+}
+
+.hf-up-explorer [hidden] { display: none !important; }
+
+/* Without the script every topic is listed, so the tabs have nothing to do. */
+.hf-up-nav,
+.hf-up-tools { display: none; }
+
+.hf-up-js {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);
+}
+
+.hf-up-js .hf-up-nav {
+    align-content: start;
+    background: var(--hf-surface-sunken, #fafbfc);
+    border-right: 1px solid var(--hf-border, #e2e5ea);
+    display: grid;
+    gap: 2px;
+    padding: var(--hf-space-4, 16px) var(--hf-space-3, 12px);
+}
+
+.hf-up-nav-title {
+    color: var(--hf-text-faint, #8c9196);
+    font-size: var(--hf-font-xs, 11px);
+    font-weight: 600;
+    letter-spacing: .06em;
+    padding: 4px 12px 8px;
+    text-transform: uppercase;
+}
+
+.hf-up-tab {
+    align-items: center;
+    background: none;
+    border: 0;
+    border-radius: var(--hf-radius, 8px);
+    color: var(--hf-text, #1e2327);
+    cursor: pointer;
+    display: flex;
+    font-size: var(--hf-font-md, 14px);
+    gap: var(--hf-space-2, 8px);
+    justify-content: space-between;
+    padding: 10px 12px;
+    text-align: left;
+    transition: background var(--hf-transition, .15s ease);
+}
+
+.hf-up-tab:hover { background: var(--hf-accent-soft, #fdf6f0); }
+
+.hf-up-tab:focus-visible {
     outline: 2px solid var(--hf-accent, #dd823b);
     outline-offset: 1px;
+}
+
+.hf-up-tab.is-active {
+    background: var(--hf-surface, #fff);
+    box-shadow: var(--hf-shadow, 0 1px 2px rgba(16, 24, 40, .05)), inset 3px 0 0 var(--hf-accent, #dd823b);
+    font-weight: 600;
+}
+
+/* How many things the topic adds over the free plugin. */
+.hf-up-tab-count {
+    background: var(--hf-accent-soft, #fdf6f0);
+    border-radius: var(--hf-radius-pill, 999px);
+    color: var(--hf-accent-text, #a3591b);
+    font-size: var(--hf-font-xs, 11px);
+    font-weight: 600;
+    padding: 2px 8px;
+}
+
+.hf-up-tab-all {
+    border-top: 1px solid var(--hf-border, #e2e5ea);
+    border-radius: 0 0 var(--hf-radius, 8px) var(--hf-radius, 8px);
+    margin-top: var(--hf-space-2, 8px);
+    padding-top: 14px;
+}
+
+/* Search and the filter only make sense across every topic. */
+.hf-up-js.hf-up-all .hf-up-tools {
+    align-items: center;
+    border-bottom: 1px solid var(--hf-border, #e2e5ea);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--hf-space-3, 12px);
+    justify-content: space-between;
+    padding: var(--hf-space-3, 12px) var(--hf-space-5, 24px);
+}
+
+.hf-up-tools .hf-up-search {
+    border: 1px solid var(--hf-border-strong, #d3d8e0);
+    border-radius: var(--hf-radius-sm, 4px);
+    min-height: 32px;
+    width: 240px;
+}
+
+.hf-up-only {
+    align-items: center;
+    color: var(--hf-text-muted, #646970);
+    display: inline-flex;
+    gap: 6px;
+}
+
+.hf-up-only input { margin: 0; }
+
+.hf-up-panel-head {
+    padding: var(--hf-space-5, 24px) var(--hf-space-5, 24px) var(--hf-space-4, 16px);
+}
+
+.hf-up-panel-head h3 {
+    font-size: var(--hf-font-xl, 20px);
+    letter-spacing: -.01em;
+    margin: 0 0 6px;
+}
+
+.hf-up-lede {
+    color: var(--hf-text-muted, #646970);
+    font-size: var(--hf-font-md, 14px);
+    margin: 0 0 var(--hf-space-4, 16px);
+    max-width: 72ch;
+}
+
+/* The difference in one line each, before any table. */
+.hf-up-versus {
+    display: grid;
+    gap: var(--hf-space-3, 12px);
+    grid-template-columns: 1fr 1fr;
+    margin-bottom: var(--hf-space-4, 16px);
+}
+
+.hf-up-vs {
+    border: 1px solid var(--hf-border, #e2e5ea);
+    border-radius: var(--hf-radius, 8px);
+    font-size: var(--hf-font-md, 14px);
+    padding: 12px 14px;
+}
+
+.hf-up-vs-label {
+    color: var(--hf-text-faint, #8c9196);
+    display: block;
+    font-size: var(--hf-font-xs, 11px);
+    font-weight: 600;
+    letter-spacing: .06em;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.hf-up-vs-pro {
+    background: var(--hf-accent-soft, #fdf6f0);
+    border-color: color-mix(in srgb, var(--hf-accent, #dd823b) 35%, #fff);
+}
+
+.hf-up-vs-pro .hf-up-vs-label { color: var(--hf-accent-text, #a3591b); }
+
+.hf-up-col { display: none; }
+
+/* In the full comparison the topic is one band over its rows: its name, a link
+   and the column labels, standing in for the table's own header. */
+.hf-up-all .hf-up-lede,
+.hf-up-all .hf-up-versus,
+.hf-up-all .hf-up-links .button:not(.button-primary) { display: none; }
+
+.hf-up-all .hf-up-panel-head {
+    align-items: center;
+    background: var(--hf-surface-sunken, #fafbfc);
+    border-bottom: 1px solid var(--hf-border, #e2e5ea);
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) 120px 120px;
+    padding: 0 0 0 var(--hf-space-5, 24px);
+}
+
+.hf-up-all .hf-up-panel-head h3 {
+    font-size: var(--hf-font-md, 14px);
+    letter-spacing: 0;
+    margin: 0;
+    padding: 12px 0;
+}
+
+.hf-up-all .hf-up-links { padding: 0 var(--hf-space-4, 16px); }
+
+.hf-up-all .hf-up-links .hf-upgrade-button.button-primary,
+.hf-up-all .hf-up-links .hf-upgrade-button.button-primary:hover,
+.hf-up-all .hf-up-links .hf-upgrade-button.button-primary:focus {
+    background: none;
+    border: 0;
+    box-shadow: none;
+    color: var(--hf-accent-text, #a3591b);
+    font-size: var(--hf-font-base, 13px);
+    min-height: 0;
+    padding: 0;
+    text-decoration: underline;
+}
+
+.hf-up-all .hf-up-col {
+    color: var(--hf-text-muted, #646970);
+    display: block;
+    font-size: var(--hf-font-xs, 11px);
+    font-weight: 600;
+    letter-spacing: .06em;
+    padding: 0 16px;
+    text-transform: uppercase;
+}
+
+.hf-up-all .hf-up-col-pro { color: var(--hf-accent-text, #a3591b); }
+
+/* Still read out and still sizing the columns, just not drawn a second time. */
+.hf-up-all .hf-cmp thead th {
+    border: 0;
+    font-size: 0;
+    line-height: 0;
+    padding-bottom: 0;
+    padding-top: 0;
+}
+
+.hf-up-panel + .hf-up-panel { border-top: 1px solid var(--hf-border, #e2e5ea); }
+
+.hf-cmp {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+}
+
+.hf-cmp th {
+    background: var(--hf-surface-sunken, #fafbfc);
+    border-bottom: 1px solid var(--hf-border, #e2e5ea);
+    border-top: 1px solid var(--hf-border, #e2e5ea);
+    color: var(--hf-text-muted, #646970);
+    font-size: var(--hf-font-xs, 11px);
+    letter-spacing: .06em;
+    padding: 10px 16px;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.hf-cmp th:first-child,
+.hf-cmp td:first-child { padding-left: var(--hf-space-5, 24px); }
+
+.hf-cmp th:nth-child(n+2),
+.hf-cmp td:nth-child(n+2) { width: 120px; }
+
+.hf-cmp .hf-cmp-head-pro { color: var(--hf-accent-text, #a3591b); }
+
+.hf-cmp td {
+    border-bottom: 1px solid var(--hf-hairline, #f0f0f1);
+    padding: 12px 16px;
+    vertical-align: top;
+}
+
+.hf-cmp tr:last-child td { border-bottom: 0; }
+
+.hf-cmp-name {
+    display: block;
+    font-weight: 600;
+}
+
+a.hf-cmp-name {
+    color: var(--hf-text, #1e2327);
+    text-decoration: none;
+}
+
+a.hf-cmp-name:hover,
+a.hf-cmp-name:focus { color: var(--hf-accent-text, #a3591b); }
+
+a.hf-cmp-name::after {
+    content: "\2197";
+    color: var(--hf-text-faint, #8c9196);
+    font-weight: 400;
+    margin-left: 4px;
+}
+
+/* A list of names, one chip each. */
+.hf-cmp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.hf-cmp-chips span {
+    background: var(--hf-surface-sunken, #fafbfc);
+    border: 1px solid var(--hf-border, #e2e5ea);
+    border-radius: var(--hf-radius-pill, 999px);
+    font-size: var(--hf-font-sm, 12px);
+    padding: 2px 10px;
+}
+
+.hf-cmp-desc {
+    color: var(--hf-text-muted, #646970);
+    display: block;
+    font-size: var(--hf-font-base, 13px);
+    margin-top: 2px;
+}
+
+/* The tick and the dash carry the answer; the words beside them only qualify it. */
+.hf-cmp-mark {
+    font-weight: 700;
+    margin-right: 6px;
+}
+
+.hf-cmp-yes .hf-cmp-mark { color: var(--hf-success, #2e9e5b); }
+
+.hf-cmp-no { color: var(--hf-text-faint, #8c9196); }
+
+.hf-cmp-plain { font-weight: 600; }
+
+.hf-cmp-pro.hf-cmp-plain,
+.hf-cmp-pro.hf-cmp-yes {
+    background: color-mix(in srgb, var(--hf-accent, #dd823b) 5%, #fff);
+}
+
+.hf-up-empty {
+    color: var(--hf-text-muted, #646970);
+    margin: 0;
+    padding: var(--hf-space-6, 32px) var(--hf-space-5, 24px);
+    text-align: center;
+}
+
+.hf-upgrade-foot {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--hf-space-4, 16px);
+    justify-content: space-between;
+    padding: 22px 32px;
+}
+
+.hf-upgrade-foot h3 {
+    font-size: var(--hf-font-lg, 16px);
+    margin: 0 0 4px;
+}
+
+.hf-upgrade-foot p {
+    color: var(--hf-text-muted, #646970);
+    margin: 0;
+    max-width: 62ch;
+}
+
+.hf-upgrade-foot .hf-upgrade-have {
+    border-top: 1px solid var(--hf-border, #e2e5ea);
+    flex: 1 1 100%;
+    max-width: none;
+    padding-top: var(--hf-space-3, 12px);
+}
+
+.hf-upgrade-have a { color: var(--hf-accent-text, #a3591b); }
+
+/* The bar's own call to action. */
+.hf-list-header .hf-upgrade-cta {
+    background: var(--hf-accent, #dd823b);
+    border-color: var(--hf-accent, #dd823b);
+    color: #fff;
+}
+
+@media (max-width: 960px) {
+    .hf-up-js { grid-template-columns: minmax(0, 1fr); }
+
+    /* The topics become a strip that scrolls sideways. */
+    .hf-up-js .hf-up-nav {
+        border-bottom: 1px solid var(--hf-border, #e2e5ea);
+        border-right: 0;
+        display: flex;
+        overflow-x: auto;
+        padding: var(--hf-space-2, 8px);
+    }
+
+    .hf-up-nav-title { display: none; }
+
+    .hf-up-tab {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    .hf-up-tab.is-active { box-shadow: inset 0 -3px 0 var(--hf-accent, #dd823b); }
+
+    .hf-up-tab-all {
+        border-radius: var(--hf-radius, 8px);
+        border-top: 0;
+        margin-top: 0;
+        padding-top: 10px;
+    }
+}
+
+@media (max-width: 782px) {
+    .hf-upgrade-hero,
+    .hf-upgrade-foot { padding: 20px; }
+
+    .hf-up-stats { grid-template-columns: repeat(2, 1fr); }
+    .hf-up-versus { grid-template-columns: 1fr; }
+    .hf-up-tools .hf-up-search { width: 100%; }
+    .hf-up-search-wrap { flex: 1 1 100%; }
+
+    .hf-cmp th:nth-child(n+2),
+    .hf-cmp td:nth-child(n+2) { width: 84px; }
+
+    .hf-up-all .hf-up-panel-head {
+        grid-template-columns: auto minmax(0, 1fr) 84px 84px;
+        padding-left: 16px;
+    }
+
+    .hf-up-all .hf-up-col { padding: 0 6px; }
+    .hf-cmp td,
+    .hf-cmp th { padding: 10px 6px; }
+
+    /* Keeps "Unlimited" inside its column. */
+    .hf-cmp-mark { display: block; }
+
+    .hf-cmp th:first-child,
+    .hf-cmp td:first-child { padding-left: 16px; }
 }

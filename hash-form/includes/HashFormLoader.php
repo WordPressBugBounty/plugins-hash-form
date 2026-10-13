@@ -42,17 +42,12 @@ class HashFormLoader {
         $is_style_template_screen = ($screen && 'hashform-styles' === $screen->post_type)
                 || HashFormStyleBuilder::is_builder();
 
-        // Everything below is only useful on the plugin's own screens; do not
-        // weigh down the rest of wp-admin with it.
+        // Nothing below is needed outside the plugin's own screens.
         if (strpos($page, 'hashform') !== 0 && !$is_style_template_screen) {
             return;
         }
 
-        /*
-         * The style builder's slug begins with hashform too, but it is a style
-         * screen and not the form builder: loading the form builder's scripts
-         * there would put them somewhere they have never run before.
-         */
+        // The style builder's slug starts with hashform too, but it is not the form builder.
         if (strpos($page, 'hashform') === 0 && !HashFormStyleBuilder::is_builder()) {
             wp_enqueue_script('hashform-builder', HASHFORM_URL . 'js/builder.js', array('jquery', 'jquery-ui-core', 'jquery-ui-draggable', 'jquery-ui-droppable', 'jquery-ui-sortable', 'wp-i18n', 'wp-hooks', 'jquery-ui-dialog', 'hashform-select2'), HASHFORM_VERSION, true);
             wp_enqueue_script('hashform-backend', HASHFORM_URL . 'js/backend.js', array('jquery', 'jquery-ui-core', 'jquery-ui-draggable', 'jquery-ui-droppable', 'jquery-ui-sortable', 'wp-i18n', 'wp-hooks', 'jquery-ui-dialog', 'jquery-ui-datepicker'), HASHFORM_VERSION, true);
@@ -77,9 +72,7 @@ class HashFormLoader {
                 'nonce' => wp_create_nonce('hashform_backend_ajax'),
             ));
 
-            // Kept separate from hashform_backend_js: the backend script
-            // declares that same global afterwards, which would drop any key
-            // only the builder had set.
+            // Separate from hashform_backend_js: the backend script declares that global later and would overwrite it.
             wp_localize_script('hashform-builder', 'hashform_builder_js', array(
                 'drop_field_here' => esc_html__('Drop a field here', 'hash-form'),
                 'move' => esc_html__('Move Row', 'hash-form'),
@@ -96,6 +89,23 @@ class HashFormLoader {
 
         wp_enqueue_script('hashform-chosen', HASHFORM_URL . 'js/chosen.jquery.js', array('jquery'), HASHFORM_VERSION, true);
         wp_enqueue_script('hashform-select2', HASHFORM_URL . 'js/select2.min.js', array('jquery'), HASHFORM_VERSION, true);
+        // Adds a search box to long dropdowns. No dependencies.
+        wp_enqueue_script('hashform-searchable-select', HASHFORM_URL . 'js/searchable-select.js', array(), HASHFORM_VERSION, true);
+        wp_localize_script('hashform-searchable-select', 'hashformSearchableSelect', array(
+            /**
+             * How many options a dropdown needs before it opens with a search box.
+             *
+             * @param int $threshold
+             */
+            'threshold' => absint(apply_filters('hashform_searchable_select_threshold', 10)),
+            'i18n' => array(
+                'search' => esc_html__('Search', 'hash-form'),
+                'noResults' => esc_html__('No matches', 'hash-form'),
+                'oneResult' => esc_html__('1 result', 'hash-form'),
+                /* translators: %d: number of matching options. */
+                'results' => esc_html__('%d results', 'hash-form'),
+            ),
+        ));
         wp_enqueue_script('jquery-condition', HASHFORM_URL . 'js/jquery-condition.js', array('jquery'), HASHFORM_VERSION, true);
         wp_enqueue_script('wp-color-picker-alpha', HASHFORM_URL . 'js/wp-color-picker-alpha.js', array('wp-color-picker'), HASHFORM_VERSION, true);
         wp_enqueue_script('hashform-admin-settings', HASHFORM_URL . 'js/admin-settings.js', array('jquery'), HASHFORM_VERSION, true);
@@ -112,13 +122,13 @@ class HashFormLoader {
         wp_enqueue_style('materialdesignicons', HASHFORM_URL . 'fonts/materialdesignicons.css', array(), HASHFORM_VERSION);
         wp_enqueue_style('hashform-chosen', HASHFORM_URL . 'css/chosen.css', array(), HASHFORM_VERSION);
         wp_enqueue_style('hashform-select2', HASHFORM_URL . 'css/select2.min.css', array(), HASHFORM_VERSION);
+        wp_enqueue_style('hashform-searchable-select', HASHFORM_URL . 'css/searchable-select.css', array(), HASHFORM_VERSION);
         // Tokens load first and are a dependency of everything else, so any
         // stylesheet can rely on the custom properties being defined.
         wp_enqueue_style('hashform-tokens', HASHFORM_URL . 'css/design-tokens.css', array(), HASHFORM_VERSION);
         wp_enqueue_style('hashform-admin', HASHFORM_URL . 'css/admin-style.css', array('hashform-tokens'), HASHFORM_VERSION);
 
-        // Loaded after the legacy sheet so the reworked screens win without
-        // having to unpick admin-style.css in one go.
+        // Loaded after the legacy admin-style.css so the reworked screens win.
         wp_enqueue_style('hashform-builder-ui', HASHFORM_URL . 'css/builder.css', array('hashform-admin'), HASHFORM_VERSION);
         wp_enqueue_style('hashform-file-uploader', HASHFORM_URL . 'css/file-uploader.css', array(), HASHFORM_VERSION);
         wp_enqueue_style('hashform-admin-settings', HASHFORM_URL . 'css/admin-settings.css', array(), HASHFORM_VERSION);
@@ -137,23 +147,16 @@ class HashFormLoader {
     }
 
     public static function elementor_editor_styles() {
-        /*
-         * One rule, built from the same drawing the field icons come from, so
-         * the widget mark cannot drift from the rest of the set. This replaced
-         * a 65 KB icon font that was loaded here to draw exactly one glyph.
-         */
+        // The widget mark as one inline rule, from the same drawing as the field icons.
         wp_register_style('hashform-elementor-icon', false, array(), HASHFORM_VERSION);
         wp_enqueue_style('hashform-elementor-icon');
         wp_add_inline_style('hashform-elementor-icon', HashFormFieldIcons::elementor_icon_css());
     }
 
-    // Frontend assets are only registered here; they are enqueued by
-    // enqueue_form_assets() when a form is actually rendered, so pages
-    // without a form load none of them.
+    // Frontend assets are only registered here; enqueue_form_assets() enqueues
+    // them when a form is rendered.
     public static function enqueue_styles() {
-        // The stock jquery.timepicker stylesheet is deliberately not registered.
-        // The time picker is styled in style.css alongside the date picker so
-        // the two share one set of tokens.
+        // No stock jquery.timepicker stylesheet: the time picker is styled in style.css with the date picker.
         wp_register_style('hashform-file-uploader', HASHFORM_URL . 'css/file-uploader.css', array(), HASHFORM_VERSION);
         wp_register_style('materialdesignicons', HASHFORM_URL . 'fonts/materialdesignicons.css', array(), HASHFORM_VERSION);
         wp_register_style('hashform-style', HASHFORM_URL . 'css/style.css', array(), HASHFORM_VERSION);
@@ -182,10 +185,7 @@ class HashFormLoader {
     }
 
     /**
-     * Everything a rendered form needs to look right.
-     *
-     * Split out from enqueue_form_assets() because the Elementor editor needs
-     * these without the scripts - see elementor_preview_styles().
+     * Everything a rendered form needs to look right. Separate from enqueue_form_assets() so the Elementor editor gets styles without scripts.
      */
     public static function enqueue_form_styles() {
         wp_enqueue_style('dashicons');
@@ -196,20 +196,10 @@ class HashFormLoader {
     }
 
     /**
-     * The form's stylesheet inside the Elementor editor's preview iframe.
+     * The form stylesheets inside the Elementor editor's preview iframe, where the widget's render() does not enqueue them.
      *
-     * Elementor builds the widgets client-side there - the preview page arrives
-     * with no element markup at all - so the widget's render(), which is what
-     * enqueues the form assets, never runs. The form was then injected by the
-     * editor with no stylesheet behind it, and every style control looked like
-     * it did nothing: the css variables they set had no rules to act on.
-     *
-     * Styles only. The scripts would bind the submit handler and start hiding
-     * fields by conditional logic inside the editor, which is not something
-     * anyone laying out a page wants to fight with.
-     *
-     * Elementor fires this at wp_enqueue_scripts priority 20, and these handles
-     * are registered at 11, so they are always there to enqueue by now.
+     * Styles only, so submit and conditional logic do not run in the editor. Elementor fires this at
+     * wp_enqueue_scripts priority 20, after the handles are registered at 11.
      */
     public static function elementor_preview_styles() {
         self::enqueue_form_styles();
@@ -221,10 +211,7 @@ class HashFormLoader {
         wp_enqueue_script('jquery-ui-slider');
         wp_enqueue_script('jquery-timepicker');
         wp_enqueue_script('hashform-file-uploader');
-        // Core's own copy, registered by WordPress since 4.6. The plugin used
-        // to ship an identical build of the same version, which WordPress
-        // ignored anyway: wp_register_script() will not take a handle that is
-        // already registered.
+        // Core's copy, registered by WordPress since 4.6.
         wp_enqueue_script('moment');
         wp_enqueue_script('frontend');
     }

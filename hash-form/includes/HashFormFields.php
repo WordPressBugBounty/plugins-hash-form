@@ -17,11 +17,7 @@ class HashFormFields {
         global $wpdb;
 
         /**
-         * Supply a form's fields without them being stored.
-         *
-         * The companion to hashform_pre_get_form_vars: between them a caller
-         * can render a form it holds in memory. Return anything but null and
-         * the query below is skipped.
+         * Supply a form's fields without them being stored. Return non-null to skip the query.
          *
          * @param array|null $fields null to load them as usual.
          * @param int        $form_id
@@ -32,8 +28,7 @@ class HashFormFields {
             return $pre;
         }
 
-        // After the filter, so a caller supplying a form in memory is asked
-        // with the id it passed rather than a sanitised version of it.
+        // After the filter, so it receives the id as passed.
         $form_id = absint($form_id);
 
         $results = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}hashform_fields WHERE form_id=%d ORDER BY field_order", $form_id));
@@ -75,10 +70,7 @@ class HashFormFields {
     }
 
     /**
-     * Copy one field, place the copy directly after the original and render it.
-     *
-     * Echoes the new field's builder markup so the caller can drop it into the
-     * editor, matching what include_new_field() returns for a brand new field.
+     * Copy one field, place the copy right after the original and echo its builder markup.
      */
     public static function duplicate_field($field_id) {
         global $wpdb;
@@ -100,8 +92,7 @@ class HashFormFields {
         $values = array();
         self::fill_field($values, $field, $field->form_id);
 
-        // Make room so the copy sorts immediately after its original instead of
-        // tying with it, which would leave the order down to the database.
+        // Make room so the copy sorts right after its original instead of tying with it.
         $wpdb->query($wpdb->prepare(
                 "UPDATE {$wpdb->prefix}hashform_fields SET field_order = field_order + 1 WHERE form_id = %d AND field_order > %d", absint($field->form_id), absint($field->field_order)
         ));
@@ -135,9 +126,6 @@ class HashFormFields {
         $field_obj = HashFormFields::get_field_class($field_array['type'], $field_array);
         $field_obj->load_single_field();
 
-        // The row was created and its markup printed, but the function fell
-        // off the end and handed every caller null, so nothing downstream
-        // could tell a successful insert from a refused one.
         return $field_id;
     }
 
@@ -283,10 +271,7 @@ class HashFormFields {
     }
 
     /**
-     * The groups the field palette is divided into, in display order.
-     *
-     * Add-ons can add a group here and put their own types in it through
-     * hashform_field_group_map.
+     * The field palette groups, in display order. Add-ons map their types into them via hashform_field_group_map.
      */
     public static function field_groups() {
         return apply_filters('hashform_field_groups', array(
@@ -300,11 +285,7 @@ class HashFormFields {
     }
 
     /**
-     * Which group each field type belongs to.
-     *
-     * A type missing from this map is not dropped — the palette collects
-     * anything unlisted into a trailing group, so a field from an add-on that
-     * has not registered itself still appears.
+     * Which group each field type belongs to. Unlisted types go into a trailing group.
      */
     public static function field_group_map() {
         return apply_filters('hashform_field_group_map', array(
@@ -390,9 +371,7 @@ class HashFormFields {
         $new_values['field_key'] = sanitize_text_field(HashFormHelper::get_unique_key('hashform_fields', 'field_key'));
         $new_values['name'] = sanitize_text_field($values['name']);
         $new_values['type'] = sanitize_text_field($values['type']);
-        // Sanitized for the field's own kind: duplicating a field or a form,
-        // importing one and starting from a template all come through here,
-        // and none of them used to carry an HTML field's markup across.
+        // Sanitized for the field's type, so an HTML field's markup survives duplication, import and templates.
         $new_values['description'] = HashFormHelper::sanitize_field_description($values['description'], $new_values['type']);
         $new_values['field_order'] = isset($values['field_order']) ? absint($values['field_order']) : '';
         $new_values['required'] = $values['required'] ? true : false;
@@ -489,14 +468,7 @@ class HashFormFields {
 
         $values['options'] = serialize(is_array($values['options']) ? HashFormHelper::sanitize_array($values['options']) : sanitize_text_field($values['options']));
 
-        /*
-         * get_field_vars() runs wp_unslash() over everything it reads, so a
-         * regex has to go in carrying an extra level of backslashes to come
-         * back out intact. create_row() has always done this; update_fields()
-         * never did, so editing a field stripped the backslashes out of its
-         * Format and left a pattern that would not compile — which rejects
-         * every value submitted to it.
-         */
+        // get_field_vars() unslashes everything it reads, so a Format regex needs its backslashes doubled first.
         self::preserve_format_option_backslashes($values);
 
         $values['field_options'] = serialize(HashFormHelper::sanitize_array($values['field_options'], HashFormHelper::get_field_options_sanitize_rules()));
@@ -519,9 +491,7 @@ class HashFormFields {
      *
      * @param int $old_form_id
      * @param int $form_id
-     * @return array old field id => new field id, for anything that refers to a
-     *               field by id and has to be pointed at the copy - the show
-     *               and hide rules above all.
+     * @return array old field id => new field id.
      */
     public static function duplicate_fields($old_form_id, $form_id) {
         global $wpdb;
@@ -643,16 +613,7 @@ class HashFormFields {
     }
 
     /**
-     * The fields a given field could be asked to match.
-     *
-     * Only fields this one could ever equal. Offering an email field the choice
-     * of matching a phone field produced a rule nothing could satisfy: a value
-     * that passes email validation is not one anybody would type into a phone
-     * field, so the form could never be submitted and the error looked like a
-     * bug in the matching itself.
-     *
-     * Two fields are compatible when they are the same type, or when one of
-     * them puts no format constraint on its value.
+     * The fields a given field could be asked to match: same type, or either one without a format constraint.
      *
      * @param int    $form_id
      * @param int    $field_id   The field being configured, which cannot match itself.
@@ -697,9 +658,7 @@ class HashFormFields {
     }
 
     /**
-     * Every field's match options for one form, so the builder can rebuild the
-     * dropdowns after a field is added or deleted without reproducing the rules
-     * above in JavaScript.
+     * Every field's match options for one form, so the builder can rebuild the dropdowns after fields change.
      */
     public function match_field_options() {
         HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
@@ -783,12 +742,9 @@ class HashFormFields {
     }
 
     /**
-     * Render the form's fields, stacking any that share a column group.
+     * Render the form's fields, wrapping fields that share a column_group in one grid cell.
      *
-     * Fields carrying the same column_group are wrapped in one grid cell so
-     * they sit under each other. A column nobody put a field into still gets its
-     * cell, so the columns beside it keep the place the form was built with.
-     * Ungrouped fields stay direct children of the form grid.
+     * Empty columns still get their cell so the columns beside them keep their place.
      */
     public static function show_fields($fields) {
         $open_group = '';
@@ -848,7 +804,7 @@ class HashFormFields {
             self::show_empty_column($column['width']);
         }
 
-        // Saved before the row was written out, so the field's own width stands in.
+        // Group missing from the saved row: use the field's own width.
         $width = (isset($field['grid_id']) && $field['grid_id']) ? $field['grid_id'] : 'hf-grid-12';
         echo '<div class="hf-column-group ' . esc_attr($width) . '">';
         return $row;

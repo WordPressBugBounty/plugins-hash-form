@@ -35,9 +35,7 @@ class HashFormFieldSeparator extends HashFormFieldType {
     /**
      * The stored style, held to that list.
      *
-     * It used to go into the style attribute as it stood, where esc_attr() is
-     * no protection: `solid; height:80px` carries no quotes to escape and each
-     * declaration after the first simply applies.
+     * It goes into a style attribute, where esc_attr() cannot stop extra declarations.
      */
     private function border_style($field) {
         $style = isset($field['border_style']) ? strtolower(trim($field['border_style'])) : '';
@@ -46,11 +44,7 @@ class HashFormFieldSeparator extends HashFormFieldType {
     }
 
     /**
-     * The line's thickness in whole pixels.
-     *
-     * An empty setting used to be written out as `border-bottom-width:px`,
-     * which browsers throw away, leaving the line at whatever `medium` happens
-     * to be — 3px — rather than at the 2px the field says it defaults to.
+     * The line's thickness in whole pixels, defaulting to 2 when empty.
      */
     private function border_width($field) {
         $width = isset($field['border_width']) ? $field['border_width'] : '';

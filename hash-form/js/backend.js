@@ -47,6 +47,25 @@ var hashFormAdmin = hashFormAdmin || {};
         return $el.removeClass(group).addClass(prefix + value);
     }
 
+    // Let the style preview's controls respond, but block what leaves the
+    // preview: submitting a form and following a link.
+    function guardPreview(doc) {
+        doc.addEventListener('submit', (e) => {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+        }, true);
+
+        doc.addEventListener('click', (e) => {
+            const target = e.target.closest ? e.target : e.target.parentElement;
+
+            // Not stopped: scripts that drive links still run, the browser
+            // just does not follow them.
+            if (target && target.closest('a[href]')) {
+                e.preventDefault();
+            }
+        }, true);
+    }
+
     // Open the WP media library on images only and hand the picked attachment back.
     function chooseImage(onSelect) {
         const fileFrame = wp.media({
@@ -106,8 +125,7 @@ var hashFormAdmin = hashFormAdmin || {};
             $(document).on('keydown', '.hf-attr-field', hashFormAdmin.keyFieldAttrPicker);
             hashFormAdmin.initFieldAttrPickers();
 
-            /* Open the embed popup. Closing it — button, backdrop or Escape —
-               is handled with the add-form dialog in initNewFormModal. */
+            /* Open the embed popup; closing it is handled in initNewFormModal. */
             $(document).on('click', '.hf-embed-button', () => {
                 $('#hf-shortcode-form-modal').addClass('hf-open').attr('aria-hidden', 'false');
                 $('body').addClass('hf-modal-open');
@@ -134,16 +152,8 @@ var hashFormAdmin = hashFormAdmin || {};
                     });
                 }
 
-                /*
-                 * So do the option lists of a choice field. Sorting is set up
-                 * once, over the lists that exist when the builder loads, so a
-                 * checkbox or radio added afterwards had no sortable at all and
-                 * its options would not drag until the page was reloaded.
-                 *
-                 * Found by id rather than inside the field: updateFieldOrder()
-                 * has already run by now and moves the settings panel out of the
-                 * field's own li, so searching the li finds nothing.
-                 */
+                // Make a new choice field's option list sortable. Found by id: updateFieldOrder()
+                // has already moved the settings panel out of the field's li.
                 const hfFieldId = e.hfField ? e.hfField.getAttribute('data-fid') : '';
                 const $options = hfFieldId
                     ? $('#hf-fields-settings-' + hfFieldId).find('.hf-option-list')
@@ -196,9 +206,7 @@ var hashFormAdmin = hashFormAdmin || {};
 
             $('.' + toSearch).each(function () {
                 const $item = $(this);
-                // The id is the field type, which rarely reads like the label
-                // people actually search for — 'select' for Dropdown, say — so
-                // the visible name is matched too.
+                // Match the visible name too; the id is the field type ('select' for Dropdown).
                 const name = $item.attr('data-field-name') || '';
                 const hit = !searchText
                     || $item.attr('id').indexOf(searchText) > -1
@@ -207,15 +215,11 @@ var hashFormAdmin = hashFormAdmin || {};
                 if (searchText) {
                     $item.toggle(hit);
                 } else {
-                    // Clearing the inline display rather than calling show():
-                    // inside a collapsed group show() forces a display value
-                    // onto the item, and the group's own CSS should be what
-                    // decides whether it is on screen.
+                    // Clear the inline display rather than show(), so a collapsed group's CSS still decides.
                     $item.css('display', '');
                 }
 
-                // The match is recorded on the element because the group
-                // counts below cannot ask :visible — see the note there.
+                // Recorded as a class because the group counts below cannot use :visible.
                 $item.toggleClass('hf-search-hit', hit);
 
                 if (hit) {
@@ -236,11 +240,8 @@ var hashFormAdmin = hashFormAdmin || {};
             $section.find('.hf-field-group').each(function () {
                 const $group = $(this);
 
-                // Counted from the match class, never from :visible. The line
-                // above drops .hf-searching, which re-collapses every closed
-                // group, so :visible reported zero for all of them and each
-                // one was then hidden outright — clearing the search box
-                // emptied the palette and only a reload brought it back.
+                // Count from the match class, not :visible: closed groups re-collapse when
+                // .hf-searching is dropped and would all count as zero.
                 const shown = $group.find('.hf-field-box.hf-search-hit').length;
 
                 $group.prop('hidden', shown === 0);
@@ -264,8 +265,7 @@ var hashFormAdmin = hashFormAdmin || {};
         /**
          * Drops a ready-made regex into the Format box, or empties it.
          *
-         * change is fired explicitly because the value is set in code, and
-         * the builder's unsaved-changes tracking listens for it.
+         * Fires change because the unsaved-changes tracking listens for it.
          */
         applyFormatPreset: function (e) {
             e.preventDefault();
@@ -377,12 +377,7 @@ var hashFormAdmin = hashFormAdmin || {};
                 const frontImagePreview = hashFormAdmin.canvasImagePreview(imagePreview);
                 frontImagePreview.attr('data-sizes', JSON.stringify(urls));
 
-                /*
-                 * The canvas image is replaced, not appended to: choosing a
-                 * second image left the first one sitting above it. It is also
-                 * shown at the size the field is set to rather than always at
-                 * full size, which is what the page will do.
-                 */
+                // Replace the canvas image, shown at the size the field is set to.
                 let canvasImage = frontImagePreview.find('img');
 
                 if (!canvasImage.length) {
@@ -461,9 +456,6 @@ var hashFormAdmin = hashFormAdmin || {};
                 hashFormAdmin.afterFormSave(button);
                 hashFormAdmin.showUpdatedInfo(msg);
             }).fail(function () {
-                // There was no failure path at all: a save that died left the
-                // button spinning for good and said nothing, which is
-                // indistinguishable from a save that is merely slow.
                 hashFormAdmin.afterFormSave(button);
                 hashFormAdmin.showUpdatedInfo(
                     '<span class="mdi mdi-alert-circle"></span>' + hashFormAdmin.saveErrorText(),
@@ -636,10 +628,7 @@ var hashFormAdmin = hashFormAdmin || {};
                         doc.open();
                         doc.write(response.data);
                         doc.close();
-                        // The preview is for looks only, so swallow all interaction.
-                        doc.addEventListener('click', (e) => e.preventDefault(), true);
-                        doc.addEventListener('mousedown', (e) => e.preventDefault(), true);
-                        doc.addEventListener('mouseup', (e) => e.preventDefault(), true);
+                        guardPreview(doc);
                     }, 0);
 
                     $('.hf-form-wrap').removeClass('hf-content-loading');
@@ -663,8 +652,6 @@ var hashFormAdmin = hashFormAdmin || {};
 
                 $notice.html('');
                 if (!hashFormAdmin.isEmail(testEmail)) {
-                    // Was appended to .hf-grid-3, which this row has never
-                    // contained, so an invalid address reported nothing at all.
                     $notice.html('<div class="hf-error">' + hashFormAdmin.invalidEmailText() + '</div>');
                     return;
                 }
@@ -699,18 +686,10 @@ var hashFormAdmin = hashFormAdmin || {};
             $('#hf-meta-panel').on('input', '[data-changeme]', hashFormAdmin.liveChangesInput);
             $('#hf-meta-panel').on('change', 'select[name="submit_btn_alignment"]', hashFormAdmin.liveChangeButtonPosition);
 
-            // 'input change', not 'input, change': jQuery splits event names on
-            // whitespace, so the comma made this listen for an event called
-            // "input," that nothing ever fires. Typing changed nothing on the
-            // canvas until the control lost focus.
+            // Space-separated: jQuery splits event names on whitespace, not commas.
             $buildForm.on('input change', '[data-changeme]', hashFormAdmin.liveChangesInput);
 
-            /*
-             * Must Match Field lists the other fields by their label, and that
-             * list is drawn once when the builder loads. Renaming a field left
-             * every one of those dropdowns naming it by its old label until the
-             * form was saved and the page came back.
-             */
+            // Keep the Must Match Field lists in step with a field's label as it is typed.
             $buildForm.on('input', 'input[name^="field_options[name_"]', hashFormAdmin.syncFieldLabelInLists);
 
             $buildForm.on('click', 'input.hf-form-field-required', hashFormAdmin.markRequired);
@@ -796,18 +775,11 @@ var hashFormAdmin = hashFormAdmin || {};
                     changes.innerHTML = '<input type="text" value="" disabled />';
                 }
             } else if (changes.classList.contains('hf-custom-html-field')) {
-                /*
-                 * The HTML field draws what it holds, so the canvas shows what
-                 * the page will. Scrubbed on the way in: the server drops
-                 * script, style and every event attribute when this is saved,
-                 * and a preview that ran them would behave unlike the thing it
-                 * is previewing.
-                 */
+                // Scrubbed of script, style and event attributes as the server does on
+                // save, so the preview behaves like the page.
                 hashFormAdmin.renderHtmlFieldPreview(changes, newValue);
             } else {
-                // A paragraph field is rendered with wpautop, so the canvas
-                // has to break the text up the same way or the preview shows
-                // one run of words where the page will show paragraphs.
+                // Paragraph fields render with wpautop, so the canvas breaks the text the same way.
                 changes.innerHTML = changes.classList.contains('hf-paragraph-field')
                     ? hashFormAdmin.autoParagraphs(newValue)
                     : newValue;
@@ -823,8 +795,7 @@ var hashFormAdmin = hashFormAdmin || {};
         },
 
         // The essentials of wpautop: a blank line starts a paragraph, a single
-        // newline is a break. Kept to that, because this only has to agree with
-        // what PHP will render, not reimplement it.
+        // newline is a break.
         autoParagraphs: function (text) {
             return String(text)
                 .replace(/\r\n?/g, '\n')
@@ -923,11 +894,7 @@ var hashFormAdmin = hashFormAdmin || {};
                 return;
             }
 
-            /*
-             * Carry the attributes over. This used to write a bare
-             * <tag id="...">, so changing the level dropped the field's own
-             * class and every rule hanging off it until the page was reloaded.
-             */
+            // Carry the attributes over so the field keeps its class and styling.
             const replacement = document.createElement(tag);
 
             Array.prototype.forEach.call(current.attributes, function (attr) {
@@ -957,9 +924,7 @@ var hashFormAdmin = hashFormAdmin || {};
                 return;
             }
 
-            // Empty falls back to 50px, the way the field renders it. This
-            // cleared the height instead, so the canvas showed nothing while
-            // the page would show a 50px gap.
+            // Empty falls back to 50px, as the field renders it.
             const height = this.value === '' || isNaN(parseInt(this.value, 10)) ? 50 : Math.max(0, parseInt(this.value, 10));
 
             $(changes).css('height', height + 'px');
@@ -996,9 +961,7 @@ var hashFormAdmin = hashFormAdmin || {};
         },
 
         liveChangeBorderWidth: function () {
-            // Empty falls back to 2px, the way the field renders it. This wrote
-            // 'px' on its own, which the browser drops, so the canvas kept
-            // showing the previous width while the page would show 2.
+            // Empty falls back to 2px, as the field renders it.
             const width = this.value === '' || isNaN(parseInt(this.value, 10)) ? 2 : parseInt(this.value, 10);
             $('#' + this.getAttribute('data-changeborderwidth')).css('border-bottom-width', width + 'px');
         },
@@ -1052,8 +1015,6 @@ var hashFormAdmin = hashFormAdmin || {};
         },
 
         // The label is hidden when its text is empty or the "hide" box is ticked.
-        // Each entry point reads its own control directly and the sibling from
-        // the settings panel, so the two handlers keep separate lookups.
         setFieldLabelHidden: function (parentFieldSetting, hidden) {
             $('#hf-editor-field-id-' + parentFieldSetting.data('fid'))
                 .find('label.hf-label-show-hide')
@@ -1122,7 +1083,6 @@ var hashFormAdmin = hashFormAdmin || {};
                 return;
             }
 
-            //Update hidden field
             document.getElementById('other_input_' + fieldId).value = 1;
 
             //Hide "Add Other" option now if this is radio field
@@ -1215,10 +1175,8 @@ var hashFormAdmin = hashFormAdmin || {};
         /**
          * Draw an HTML field's content on the canvas.
          *
-         * Mirrors HashFormHelper::sanitize_html_field_content(): script and
-         * style go, then anything that could run. An empty field falls back to
-         * the same note the server prints, so the block never collapses to
-         * nothing while it is being written.
+         * Mirrors HashFormHelper::sanitize_html_field_content(); an empty field shows
+         * the same note the server prints.
          */
         renderHtmlFieldPreview: function (target, html) {
             const holder = document.createElement('div');
@@ -1254,11 +1212,7 @@ var hashFormAdmin = hashFormAdmin || {};
         },
 
         /**
-         * Keep the lists that name other fields in step with a renamed one.
-         *
-         * Only Must Match Field today; it takes the field id from the input's
-         * own name, so any list keyed the same way is picked up by adding its
-         * selector here.
+         * Keep the lists that name other fields (Must Match Field) in step with a renamed one.
          */
         syncFieldLabelInLists: function () {
             const match = /field_options\[name_(\d+)\]/.exec(this.name || '');
@@ -1276,13 +1230,9 @@ var hashFormAdmin = hashFormAdmin || {};
         },
 
         /**
-         * Rebuild the Must Match dropdowns from the server.
+         * Rebuild the Must Match dropdowns from the server, which owns the eligibility rules.
          *
-         * Which fields may be offered depends on rules that live in PHP - same
-         * type, or one side with no format constraint - so the list is asked
-         * for rather than worked out again here, where the two would drift.
-         * Called when a field is added or removed; a rename is handled by
-         * syncFieldLabelInLists() without a request.
+         * Called when a field is added or removed; a rename is handled by syncFieldLabelInLists().
          */
         refreshMatchFieldOptions: function () {
             const $selects = $('.hf-match-field-select');
@@ -1425,9 +1375,7 @@ var hashFormAdmin = hashFormAdmin || {};
         getFieldOptions: function (fieldId) {
             const list = document.getElementById('hf-field-options-' + fieldId);
 
-            // Not every field keeps its options here: a repeater's columns
-            // live in hf-field-options-repeater-<id>. Asking for a list that
-            // is not there used to throw.
+            // A repeater's columns live in hf-field-options-repeater-<id>, not here.
             if (!list) {
                 return [];
             }
@@ -1481,7 +1429,6 @@ var hashFormAdmin = hashFormAdmin || {};
             if (single.length < 1) {
                 hashFormAdmin.resetDisplayedOpts(fieldId);
 
-                // Set the default value.
                 const defaultVal = thisOpt.find('input[name^="default_value_"]');
                 if (defaultVal.is(':checked') && label.length > 0) {
                     $('select[name^="item_meta[' + fieldId + ']"]').val(label.val());
@@ -1493,7 +1440,6 @@ var hashFormAdmin = hashFormAdmin || {};
             let saved;
 
             if (label.length < 1) {
-                // Check for other label.
                 label = $('input[name="' + baseName + '"]');
                 saved = label.val();
             } else if (separateValues) {
@@ -1506,15 +1452,12 @@ var hashFormAdmin = hashFormAdmin || {};
                 return;
             }
 
-            // Set the displayed value.
             const text = single[0].childNodes;
             text[text.length - 1].nodeValue = ' ' + label.val();
             previewInput.closest('.hf-choice').find('.hf-field-is-label').text(saved);
 
-            // Set saved value.
             previewInput.val(saved);
 
-            // Set the default value.
             previewInput.prop('checked', thisOpt.find('input[name^="default_value_"]').is(':checked'));
         },
 
@@ -1538,12 +1481,7 @@ var hashFormAdmin = hashFormAdmin || {};
                 // Re-query: fillDropdownOpts has just rewritten the options.
                 const refreshed = $('[name^="item_meta[' + fieldId + ']"]');
 
-                /*
-                 * Whether the option that was selected is still among them.
-                 * This asked the element whether it contained the value, and
-                 * Node.contains() takes a node, not a string, so deleting an
-                 * option threw and left the rest of this undone.
-                 */
+                // Whether the previously selected option is still offered.
                 const stillOffered = refreshed.length > 0 && $.makeArray(refreshed[0].options || []).some(
                     option => option.value === selectedValDefault
                 );
@@ -1709,8 +1647,7 @@ var hashFormAdmin = hashFormAdmin || {};
                 $modal.dialog('close');
             };
             $('.ui-widget-overlay').on('click', closeModal);
-            // Tag-agnostic: the close control is a <button> now, so that it can
-            // be reached by keyboard, and Cancel carries the same class.
+            // Matches the close button and Cancel alike.
             $modal.on('click', '.dismiss', closeModal);
         },
 
@@ -1848,8 +1785,7 @@ var hashFormAdmin = hashFormAdmin || {};
                     return;
                 }
 
-                // Focus trap. Without it Tab walks out of the dialog and into
-                // the page behind, which is still there and still clickable.
+                // Focus trap: keep Tab inside the dialog.
                 if (e.key !== 'Tab') {
                     return;
                 }
@@ -1925,8 +1861,6 @@ var hashFormAdmin = hashFormAdmin || {};
                         return;
                     }
 
-                    // Leaving the button spinning forever is worse than
-                    // saying nothing happened.
                     $button.removeClass('hashform-updating');
                     showError((res && res.error) || hashform_backend_js.generic_error);
                 }).fail(function () {
@@ -1940,11 +1874,8 @@ var hashFormAdmin = hashFormAdmin || {};
          * Conditional logic repeater
          * ---------------------------------------------------------------- */
 
-        /*
-         * The rules are numbered in the markup rather than by CSS counter so
-         * the number is readable to anything that only sees the DOM, and so
-         * it survives a row being deleted from the middle.
-         */
+        // Rules are numbered in the markup rather than by CSS counter, so the
+        // numbers are in the DOM.
         refreshConditionList: function ($list) {
             const $rows = $list.find('.hf-condition-row');
 
@@ -1992,18 +1923,7 @@ var hashFormAdmin = hashFormAdmin || {};
         },
 
         /* -------------------------------------------------------------------
-         * Settings page: field attribute inserter
-         * ---------------------------------------------------------------- */
-
-        /* -------------------------------------------------------------------
          * Field-tag picker
-         *
-         * The list is opened by hover, which leaves it unreachable from the
-         * keyboard, and on a form with a couple of dozen fields it is a long
-         * scroll with nothing to narrow it down. The markup is shared by the
-         * email settings, the Pro integration panels and the calculation
-         * field, so this upgrades whatever is on the page rather than each
-         * template carrying its own copy.
          * ---------------------------------------------------------------- */
 
         // Below this many fields the list is short enough to read at a glance.
@@ -2021,8 +1941,7 @@ var hashFormAdmin = hashFormAdmin || {};
 
                 $field.data('hfAttrReady', true);
 
-                // The trigger is a <div> in every template. Rather than edit
-                // a dozen of them, it is given the button semantics here.
+                // The trigger is a <div> in every template; give it button semantics here.
                 $trigger.attr({ role: 'button', tabindex: 0, 'aria-haspopup': 'listbox' });
 
                 const $options = $list.children('li');
@@ -2088,11 +2007,7 @@ var hashFormAdmin = hashFormAdmin || {};
             $list.children('.hf-attr-empty').toggleClass('hf-hidden', 0 !== matches);
         },
 
-        /*
-         * The trigger for a field near the bottom of the panel would open a
-         * list that ran past the window, with its last rows unreachable.
-         * Measured on open, since the panel scrolls under it.
-         */
+        // Keep the list inside the window; measured on open because the panel scrolls.
         placeFieldAttrList: function () {
             const $field = $(this);
             const $list = $field.find('.hf-add-field-attr-to-form').first();
@@ -2108,11 +2023,7 @@ var hashFormAdmin = hashFormAdmin || {};
             $field.toggleClass('hf-attr-left', box.right - $list.outerWidth() < bounds.left);
         },
 
-        /*
-         * The nearest ancestor that would cut the list off. The builder's
-         * field editor sidebar scrolls, so a list wider than the distance
-         * from the trigger to its left edge disappears into the overflow.
-         */
+        // The nearest ancestor that would clip the list (the builder's field sidebar scrolls).
         clippingBounds: function (el) {
             for (let node = el.parentElement; node && node !== document.body; node = node.parentElement) {
                 if ('visible' !== getComputedStyle(node).overflowX) {
@@ -2125,18 +2036,16 @@ var hashFormAdmin = hashFormAdmin || {};
 
         addFieldAttrToForm: function () {
             const fieldId = $(this).attr('data-value');
-            const $row = $(this).closest('.hf-form-row');
-            const inputChange = $row.find('input').not('.hf-attr-search input');
-            const textAreaChange = $row.find('textarea');
 
-            // Note: .val(x) writes one value to every match, seeded from the
-            // first one. Preserved from the original.
-            if (fieldId && inputChange.length > 0) {
-                inputChange.val(inputChange.val() + ' ' + fieldId);
+            // Only the box right after the picker's label; a row can hold other inputs.
+            let $target = $(this).closest('.hf-label-with-attr').nextAll('input, textarea').first();
+
+            if (!$target.length) {
+                $target = $(this).closest('.hf-form-row').find('input, textarea').not('.hf-attr-search input').first();
             }
 
-            if (fieldId && textAreaChange.length > 0) {
-                textAreaChange.val(textAreaChange.val() + ' ' + fieldId);
+            if (fieldId && $target.length) {
+                $target.val($target.val() + ' ' + fieldId);
             }
 
             // Hover alone would keep the list open over the field just
@@ -2144,7 +2053,7 @@ var hashFormAdmin = hashFormAdmin || {};
             const $list = $(this).closest('.hf-add-field-attr-to-form');
             $list.find('.hf-attr-search input').val('').trigger('input');
             $list.closest('.hf-attr-field').find('.hf-attr-field-tags').trigger('blur');
-            (textAreaChange.length ? textAreaChange : inputChange).first().trigger('focus');
+            $target.trigger('focus');
         },
 
         /* -------------------------------------------------------------------
@@ -2197,45 +2106,15 @@ var hashFormAdmin = hashFormAdmin || {};
 })(jQuery);
 
 
-/**
- * NOTE: this shadows Node.prototype.contains for <select> elements. Kept as-is;
- * resetDisplayedOpts() depends on this value-lookup behaviour.
- */
-HTMLSelectElement.prototype.contains = function (value) {
-    for (var i = 0, l = this.options.length; i < l; i++) {
-        if (this.options[i].value == value) {
-            return true;
-        }
-    }
-    return false;
-};
-
 
 /**
- * Entry workflow: starring, private notes and resending a notification.
- * Kept separate from hashFormAdmin so it stays self contained.
+ * Settings export.
  */
 (function ($) {
     'use strict';
 
-    function vars() {
-        return (typeof hashform_backend_js === 'undefined') ? {} : hashform_backend_js;
-    }
-
-    function post(action, data) {
-        return $.post(ajaxurl, $.extend({
-            action: action,
-            nonce: vars().entry_nonce
-        }, data));
-    }
-
-    /*
-     * The export lives inside the settings form in the markup, because HTML
-     * will not nest one form in another. Rather than submit the settings form,
-     * the fields are copied into a form of the export's own, attached to the
-     * document just long enough to post, so the settings on screen are left
-     * exactly as they were.
-     */
+    // The export fields sit inside the settings form (forms cannot nest), so they
+    // are copied into a temporary form and posted from there.
     $(document).on('click', '#hashform_export', function (e) {
         e.preventDefault();
 
@@ -2252,6 +2131,25 @@ HTMLSelectElement.prototype.contains = function (value) {
         $form.appendTo('body').trigger('submit');
         $form.remove();
     });
+})(jQuery);
+
+
+/**
+ * Entry workflow: starring, private notes and resending a notification.
+ */
+(function ($) {
+    'use strict';
+
+    function vars() {
+        return (typeof hashform_backend_js === 'undefined') ? {} : hashform_backend_js;
+    }
+
+    function post(action, data) {
+        return $.post(ajaxurl, $.extend({
+            action: action,
+            nonce: vars().entry_nonce
+        }, data));
+    }
 
     $(document).on('click', '.hf-entry-star', function (e) {
         e.preventDefault();
@@ -2286,13 +2184,7 @@ HTMLSelectElement.prototype.contains = function (value) {
             entry_id: $button.attr('data-entry'),
             starred: starred
         }).done(function (response) {
-            /*
-             * A refusal from the server still arrives as a successful request:
-             * wp_send_json_error() answers 200, so it lands here rather than in
-             * fail(). Only the transport was being checked, which left a star
-             * the server had declined — a missing entry, a capability check, a
-             * stale nonce — sitting there looking saved.
-             */
+            // wp_send_json_error() answers 200, so a refusal lands here rather than in fail().
             if (!response || !response.success) {
                 revert();
             }
@@ -2314,18 +2206,13 @@ HTMLSelectElement.prototype.contains = function (value) {
             entry_id: $wrap.attr('data-entry'),
             note: $wrap.find('textarea').val()
         }).done(function (response) {
-            // The failure message used to be written into the same element
-            // without this class, so a note that had not saved was reported in
-            // the colour reserved for one that had.
             var saved = !!(response && response.success);
             $status.toggleClass('hf-entry-status-error', !saved).text(saved ? vars().note_saved : vars().note_error);
         }).fail(function () {
             $status.addClass('hf-entry-status-error').text(vars().note_error);
         }).always(function () {
             $button.prop('disabled', false);
-            // Each save clears the previous countdown. Without this a second
-            // save shortly after the first inherited the first one's timer and
-            // had its message wiped almost immediately.
+            // Clear the previous countdown so a second save's message is not wiped early.
             window.clearTimeout($status.data('hf-clear-timer'));
             $status.data('hf-clear-timer', window.setTimeout(function () {
                 $status.text('').removeClass('hf-entry-status-error');

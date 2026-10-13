@@ -75,19 +75,12 @@ class HashFormValidate {
             return $errors;
         }
 
-        /*
-         * Verify the per-form nonce on every submission, not only when an
-         * administrator is logged in. The form already prints this field
-         * (form.php), but the check used to be gated behind is_admin_page()
-         * and is_user_logged_in(), so a wp_ajax_nopriv POST from a guest —
-         * where both are false — skipped it entirely and any crafted payload
-         * was accepted. A stale nonce (e.g. a full-page-cached form older
-         * than the nonce lifetime) now fails here; sites that serve cached
-         * forms should exclude this field from their cache or refresh it.
-         */
+        // Checked on every submission, guests included. Full-page-cached forms must exclude or refresh this field.
         $nonce_field = 'hashform_submit_entry_' . absint($values['form_id']);
-        if (!isset($values[$nonce_field]) || !wp_verify_nonce($values[$nonce_field], 'hashform_submit_entry_nonce')) {
-            $errors['form'] = esc_html__('Nonce Error', 'hash-form');
+        // A guest's token from a logged-in request is accepted and the entry saved as a guest's:
+        // see verify_public_nonce() and process_entry().
+        if (!isset($values[$nonce_field]) || !HashFormHelper::verify_public_nonce($values[$nonce_field], 'hashform_submit_entry_nonce')) {
+            $errors['form'] = esc_html__('This form has expired. Please reload the page and try again.', 'hash-form');
         }
 
         $fields = HashFormFields::get_form_fields($values['form_id']);
@@ -158,16 +151,7 @@ class HashFormValidate {
                     break;
             }
 
-            /*
-             * A rule either shows its field when the comparison matches or
-             * hides it, and only the browser was reading which. The server took
-             * any rule that did not match to mean the field was hidden, so a
-             * hide rule came out backwards: the field the visitor could see was
-             * treated as hidden and skipped, while the one hidden from them was
-             * validated. A required field on a hide rule could then never be
-             * satisfied, and the form refused every submission with an error
-             * against a field nobody could fill in.
-             */
+            // A show rule shows its field on a match; a hide rule hides it.
             $show_on_match = !isset($cond['condition_action']) || 'show' === $cond['condition_action'];
             $is_visible = $show_on_match ? $condition : !$condition;
 
@@ -198,13 +182,6 @@ class HashFormValidate {
             $value = trim($value);
         }
 
-        /*
-         * Outside the is_array() branch it used to sit in. Any field posting
-         * an array — a multiple select, a checkbox set, a composite name or
-         * address — skipped the required check entirely. It only appeared to
-         * work because a field with nothing chosen posts no key at all and
-         * arrives here as an empty string instead.
-         */
         if ($is_field_visible && '1' == $field->required && self::is_blank_value($value)) {
             $errors['field' . $field_id] = HashFormFields::get_error_msg($field, 'blank');
         }
@@ -213,11 +190,7 @@ class HashFormValidate {
     }
 
     /**
-     * Whether a submitted value counts as nothing entered.
-     *
-     * Handles the array shapes fields post as well as plain strings: a
-     * multiple select or checkbox set posts a list, and a name or address
-     * posts an associative array whose parts may each be blank.
+     * Whether a submitted value counts as nothing entered, including array values whose parts are all blank.
      *
      * @param mixed $value
      * @return bool
@@ -242,29 +215,13 @@ class HashFormValidate {
         $args['value'] = $value;
         $args['id'] = $field->id;
 
-        /*
-         * Seven field classes read this when building their validation
-         * message, but nothing ever set it: every failed email, url, phone,
-         * number, text, spinner or range validation raised an "Undefined
-         * array key" warning on PHP 8 and looked the form title up with null.
-         */
+        // Read by field classes when building their validation messages.
         $args['form_id'] = $field->form_id;
 
-        /*
-         * The whole submitted payload, so a field can read inputs that sit
-         * beside it rather than in item_meta. The front end posts the form as
-         * one serialised 'data' parameter, so anything a field printed outside
-         * item_meta — a captcha token, for instance — never reaches $_POST on
-         * its own and can only be found here.
-         */
+        // The whole payload, so a field can read inputs outside item_meta, such as a captcha token.
         $args['values'] = $values;
 
-        /*
-         * Whether a conditional rule is showing this field. The required check
-         * above has always honoured it; a field class asking its own version of
-         * that question had no way to, so anything it insisted on would be
-         * insisted on for a field the visitor could not see.
-         */
+        // Whether a conditional rule is showing this field.
         $args['is_visible'] = $is_field_visible;
 
         $new_errors = $field_obj->validate($args);
@@ -277,11 +234,9 @@ class HashFormValidate {
     }
 
     /**
-     * Length, pattern, matching and uniqueness rules.
+     * Length, pattern, matching and uniqueness rules for every field type.
      *
-     * These run for every field type rather than being repeated in each field
-     * class, and they run on the server because the matching html attributes
-     * are only a convenience: a posted request can ignore them entirely.
+     * Enforced on the server because the matching HTML attributes can be bypassed.
      */
     public static function validate_advanced_rules(&$errors, $field, $value, $values = array()) {
         $key = 'field' . $field->id;
@@ -306,7 +261,7 @@ class HashFormValidate {
             return;
         }
 
-        // The max characters option only set a maxlength attribute until now.
+        // Enforced here as well as through the maxlength attribute.
         $max_length = HashFormFields::get_option($field, 'max');
 
         if ($max_length !== '' && is_numeric($max_length) && mb_strlen($value) > (int) $max_length) {

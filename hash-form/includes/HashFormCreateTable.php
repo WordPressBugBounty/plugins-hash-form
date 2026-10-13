@@ -26,9 +26,7 @@ class HashFormCreateTable {
     }
 
     /**
-     * Activation is the only thing that used to run dbDelta, so a site that
-     * updated the plugin never received new columns. Run it once per version
-     * instead.
+     * Run dbDelta once per plugin version, since updates skip the activation hook.
      */
     public static function maybe_upgrade() {
         if (get_option('hashform_db_version') === HASHFORM_VERSION) {
@@ -41,8 +39,7 @@ class HashFormCreateTable {
     }
 
     /**
-     * Entries that predate the read/unread column would all show up as unread,
-     * which is noise rather than news. Mark them read once.
+     * Mark entries that predate the is_read column as read, once.
      */
     private function migrate_existing_entries_to_read() {
         if (get_option('hashform_entries_read_migrated')) {

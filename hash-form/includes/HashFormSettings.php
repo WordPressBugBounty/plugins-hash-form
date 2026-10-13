@@ -13,10 +13,8 @@ class HashFormSettings {
     }
 
     public function menu() {
-        // With Pro active, every setting is managed from the per-module
-        // popups on the Modules screen, so the Settings page is not added.
-        // (Pro's OAuth callbacks still run on admin_init and exit before the
-        // page would render, so their registered redirect URIs keep working.)
+        // With Pro active, settings live in the Modules screen popups. Pro registers this slug as a
+        // hidden page itself, so OAuth redirect URIs registered with Google, Dropbox and Trello keep working.
         if (!defined('HASH_FORM_PRO_VERSION')) {
             add_submenu_page('hashform', 'Hash Form | ' . esc_html__('Settings', 'hash-form'), esc_html__('Settings', 'hash-form'), 'hashform_manage_settings', 'hashform-settings', array($this, 'route'));
         }
@@ -24,12 +22,7 @@ class HashFormSettings {
     }
 
     /**
-     * The bar across the top of the Settings screen.
-     *
-     * The same component the Forms, Entries and style template lists use, so
-     * this screen is headed the way every other one is. It replaces the black
-     * uppercase title bar this page carried, which was the only one of its
-     * kind left in the plugin.
+     * Header bar for the Settings screen; see HashFormHelper::render_list_header().
      */
     public function list_header() {
         if (!self::is_settings_page()) {
@@ -80,8 +73,7 @@ class HashFormSettings {
         ));
         extract($vars);
 
-        // Deep-link support: honor ?t=<section> and never point at a section
-        // that does not exist (e.g. after the pro plugin swaps the list).
+        // Honor ?t=<section>, but only for a section that exists.
         $requested_tab = HashFormHelper::get_var('t', 'sanitize_title');
         if ($requested_tab && isset($sections[$requested_tab])) {
             $current = $requested_tab;
@@ -96,14 +88,7 @@ class HashFormSettings {
                 <h1></h1>
 
                 <?php
-                /*
-                 * esc_url, not esc_html. esc_html turned the '&amp;' into
-                 * '&amp;amp;', which the browser submitted to a literal
-                 * '&amp;t=' — so the save landed with $_GET['amp;t'] set and
-                 * 't' absent, and every save from a tab that had not been
-                 * clicked came back on the first one. esc_url emits '&#038;',
-                 * which decodes to a plain '&'.
-                 */
+                // esc_url, not esc_html: esc_html double-encodes the '&' and the t parameter is lost on save.
                 $action_url = '?page=hashform-settings' . ($current ? '&t=' . $current : '');
                 ?>
                 <form name="hashform_settings_form" method="post" action="<?php echo esc_url($action_url); ?>">
@@ -133,13 +118,7 @@ class HashFormSettings {
                             <?php HashFormHelper::print_message(); ?>
 
                             <?php
-                            /*
-                             * The sections are kept in a wrapper of their own:
-                             * the tab script hides the clicked panel's
-                             * siblings, and before this the nonce, the hidden
-                             * inputs and the saved notice were all siblings
-                             * too.
-                             */
+                            /* Sections get their own wrapper because the tab script hides the clicked panel's siblings. */
                             ?>
                             <div class="hf-settings-sections">
                                 <?php
@@ -225,9 +204,8 @@ class HashFormSettings {
         $posted = HashFormHelper::get_post('hashform_settings', 'esc_html');
         $posted = is_array($posted) ? $posted : array();
 
-        // Unchecked checkboxes are absent from the POST. Only force off the
-        // ones this page actually rendered (listed by the form's JS), so
-        // settings managed elsewhere — e.g. the module popups — survive.
+        // Unchecked checkboxes are absent from the POST. Only force off those this page rendered
+        // (listed by its JS), so settings managed elsewhere survive.
         $rendered = HashFormHelper::get_post('hashform_rendered_checkboxes', 'sanitize_text_field');
         $rendered = $rendered ? array_filter(array_map('sanitize_key', explode(',', $rendered))) : array_keys(self::checkbox_settings());
         foreach ($rendered as $checkbox_key) {
@@ -345,18 +323,11 @@ class HashFormSettings {
             'privkey_v3' => '',
             're_lang' => 'en',
             're_threshold' => '0.5',
-            /*
-             * Read by every captcha field as the message shown when a
-             * challenge is not passed, and defined nowhere until now: each of
-             * them looked up an array key that did not exist, so a field
-             * carrying no message of its own told the visitor "null".
-             */
+            // Default message for captcha fields without their own.
             're_msg' => 'The captcha was not completed correctly. Please try again.',
             'header_image' => '',
             'email_template' => 'template1',
-            // Left on so an existing site's typography does not change under
-            // it. Sites that would rather not call out to Google can switch it
-            // off without touching their style templates.
+            // On by default so existing typography is unchanged.
             'load_google_fonts' => 'on',
         ));
     }

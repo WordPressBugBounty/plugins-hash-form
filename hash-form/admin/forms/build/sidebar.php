@@ -1,10 +1,5 @@
 <?php
 defined('ABSPATH') || die();
-/*
- * A template, included from inside a class method - never loaded on its own.
- * The variables below are locals of the method that includes it, not globals,
- * which is what the prefix sniff assumes about a file-scope assignment.
- */
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
 ?>
 
@@ -31,8 +26,7 @@ defined('ABSPATH') || die();
                     <p class="hf-layout-help"><?php esc_html_e('Add a row, then drag fields into its columns.', 'hash-form'); ?></p>
                     <ul class="hf-columns-list">
                         <?php
-                        // Only divisors of the 12 column grid, so every column
-                        // comes out an equal width.
+                        // Divisors of the 12-column grid only, so columns are equal width.
                         foreach (array(2, 3, 4, 6) as $columns) {
                             ?>
                             <li class="hf-column-box">
@@ -61,20 +55,12 @@ defined('ABSPATH') || die();
                     </p>
 
                     <?php
-                    /*
-                     * Grouped rather than one flat list: there are around fifty
-                     * field types, and finding one in a single run of tiles
-                     * meant scrolling past everything else.
-                     *
-                     * grouped_field_selection() applies the palette filter, so
-                     * a type whose module is switched off is already gone.
-                     */
+                    // grouped_field_selection() applies the palette filter, so disabled modules are already excluded.
                     $field_groups = HashFormFields::grouped_field_selection();
                     $first_group = true;
 
                     foreach ($field_groups as $group_key => $group) {
-                        // The first group starts open, the rest closed, so the
-                        // panel opens on the fields most forms begin with.
+                        // Only the first group starts open.
                         $open = $first_group;
                         $first_group = false;
                         ?>
@@ -95,8 +81,7 @@ defined('ABSPATH') || die();
                                         echo esc_attr(sprintf(__('Drag %s into your form', 'hash-form'), $field_type['name']));
                                         ?>">
                                             <?php
-                                            // render() covers an unregistered type with a
-                                            // neutral mark, so there is no font branch left.
+                                            // render() falls back to a neutral icon for unregistered types.
                                             echo wp_kses(HashFormFieldIcons::render($field_key), HashFormFieldIcons::allowed_svg());
                                             ?>
                                             <span><?php echo esc_html($field_type['name']); ?></span>
@@ -183,7 +168,7 @@ defined('ABSPATH') || die();
                                 <option value="center" <?php isset($values['submit_btn_alignment']) ? selected($values['submit_btn_alignment'], 'center') : ''; ?>>
                                     <?php esc_html_e('Center', 'hash-form'); ?>
                                 </option>
-                                <option value="stretch" <?php isset($values['submit_btn_alignment']) ? selected($values['submit_btn_alignment'], 'center') : ''; ?>>
+                                <option value="stretch" <?php isset($values['submit_btn_alignment']) ? selected($values['submit_btn_alignment'], 'stretch') : ''; ?>>
                                     <?php esc_html_e('Stretch', 'hash-form'); ?>
                                 </option>
                             </select>

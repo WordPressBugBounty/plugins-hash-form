@@ -1,11 +1,7 @@
 <?php
 defined('ABSPATH') || die();
 
-/*
- * meta_value here is a column in the plugin's own hashform_entry_meta table,
- * not the WP_Query argument the sniff is looking for. There is no meta query
- * in this file to be slow.
- */
+/* meta_value is a column of hashform_entry_meta, not a WP_Query meta query. */
 // phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 
 class HashFormEntry {
@@ -13,8 +9,7 @@ class HashFormEntry {
     use HashFormListActions;
 
     public function __construct() {
-        // Printed above #wpbody so the bar sits flush under the admin bar and
-        // clear of the Screen Options tab, as on the style templates list.
+        // Printed above #wpbody so the bar sits under the admin bar, clear of Screen Options.
         add_action('in_admin_header', array($this, 'list_header'));
 
         // Notices are moved inside the screen wrapper; see buffer_notices().
@@ -73,7 +68,7 @@ class HashFormEntry {
     }
 
     /**
-     * A private note on an entry, for whoever picks it up next.
+     * Save a private note on an entry.
      */
     public function save_entry_note() {
         HashFormCapabilities::require_cap_ajax('hashform_edit_entries');
@@ -94,8 +89,7 @@ class HashFormEntry {
     }
 
     /**
-     * Sends the notification emails for an entry again, for when the original
-     * bounced or the address was wrong at the time.
+     * Resend an entry's notification emails.
      */
     public function resend_notification() {
         HashFormCapabilities::require_cap_ajax('hashform_edit_entries');
@@ -116,9 +110,7 @@ class HashFormEntry {
             wp_send_json_error(array('message' => esc_html__('The form for this entry no longer exists.', 'hash-form')));
         }
 
-        // Resending must only send the mail. Without this the post submission
-        // actions would run again, which for a payment form means dispatching
-        // a second charge.
+        // Send the mail only; rerunning post submission actions would charge a payment form again.
         HashFormEmail::$sending_deferred = true;
 
         $send_mail = new HashFormEmail($form, $id, '');
@@ -194,11 +186,7 @@ class HashFormEntry {
     }
 
     /**
-     * May the current user read this entry?
-     *
-     * The check lives here rather than only in the callers because this
-     * method renders an entry in full - every answer somebody submitted - and
-     * a caller that forgets to ask is one line away from publishing it.
+     * Whether the current user may read this entry.
      *
      * @param int $entry_id
      * @return bool
@@ -206,9 +194,6 @@ class HashFormEntry {
     public static function current_user_can_view($entry_id) {
         /**
          * Final say on whether an entry may be read.
-         *
-         * Add-ons that decide access some other way - by form, by ownership,
-         * by a membership plugin - hook this rather than replacing the check.
          *
          * @param bool $allowed
          * @param int  $entry_id
@@ -255,8 +240,7 @@ class HashFormEntry {
     }
 
     /**
-     * The bar across the top of the Entries list. Same placement as the Forms
-     * and style template lists — see HashFormBuilder::list_header().
+     * Header bar for the Entries list; see HashFormBuilder::list_header().
      */
     public function list_header() {
         if (!self::is_list_view()) {
@@ -323,8 +307,6 @@ class HashFormEntry {
         );
 
         add_screen_option('per_page', $args);
-
-        //new HashFormEntryListing();
     }
 
     public function set_screen_option($status, $option, $value) {
@@ -339,23 +321,14 @@ class HashFormEntry {
         }
 
         /**
-         * An entry is about to be deleted.
-         *
-         * Fires while the entry and its meta can still be read, so an add-on
-         * can clear whatever it stored alongside the entry before the row it
-         * keys on disappears. Without this, anything an add-on wrote against
-         * an entry id outlives the entry with nothing left to identify it.
+         * Fires before an entry is deleted, while it and its meta can still be read.
          *
          * @param int    $id
          * @param object $entry The entry, with its meta loaded.
          */
         do_action('hashform_before_destroy_entry', $id, $entry);
 
-        // Files first: once the meta rows are gone there is nothing left to
-        // say which uploads belonged to this entry, and they would sit in the
-        // uploads directory forever - still reachable by url, which for a
-        // deletion made on a privacy request is the opposite of what was
-        // asked for.
+        // Files first: once the meta rows are gone, nothing links the uploads to this entry.
         self::delete_entry_files($entry);
 
         $wpdb->query($wpdb->prepare('DELETE FROM ' . $wpdb->prefix . 'hashform_entry_meta WHERE item_id=%d', $id));
@@ -364,12 +337,7 @@ class HashFormEntry {
     }
 
     /**
-     * Remove the files an entry's upload fields point at.
-     *
-     * Only paths that resolve inside the plugin's own upload directory are
-     * touched, so a value pointing anywhere else - a media library item
-     * shared with other content, or an absolute path from a tampered row -
-     * is left alone.
+     * Remove the files an entry's upload fields point at. Only paths inside the plugin's upload directory are touched.
      */
     private static function delete_entry_files($entry) {
         if (!$entry || empty($entry->metas) || !is_array($entry->metas)) {
@@ -436,8 +404,7 @@ class HashFormEntry {
                 'name' => $meta_val->name,
                 'value' => $meta_val->meta_value,
                 'type' => $meta_val->field_type,
-                // Carried through so a value can be rendered the way its field
-                // was configured, rather than every display path re-querying.
+                // Lets a value be rendered per its field settings without re-querying.
                 'options' => maybe_unserialize($meta_val->field_options)
             );
         }
@@ -450,13 +417,7 @@ class HashFormEntry {
         parse_str(htmlspecialchars_decode(HashFormHelper::get_post('data', 'esc_html')), $data);
         $location = esc_url(HashFormHelper::get_post('location', 'esc_html'));
 
-        /*
-         * Every exit from here answers in json. The failure paths used to
-         * `return` with nothing written, so the browser got a 200 with an
-         * empty body: the front end's success handler saw no recognised
-         * status, left the submit button spinning and told the visitor
-         * nothing at all.
-         */
+        // Every exit from here answers in JSON, or the front end is left waiting.
         if (empty($data) || empty($data['form_id']) || !isset($data['form_key'])) {
             return self::submission_failed(esc_html__('There was a problem with your submission. Please reload the page and try again.', 'hash-form'));
         }
@@ -470,14 +431,17 @@ class HashFormEntry {
             return self::submission_failed(esc_html__('This form is no longer available.', 'hash-form'));
         }
 
-        /*
-         * The submitted form_key must match the one stored for this form.
-         * Presence alone was checked before (isset), which let a request name
-         * one form's id with any key at all. A mismatch means the field was
-         * tampered with, so the submission is dropped.
-         */
+        // The posted form_key must match the stored one.
         if (!hash_equals((string) $form->form_key, (string) $data['form_key'])) {
             return self::submission_failed(esc_html__('There was a problem with your submission. Please reload the page and try again.', 'hash-form'));
+        }
+
+        // A guest-rendered page posted by a logged-in request is taken as a guest submission.
+        // Done before the restrictions below, so a login-only form still refuses it.
+        $hf_nonce_field = 'hashform_submit_entry_' . $form_id;
+
+        if (is_user_logged_in() && isset($data[$hf_nonce_field]) && 'guest' === HashFormHelper::verify_public_nonce(wp_unslash($data[$hf_nonce_field]), 'hashform_submit_entry_nonce')) {
+            wp_set_current_user(0);
         }
 
         // Checked again here: the form may have closed, filled up or already
@@ -488,9 +452,7 @@ class HashFormEntry {
             return self::submission_failed(esc_html($restriction['message']));
         }
 
-        // Cheap flood control before any of the expensive work below. A
-        // submission that trips it never reaches validation, the database or
-        // the mailer.
+        // Cheap flood control before validation, the database and the mailer.
         $throttle = self::check_rate_limit($form);
 
         if ($throttle) {
@@ -509,12 +471,6 @@ class HashFormEntry {
         $form_settings = $form->settings;
         $entry_id = self::create($data);
 
-        /*
-         * A failed insert used to be handed to the mailer regardless, which
-         * then read ->metas on the null entry it got back and died with a
-         * fatal inside the ajax handler - a 500 and a blank response for the
-         * visitor.
-         */
         if (!$entry_id) {
             return self::submission_failed(self::error_message($form, $form_settings));
         }
@@ -539,8 +495,7 @@ class HashFormEntry {
     }
 
     /**
-     * The form's own "something went wrong" wording, falling back to a
-     * generic line when the setting was never filled in.
+     * The form's error message, or a generic one when unset.
      */
     private static function error_message($form, $form_settings) {
         $message = isset($form_settings['error_message']) ? $form_settings['error_message'] : '';
@@ -553,8 +508,7 @@ class HashFormEntry {
     }
 
     /**
-     * One shape for every refusal, so the front end always has something to
-     * show the visitor.
+     * One response shape for every refusal.
      */
     private static function submission_failed($message) {
         return wp_send_json(array(
@@ -564,15 +518,11 @@ class HashFormEntry {
     }
 
     /**
-     * Flood control for public submissions.
+     * Flood control for public submissions, keyed on form and submitter.
      *
-     * Keyed on form and submitter so one abusive source cannot lock a form
-     * for everyone. Anyone who can edit forms is exempt, and the whole thing
-     * stays off until a site sets a limit through the filter, so existing
-     * installs behave exactly as before unless they opt in.
+     * Off until a site sets a limit through the filter; form editors are exempt.
      *
-     * @return string Empty when the submission may proceed, otherwise the
-     *                message to show.
+     * @return string Empty when the submission may proceed, otherwise the message to show.
      */
     private static function check_rate_limit($form) {
         $limit = (int) apply_filters('hashform_submission_rate_limit', 0, $form);
@@ -623,8 +573,7 @@ class HashFormEntry {
         } else {
             $ip = HashFormHelper::get_ip();
 
-            // Without either an account or a usable address there is nothing
-            // stable to count against, so the limit simply does not apply.
+            // No account and no usable IP: nothing to count against.
             if (!$ip) {
                 return '';
             }
@@ -659,28 +608,13 @@ class HashFormEntry {
 
         if (isset($values['item_meta']) && is_array($values['item_meta'])) {
             foreach ($values['item_meta'] as $field_id => $meta_value) {
-                /*
-                 * Only a genuinely unanswered field is skipped. This used to
-                 * be !empty(), which also threw away every answer PHP treats as
-                 * falsy: a number field holding 0, a select whose value is
-                 * "0", a calculation that came out to zero. Those submissions
-                 * were accepted and the answer silently never reached the
-                 * database, so the entry showed a gap where the visitor had
-                 * typed a valid number.
-                 */
+                // Skip only blank answers; 0 and "0" are real values.
                 if (!self::is_blank_meta_value($meta_value)) {
                     if (!is_array($meta_value)) {
                         $meta_value = sanitize_textarea_field($meta_value);
 
-                        /*
-                         * A scalar answer must never be a PHP-serialized
-                         * string. sanitize_*_field() leaves such a string
-                         * intact, so without this it would reach the database
-                         * and be unserialized on the Entries screen. Multi
-                         * value fields (arrays) are serialized by us further
-                         * down and are unaffected. The value is stored inert
-                         * rather than instantiated later.
-                         */
+                        // A scalar answer must never be stored serialized: sanitize_*_field() leaves it
+                        // intact and the Entries screen would unserialize it.
                         if (is_serialized($meta_value)) {
                             $meta_value = '';
                         }
@@ -693,13 +627,7 @@ class HashFormEntry {
                         'created_at' => sanitize_text_field(current_time('mysql')),
                     );
 
-                    /*
-                     * The field gets the value in the shape it was posted. It
-                     * used to be serialized first, so a field that posts more
-                     * than one value — a repeater's rows, an address, a set of
-                     * boxes — only ever saw a string and could not put its own
-                     * shape on what got stored.
-                     */
+                    // Passed in its posted shape so multi-value fields can shape what is stored.
                     self::sanitize_meta_value($meta_values);
 
                     if (is_array($meta_values['meta_value'])) {
@@ -714,11 +642,9 @@ class HashFormEntry {
     }
 
     /**
-     * Whether a submitted answer counts as nothing entered.
+     * Whether a submitted answer counts as nothing entered. "0" is never blank.
      *
-     * Mirrors HashFormValidate::is_blank_value(): the two must agree, or a
-     * field could pass required validation and then not be stored. "0" is a
-     * real answer and is never blank.
+     * Must agree with HashFormValidate::is_blank_value().
      *
      * @param mixed $value
      * @return bool
@@ -786,12 +712,7 @@ class HashFormEntry {
     }
 
     /**
-     * The entry before this one, within the same form.
-     *
-     * Both of these used to walk the whole table, so "previous" from an entry
-     * on one form landed on somebody else's form: the reader was stepping
-     * through every submission on the site rather than the list they came
-     * from. A trashed neighbour is skipped either way.
+     * The previous published entry within the same form.
      *
      * @param int $entry_id
      * @param int $form_id Optional. Looked up from the entry when omitted.
@@ -818,12 +739,7 @@ class HashFormEntry {
             return array();
         }
 
-        /*
-         * The two queries are written out rather than assembled, because
-         * $wpdb->prepare() has to be handed a literal to be checkable: a
-         * query built in a variable cannot be verified by anything - not the
-         * sniffs, not a reader - as holding only placeholders.
-         */
+        // Written out in full so prepare() is always handed a literal query.
         if ('prev' === $direction) {
             return $wpdb->get_results($wpdb->prepare("SELECT id FROM {$wpdb->prefix}hashform_entries WHERE id < %d AND form_id = %d AND status = 'published' ORDER BY id DESC LIMIT 1", $entry_id, $form_id));
         }

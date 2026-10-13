@@ -3,19 +3,9 @@
 defined('ABSPATH') || die();
 
 /**
- * Hooks form entries into WordPress' own privacy tools.
+ * Hooks form entries into WordPress' personal data export and erasure tools.
  *
- * Entries hold exactly the kind of thing a subject access or erasure request
- * is about - names, email addresses, whatever else the form asked for, plus
- * the submitter's ip address - and none of it was reachable from Tools >
- * Export Personal Data or Erase Personal Data. An administrator answering a
- * request had to go through the Entries screen by hand and hope they had
- * found every form.
- *
- * Entries are matched on the email address the request names: the submitter's
- * account email when they were signed in, or any email field on the form.
- * Both exporters and erasers page through the data, as core requires, so a
- * form with a large number of entries does not exhaust memory.
+ * Entries are matched on the requested email: the submitter's account email, or any email field on the form.
  */
 class HashFormPrivacy {
 
@@ -25,12 +15,7 @@ class HashFormPrivacy {
     public function __construct() {
         add_filter('wp_privacy_personal_data_exporters', array($this, 'register_exporter'));
         add_filter('wp_privacy_personal_data_erasers', array($this, 'register_eraser'));
-        /*
-         * wp_add_privacy_policy_content() rather than the
-         * wp_get_default_privacy_policy_content filter, which has been
-         * deprecated since WordPress 5.7 and emits a notice. It must run on
-         * admin_init, which is where core collects the suggested text.
-         */
+        // wp_get_default_privacy_policy_content is deprecated; core collects suggested text on admin_init.
         add_action('admin_init', array($this, 'add_privacy_policy_content'));
     }
 
@@ -66,11 +51,7 @@ class HashFormPrivacy {
         $user = get_user_by('email', $email);
         $user_id = $user ? (int) $user->ID : 0;
 
-        /*
-         * Two ways an entry can belong to someone: it was submitted while
-         * they were signed in, or one of the form's email fields holds their
-         * address. The union covers both without returning an entry twice.
-         */
+        // Entries submitted while signed in, or with the address in an email field; the union removes duplicates.
         $sql = "SELECT DISTINCT e.id
                 FROM {$wpdb->prefix}hashform_entries AS e
                 LEFT JOIN {$wpdb->prefix}hashform_entry_meta AS m ON m.item_id = e.id
@@ -185,9 +166,6 @@ class HashFormPrivacy {
 
     /**
      * Suggested wording for the site's privacy policy.
-     *
-     * Registered through wp_add_privacy_policy_content(), which is what
-     * replaced the filter this used to hook.
      */
     public function add_privacy_policy_content() {
         if (!function_exists('wp_add_privacy_policy_content')) {

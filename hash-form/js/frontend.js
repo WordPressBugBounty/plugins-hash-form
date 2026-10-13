@@ -15,8 +15,12 @@ jQuery(function ($) {
                 max: parseFloat(input.attr('max')),
                 step: parseFloat(input.attr('step')),
                 range: 'min',
+                // Fire input/change like a native range input so calculations see the new value.
                 slide: function (e, ui) {
-                    $(this).next().val(ui.value);
+                    $(this).next().val(ui.value).trigger('input');
+                },
+                stop: function (e, ui) {
+                    $(this).next().val(ui.value).trigger('change');
                 }
             });
         });
@@ -24,7 +28,6 @@ jQuery(function ($) {
 
     initRangeSliders($('.hf-range-input-selector'));
 
-    // Update the slider when the input loses focus, as it has most likely changed.
     $('.hf-range-input-selector').on('blur', function () {
         const input = $(this);
         let value = isNaN(input.val()) ? '' : input.val();
@@ -66,12 +69,7 @@ jQuery(function ($) {
     /**
      * Put a captcha back to its unanswered state.
      *
-     * Each service's script is loaded whenever a field of its kind is on the
-     * form, whether or not a site key was set, so the script can be present
-     * with nothing rendered — grecaptcha.reset() throws "No reCAPTCHA clients
-     * exist" in that case. That used to abandon the rest of the failure
-     * handler, which is why an hCaptcha widget kept its spent token and the
-     * visitor's second attempt failed on a token already used up.
+     * The script can be loaded with nothing rendered, in which case reset() throws.
      */
     function resetCaptcha(name) {
         const api = window[name];
@@ -94,10 +92,7 @@ jQuery(function ($) {
     }
 
     /**
-     * Never render an empty failure notice.
-     *
-     * A form whose Error Message setting is blank was appending an empty span,
-     * which reads to the visitor exactly like the submission having been ignored.
+     * Failure notice text; falls back to the generic error when the form's message is blank.
      */
     function failureText(message) {
         return (typeof message === 'string' && message.trim())
@@ -106,14 +101,7 @@ jQuery(function ($) {
     }
 
     /**
-     * Tie an error message to the control it belongs to.
-     *
-     * The message used to be appended as raw html with no relationship to the
-     * input at all, so a screen reader never announced it: the field stayed
-     * "valid" as far as assistive technology was concerned and the only sign
-     * anything had gone wrong was a red line someone had to see. The message
-     * now gets an id, the control points at it and is marked invalid, and the
-     * message is announced when it appears.
+     * Tie an error message to its control (aria-describedby, aria-invalid) so it is announced.
      */
     function attachError(container, key, message) {
         const errorId = 'hf-error-' + key;
@@ -231,10 +219,7 @@ jQuery(function ($) {
     /**
      * A reCAPTCHA v3 token for this form, or '' when there is nothing to fetch.
      *
-     * Scoped to the form being submitted. The widget used to be looked up as
-     * $('.g-recaptcha') — the first one in the document — so with two forms on
-     * a page one of them read the other's settings and took a path meant for a
-     * captcha it did not have.
+     * Scoped to this form so two forms on a page do not read each other's captcha.
      */
     function captchaToken(form) {
         const captcha = form.find('.g-recaptcha');
@@ -272,15 +257,7 @@ jQuery(function ($) {
 
         clearErrors(form);
 
-        /*
-         * Wait for the token itself rather than for a second on the clock.
-         *
-         * A fixed one-second setTimeout used to wrap this whole block, so
-         * every submission of every form waited a second whether a captcha was
-         * on the page or not, and a token that took longer than that was
-         * dropped: the form posted an empty response and the visitor was told
-         * the reCAPTCHA was not entered correctly, with no way to get past it.
-         */
+        // Post once the captcha token, if any, is ready.
         captchaToken(form).then((token) => {
             const data = form.serializeArray();
 
@@ -313,12 +290,8 @@ jQuery(function ($) {
                         return;
                     }
 
-                    /*
-                     * Announce the outcome on the form itself. An add-on -
-                     * the payment script is the one that needs this - can
-                     * then follow a submission it does not own, instead of
-                     * having to wrap or replace this handler.
-                     */
+                    // Announce the outcome on the form so add-ons (e.g. payments)
+                    // can follow a submission without replacing this handler.
                     form.trigger('hashform:' + response.status, [response]);
 
                     if (response.status === 'redirect') {
@@ -335,31 +308,16 @@ jQuery(function ($) {
                         resetRecaptcha();
                         appendNotice(form, 'hf-failed-msg', failureText(response.message), true);
                     } else if (response.message && typeof response.message === 'object') {
-                        /*
-                         * A captcha that was not passed comes back as a field
-                         * error like any other, and this branch never reset the
-                         * widget — so the token stayed in the form, already
-                         * spent, and the visitor's next attempt failed on the
-                         * same token however carefully they answered it.
-                         */
+                        // Reset the captcha so its spent token is not resubmitted.
                         resetRecaptcha();
                         showValidationErrors(response.message);
                     } else {
-                        // status:'error' normally carries an object of per-field
-                        // errors, but the spam checks reject a whole submission
-                        // with a plain string. $.each on a string throws, which
-                        // left the visitor looking at a form that appeared to do
-                        // nothing at all.
+                        // Spam checks reject a whole submission with a plain string
+                        // instead of per-field errors.
                         resetRecaptcha();
                         appendNotice(form, 'hf-failed-msg', failureText(response.message), true);
                     }
                 },
-                /*
-                 * There was no error handler at all, so a request that never
-                 * came back - a 500, a dropped connection, a security plugin
-                 * eating the post - left the button spinning for good with no
-                 * explanation and no way to try again.
-                 */
                 error: function () {
                     submitButton.removeClass('hf-button-loading');
                     resetRecaptcha();
@@ -374,18 +332,35 @@ jQuery(function ($) {
      * Spinner field
      * -------------------------------------------------------------------- */
 
+    // Fire input/change when the value changes, so dependent fields and totals update.
+    function stepSpinner(button, direction) {
+        const input = $(button).closest('.hashform-field-type-spinner').find('input');
+        const min = parseFloat(input.attr('min'));
+        const max = parseFloat(input.attr('max'));
+        const before = input.val();
+        let value = (Number(before) || 0) + direction;
+
+        if (!Number.isNaN(max) && value > max) {
+            value = max;
+        }
+
+        if (!Number.isNaN(min) && value < min) {
+            value = min;
+        }
+
+        input.val(value);
+
+        if (String(value) !== before) {
+            input.trigger('input').trigger('change');
+        }
+    }
+
     $('.hashform-field-type-spinner .hf-quantity .mdi-plus').on('click', function () {
-        const input = $(this).closest('.hashform-field-type-spinner').find('input');
-        const max = input.attr('max');
-        const value = Number(input.val());
-        input.val(value < max ? value + 1 : max);
+        stepSpinner(this, 1);
     });
 
     $('.hashform-field-type-spinner .hf-quantity .mdi-minus').on('click', function () {
-        const input = $(this).closest('.hashform-field-type-spinner').find('input');
-        const min = input.attr('min');
-        const value = Number(input.val());
-        input.val(value > min ? value - 1 : min);
+        stepSpinner(this, -1);
     });
 
     /* -----------------------------------------------------------------------
@@ -413,13 +388,8 @@ jQuery(function ($) {
     /**
      * Carry a form's style tokens onto a picker panel.
      *
-     * The per form --hf-* properties are declared on #hf-container-{id}, but
-     * both pickers move their panel to <body> as they open, so neither is a
-     * descendant of the form and neither inherits any of them. Copying the few
-     * that matter across on open is what lets a picker match the form that was
-     * clicked, which also keeps two differently styled forms on one page from
-     * sharing a palette. Anything the form leaves unset is skipped so the
-     * stylesheet fallback stays in play.
+     * The panel is moved to <body>, so it inherits none of the form's --hf-*
+     * properties. Unset ones are skipped so the stylesheet fallback applies.
      */
     function bridgePickerStyles(input, panel) {
         const container = input.closest('[id^="hf-container-"]');
@@ -469,10 +439,8 @@ jQuery(function ($) {
     $('.hashform-field-type-time .hf-timepicker').each(function () {
         const input = $(this);
 
-        // Step, Min Time and Max Time are set per field in the builder and
-        // printed as data attributes. The library does not read those itself,
-        // so they have to be passed in or the field silently lists every hour
-        // of the day whatever the user configured.
+        // Step, Min Time and Max Time are printed as data attributes, which the
+        // library does not read itself.
         const step = parseInt(input.attr('data-step'), 10);
         const minTime = input.attr('data-min-time');
         const maxTime = input.attr('data-max-time');
@@ -652,9 +620,7 @@ jQuery(function ($) {
         });
     }
 
-    // Bytes to something a person reads. The library has its own _formatSize,
-    // but it is a private method on the instance and this runs before one
-    // exists.
+    // Human-readable size. The library's _formatSize needs an instance, which does not exist yet.
     function formatUploadSize(bytes) {
         const size = Number(bytes);
 
@@ -677,13 +643,7 @@ jQuery(function ($) {
         const element = $(this);
         const elementId = element.attr('id');
 
-        /*
-         * The builder canvas and the style preview draw a static copy of the
-         * uploader to show what it looks like, without an id or any of the
-         * settings. There is nothing to start up on one of those — and reading
-         * its extensions threw, which stopped every uploader after it on the
-         * page from being set up at all.
-         */
+        // Static previews in the builder and style preview have no id or settings.
         if (!elementId) {
             return;
         }
@@ -701,10 +661,7 @@ jQuery(function ($) {
 
         const wrapper = () => $('#' + elementId).closest('.hf-file-uploader-wrapper');
 
-        // The constraints are already enforced, but nowhere on the page said
-        // what they were, so the first a visitor heard about a limit was an
-        // alert() after picking a file. Spelling them out on the dropzone is
-        // the whole reason it is worth having one.
+        // Spell out the limits on the dropzone so visitors see them before picking a file.
         const constraints = [];
 
         if (extensions.length && extensions[0] !== '') {
@@ -719,17 +676,14 @@ jQuery(function ($) {
             constraints.push(uploadLimit + ' files max');
         }
 
-        // Filters the operating system's own file dialog. Without it a JPG only
-        // field still offers every file on the machine and the rule is only
-        // discovered after picking one.
+        // Filters the operating system's file dialog to the allowed extensions.
         const acceptFiles = extensions
             .map((ext) => ext.trim())
             .filter(Boolean)
             .map((ext) => '.' + ext.toLowerCase())
             .join(',');
 
-        // One place for every rejection, so a failure reads on the form instead
-        // of in a browser dialog the visitor has to dismiss before continuing.
+        // One place for every rejection, shown on the form rather than in an alert().
         const showUploadError = (message) => {
             const box = wrapper().find('.hf-upload-error');
 
@@ -760,18 +714,14 @@ jQuery(function ($) {
             },
             allowedExtensions: extensions,
             sizeLimit: sizeLimit,
-            // 50 bytes is the old hardcoded floor, kept as the default so a
-            // field with no minimum set behaves exactly as it did.
+            // Default minimum of 50 bytes when the field sets none.
             minSizeLimit: minSizeLimit > 0 ? minSizeLimit : 50,
             acceptFiles: acceptFiles,
             uploadButtonText: uploaderLabel,
             multiple: multipleUpload,
 
-            // The stock template was a bare grey button with a 300px drop area
-            // that only existed mid-drag. .qq-upload-button is kept as a real
-            // button inside the card rather than becoming the card itself, so
-            // the --hf-upload-* settings a site has already configured in the
-            // styler keep applying to exactly what they were configured for.
+            // .qq-upload-button stays a real button inside the card, so the
+            // --hf-upload-* styler settings keep applying to it.
             template: '<div class="qq-uploader">' +
                 '<div class="hf-upload-dropzone">' +
                     UPLOAD_ICON +
@@ -787,9 +737,7 @@ jQuery(function ($) {
                 '<ul class="qq-upload-list"></ul>' +
                 '</div>',
 
-            // The progress bar is wrapped in a track so it has something to run
-            // against. _find() resolves by class at any depth, so nesting is
-            // safe and the library still drives the width.
+            // _find() resolves by class at any depth, so the library still drives the nested bar.
             fileTemplate: '<li>' +
                 '<span class="hf-file-row">' +
                     '<span class="qq-upload-file"></span>' +

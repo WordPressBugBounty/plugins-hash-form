@@ -66,16 +66,7 @@ abstract class HashFormFieldType {
             $has_description = isset($display['description']) && $display['description'] && !empty(trim($field['description']));
 
             if ($show_label) {
-                /*
-                 * The label carries an id and, for a field that owns a single
-                 * control, a matching for. Until now it had neither, so no
-                 * label on the form was actually tied to the input beside it:
-                 * a screen reader announced an unnamed edit box, and clicking
-                 * a label did not focus its field. Fields that render a set of
-                 * controls rather than one - radios, checkboxes, a name split
-                 * into parts - cannot use for at all, and name the group
-                 * below instead.
-                 */
+                // Group fields (radios, checkboxes, split names) cannot use for; they get role="group" below.
                 ?>
                 <label class="hf-field-label <?php echo (!$field['name'] || ((isset($field['hide_label']) && $field['hide_label']))) ? 'hf-hidden' : ''; ?>"
                        id="<?php echo esc_attr($this->label_id()); ?>"
@@ -122,9 +113,7 @@ abstract class HashFormFieldType {
         $container_class[] = ($field['type'] == 'captcha' && $global_settings['re_type'] == 'v3' && !is_admin()) ? 'hf-recaptcha-v3 hf-hidden' : '';
 
         if (in_array($field['type'], array('heading', 'paragraph'))) {
-            // 'inline' was the fallback, and no stylesheet has ever defined
-            // hf-text-alignment-inline. Left is what the field itself defaults
-            // to, so a field saved before the option existed reads the same.
+            // Default to left, matching the field default; there is no hf-text-alignment-inline style.
             $text_alignment = isset($field['text_alignment']) && $field['text_alignment'] ? $field['text_alignment'] : 'left';
             $container_class[] = 'hf-text-alignment-' . trim($text_alignment);
         }
@@ -180,18 +169,12 @@ abstract class HashFormFieldType {
     /* Form builder AdminEnd each elements */
 
     /**
-     * Mark a field the form's rules act on.
-     *
-     * Conditional logic is set up on the Settings tab, which means the canvas
-     * gave no sign that a field is only shown to some visitors - or that a
-     * field is the one deciding. Both ends carry a chip, and the rules
-     * themselves are in its tooltip.
+     * Canvas chip on a field that conditional rules target or depend on, with the rules in its tooltip.
      */
     protected function condition_hint_html() {
         $field = $this->get_field();
 
-        // A divider reports the row it opens rather than a field of its own, so
-        // the id here would not be the one a rule names.
+        // A divider's id is its row's, not one a rule can name.
         if (in_array($field['type'], array('divider', 'end_divider'), true)) {
             return;
         }
@@ -209,14 +192,7 @@ abstract class HashFormFieldType {
                 isset($hints[$id]['trigger']) ? $hints[$id]['trigger'] : array()
         );
 
-        /*
-         * The rule itself, not just that there is one.
-         *
-         * "Conditional" alone told you to go and look on the Settings tab,
-         * which is the trip this was meant to save. The first rule is written
-         * on the chip and trimmed by css when the canvas is narrow; the rest,
-         * and the untrimmed text, stay in the tooltip.
-         */
+        // First rule on the chip (css trims it when narrow); all rules in the tooltip.
         $summary = $rules[0];
         $extra = count($rules) - 1;
         ?>
@@ -340,12 +316,7 @@ abstract class HashFormFieldType {
     }
 
     /**
-     * Does this field render a set of controls rather than a single one?
-     *
-     * A group cannot be named with a label's for, because there is no one
-     * control for it to point at. Those fields are wrapped in a named group
-     * instead, so the question is announced once and each choice keeps its
-     * own label.
+     * Whether this field renders a set of controls, named by role="group" instead of a label's for.
      *
      * @return bool
      */
@@ -376,8 +347,7 @@ abstract class HashFormFieldType {
         /**
          * Field types whose label names a group of controls.
          *
-         * An add-on adding a multi-control field should register it here so
-         * it is announced the same way.
+         * @param array $groups Field type keys.
          */
         $groups = apply_filters('hashform_group_field_types', $groups);
 
@@ -415,8 +385,7 @@ abstract class HashFormFieldType {
             'default' => true,
             'description' => true,
             'image_max_width' => false,
-            // Length, pattern, matching and uniqueness rules. Only meaningful
-            // for fields that hold a single scalar answer.
+            // Length, pattern, matching and uniqueness rules; single-value fields only.
             'advanced_validation' => false
         );
     }
@@ -435,11 +404,7 @@ abstract class HashFormFieldType {
             $default_attrs['id'] = $this->html_id();
         }
 
-        /*
-         * Tie the field's help text to the control, so a screen reader reads
-         * the guidance with the field instead of leaving it stranded after
-         * it. Only set when there is something to point at.
-         */
+        // Link help text to the control, only when there is some.
         $description = $this->get_field_column('description');
 
         if (isset($display['description']) && $display['description'] && '' !== trim((string) $description)) {
@@ -586,8 +551,7 @@ abstract class HashFormFieldType {
             'grid_id' => '',
             // Fields sharing a key stack inside one column of a column row.
             'column_group' => '',
-            // Every column of that row, as group:width pairs, so the columns
-            // nobody dropped a field into can still be rebuilt.
+            // Every column of that row as group:width pairs, so empty columns can be rebuilt.
             'column_row' => '',
             'label_position' => '',
             'label_alignment' => '',

@@ -1,10 +1,5 @@
 /* -----------------------------------------------------------------------------
  * File upload field
- *
- * Unlike the date and time pickers, everything here renders inside
- * #hf-container-{id}, so the per form --hf-* properties are inherited normally
- * and no bridging is needed. The locals below read from the form's own field
- * tokens where there is a sensible source and fall back otherwise.
  * -------------------------------------------------------------------------- */
 .hf-file-uploader-wrapper {
     --hf-up-accent: var(--hf-field-border-color-focus, #2271b1);
@@ -29,8 +24,7 @@
     width: 100%;
 }
 
-/* ---------- Upload button ----------
-   Already fully tokenised through the form styler; left as it was. */
+/* ---------- Upload button ---------- */
 
 .hf-file-uploader .qq-upload-button {
     display: inline-block;
@@ -80,10 +74,7 @@
 }
 
 /* ---------- Dropzone ----------
-   The card is a wrapper around the real .qq-upload-button, not a replacement
-   for it, so a site's existing --hf-upload-* button styling still lands on a
-   button. The drop area is an overlay across the card rather than a second box
-   below it. */
+   The card wraps the real .qq-upload-button; the drop area overlays the card. */
 
 .hf-file-uploader .hf-upload-dropzone {
     align-items: center;
@@ -130,9 +121,8 @@
     opacity: .85;
 }
 
-/* The library toggles this with an inline display, so the overlay is centred
-   with absolute positioning rather than flex, which that inline style would
-   override. */
+/* The library sets an inline display on this, so it is centered with absolute
+   positioning rather than flex. */
 .hf-file-uploader .qq-upload-drop-area {
     background: var(--hf-up-soft);
     border-radius: calc(var(--hf-up-radius) + 2px);
@@ -161,9 +151,7 @@
     box-shadow: inset 0 0 0 2px var(--hf-up-accent);
 }
 
-/* ---------- Errors ----------
-   Rejections used to arrive as a browser alert(), which had to be dismissed
-   before the visitor could try again and said nothing once gone. */
+/* ---------- Errors ---------- */
 
 .hf-file-uploader .hf-upload-error {
     display: none;
@@ -201,8 +189,7 @@
     width: 100%;
 }
 
-/* Was a flat #FFF0BD mustard. A file that is still uploading is not a warning,
-   so it now reads as a neutral row and the state is carried by the left edge. */
+/* An uploading file is a neutral row; its state is carried by the left edge. */
 .hf-file-uploader .qq-upload-list li {
     background-color: var(--hf-up-surface);
     border: 1px solid var(--hf-up-border);
@@ -224,8 +211,7 @@
 }
 
 /* ---------- Progress ----------
-   The library has always driven this bar's width from _onProgress; the old
-   sheet simply hid it, so a large upload showed a spinner and nothing else. */
+   The width is set by the library's _onProgress. */
 
 .hf-file-uploader .hf-progress-track {
     background: var(--hf-up-border);
@@ -245,7 +231,7 @@
     width: 0;
 }
 
-/* Once an upload settles the bar has nothing left to say. */
+/* Hide the bar once an upload settles. */
 .hf-file-uploader .qq-upload-success .hf-progress-track,
 .hf-file-uploader .qq-upload-fail .hf-progress-track {
     display: none;
@@ -302,10 +288,8 @@
     font-weight: 600;
 }
 
-/* Outcome is carried by the edge stripe and a glyph rather than flooding the
-   row, so a long file name stays readable and the row stops competing with the
-   rest of the form. The library's own failure text is still shown, so the
-   state is never signalled by colour alone. */
+/* Outcome is shown by the edge stripe and a glyph; the library's failure text
+   stays, so state is never signalled by colour alone. */
 .hf-file-uploader .qq-upload-list li.qq-upload-success {
     border-left-color: var(--hf-up-success);
 }
@@ -314,8 +298,7 @@
     border-left-color: var(--hf-up-danger);
 }
 
-/* On .hf-file-row rather than the li, which is a column now, so the glyph sits
-   at the end of the file line instead of dropping onto one of its own. */
+/* On .hf-file-row rather than the li (a column), so the glyph ends the file line. */
 .hf-file-uploader .qq-upload-success .hf-file-row:after,
 .hf-file-uploader .qq-upload-fail .hf-file-row:after {
     font-size: 14px;
@@ -368,8 +351,7 @@
     overflow-wrap: anywhere;
 }
 
-/* Was solid #FF0000 going black on hover. Destructive, but it should not be the
-   brightest thing in the form until the pointer is actually on it. */
+/* Muted until hovered so it is not the brightest thing in the form. */
 .hf-preview-remove {
     background: transparent;
     border: 1px solid var(--hf-up-border);
@@ -390,7 +372,7 @@
     color: #fff;
 }
 
-/* Keeps its natural width if it lands directly on the list item, which stretches
+/* Keeps its natural width if placed directly on the list item, which stretches
    its children. */
 .hf-file-uploader .qq-upload-list li > .hf-preview-remove {
     align-self: flex-start;

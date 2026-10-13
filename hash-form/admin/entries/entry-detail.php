@@ -1,10 +1,5 @@
 <?php
 defined('ABSPATH') || die();
-/*
- * A template, included from inside a class method - never loaded on its own.
- * The variables below are locals of the method that includes it, not globals,
- * which is what the prefix sniff assumes about a file-scope assignment.
- */
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
 $prev_entry = HashFormEntry::get_prev_entry($entry->id, $entry->form_id);
 $prev_entry = isset($prev_entry[0]) ? $prev_entry[0] : '';
@@ -98,14 +93,13 @@ $delivery_failed = isset($entry->delivery_status) && !$entry->delivery_status;
                     // Shared with the notification email, so both read alike.
                     $entry_value = HashFormHelper::format_date_value($entry_value, $entry_type);
 
-                    // A hex code says very little on its own, so the colour is
-                    // shown alongside it.
+                    // Show a swatch next to the hex code.
                     if ('color_picker' === $entry_type && $entry_value && is_string($entry_value)) {
                         $entry_value = '<span class="hf-entry-swatch" style="background-color:' . esc_attr($entry_value) . ';"></span>'
                                 . '<span class="hf-entry-swatch-value">' . esc_html($entry_value) . '</span>';
                     }
 
-                    // Stored as a bare account id, which says nothing on its own.
+                    // Stored as a bare user id; format it for display.
                     if ($entry_type == 'user_id') {
                         $entry_value = HashFormFieldUserID::format_value(
                             $entry_value,
@@ -137,10 +131,7 @@ $delivery_failed = isset($entry->delivery_status) && !$entry->delivery_status;
                         $entry_value = $upload_value;
                     }
                     /**
-                     * Last word on how a stored value is rendered.
-                     *
-                     * Lets a field type supplied by an add-on present its own
-                     * value without this file having to know the type exists.
+                     * Filters how a stored value is rendered, so add-on field types can present their own.
                      *
                      * @param string $entry_value Value as rendered so far.
                      * @param string $entry_type  Field type.
@@ -149,12 +140,7 @@ $delivery_failed = isset($entry->delivery_status) && !$entry->delivery_status;
                      */
                     $entry_value = apply_filters('hashform_entry_display_value', $entry_value, $entry_type, $value, 'detail');
 
-                    /*
-                     * A field that was left blank used to leave the cell
-                     * completely empty, which reads as a rendering fault rather
-                     * than as an answer nobody gave. The dash is marked up so it
-                     * can be told apart from a value that happens to be one.
-                     */
+                    // Blank answers get a marked-up dash, distinct from a literal dash value.
                     $is_blank = !is_string($entry_value) ? empty($entry_value) : ('' === trim($entry_value));
 
                     echo '<tr>';
@@ -173,22 +159,14 @@ $delivery_failed = isset($entry->delivery_status) && !$entry->delivery_status;
         </table>
 
         <?php
-        /*
-         * Fires after the entry's own table has been closed, so anything hooked
-         * here is a sibling of it. Pro answers with complete tables of its own,
-         * and a table is not legal inside a tbody: printing this from within the
-         * loop left the browser to pull them back out, which it did at a
-         * position of its own choosing.
-         */
         /**
-         * After the entry's answers have been printed.
+         * Fires after the entry table is closed; Pro prints whole tables here, which are invalid inside a tbody.
          *
          * @param object $entry
          */
         do_action('hashform_after_entry_detail_view', $entry);
 
-        // The unprefixed name this hook shipped under. Still fired so an
-        // add-on written against it keeps working.
+        // Deprecated unprefixed alias of the hook above.
         do_action('hf_after_entry_detail_view', $entry); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- kept for backward compatibility; the prefixed hook above is the one to use.
         ?>
 

@@ -3,15 +3,9 @@
 defined('ABSPATH') || die();
 
 /**
- * Decides whether a form is currently accepting submissions.
+ * Decides whether a form is currently accepting submissions. Checked on render and again on submit.
  *
- * The same check runs when the form is rendered and again when an entry is
- * posted, so a form that closed while somebody had the page open still cannot
- * be submitted.
- *
- * Add-ons register further rules through the hashform_form_restrictions
- * filter, which is how the Pro plugin adds scheduling, entry limits and
- * login requirements on top of this.
+ * Add-ons, including Pro, add rules through the hashform_form_restrictions filter.
  */
 class HashFormRestrictions {
 
@@ -27,9 +21,7 @@ class HashFormRestrictions {
 
         $settings = array_merge(HashFormHelper::get_form_settings_default(), $form->settings);
 
-        // Someone who can edit forms is allowed through, otherwise a scheduled
-        // form could not be tested before it opens. Filterable for sites that
-        // would rather see exactly what visitors see.
+        // Form editors bypass restrictions so they can test a scheduled form before it opens.
         if (apply_filters('hashform_restrictions_bypass', HashFormCapabilities::user_can('hashform_edit_forms'), $form)) {
             return $allowed;
         }
@@ -64,9 +56,7 @@ class HashFormRestrictions {
 
 
     /**
-     * One entry per person. Logged in visitors are matched on their user id,
-     * guests on their ip address, which is the best that can be done without
-     * asking them to sign in.
+     * One entry per person: logged-in visitors are matched on user id, guests on IP address.
      */
     private static function check_duplicate($form, $settings) {
         if (!self::enabled($settings, 'one_entry_per_user')) {

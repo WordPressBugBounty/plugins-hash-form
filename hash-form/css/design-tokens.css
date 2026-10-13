@@ -1,44 +1,26 @@
 /**
- * Hash Form design tokens.
+ * Hash Form design tokens for the admin UI.
  *
- * The single source of truth for the admin UI. Every screen draws its colour,
- * spacing, radius, shadow and type scale from here, so a change lands
- * everywhere at once instead of being retyped per stylesheet.
- *
- * Scoped to the plugin's own wrappers so nothing leaks into the rest of
- * wp-admin. The accent follows the user's admin colour scheme.
+ * Scoped to the plugin's own wrappers so nothing leaks into the rest of wp-admin.
  */
 
 .hf-content,
 .hf-wrap,
 #hf-wrap,
 .hf-form-entry-details-wrap,
-/* Printed into admin_footer, so they sit outside every wrapper above and
-   have to declare the tokens themselves. */
+/* Printed into admin_footer, outside every wrapper above. */
 #hf-add-form-modal,
 #hf-shortcode-form-modal,
-/* jQuery UI moves a dialog to <body> when it opens, which detaches it from
-   the builder wrapper, so these need the tokens declared on them too. */
+/* jQuery UI moves dialogs to <body>, outside the builder wrapper. */
 .hf-dialog,
-/* The list header is printed on in_admin_header, above #wpbody and so outside
-   every wrapper below. */
+/* Printed on in_admin_header, outside every wrapper. */
 .hf-list-header,
-/* The module settings dialog is moved out to <body> so the page cannot clip
-   it, which puts it outside every wrapper too. */
+/* Moved to <body> so the page cannot clip it. */
 .hf-msm-overlay,
 #hf-bulk-edit-modal {
     /*
-     * Brand + state.
-     *
-     * The accent used to follow the admin colour scheme, which left the
-     * plugin showing two of them: the header, the Save button and the active
-     * nav tab are the brand orange, while everything token-driven — switches,
-     * buttons, focus rings — came out in whatever the user's WordPress theme
-     * colour happened to be. They are one colour now.
-     *
-     * --hf-accent-text is the same hue taken far enough down to be legible as
-     * text: #dd823b on white is 2.9:1, which fails, so it is used for fills,
-     * borders and rings, and the darker one wherever the accent is the text.
+     * Brand + state. --hf-accent is 2.9:1 on white, so it is for fills, borders
+     * and rings; --hf-accent-text is used wherever the accent is the text.
      */
     --hf-accent: #dd823b;
     --hf-accent-hover: #c26f2e;
@@ -106,11 +88,7 @@
 
 .hf-content *,
 .hf-wrap *,
-/* The list header is printed on in_admin_header, which puts it outside both
-   wrappers above, so the reset never reached it: its inner bar carried a width
-   of 100% and 32px of padding either side under content-box and so ran 64px
-   wider than the header holding it, which the page answered with a horizontal
-   scrollbar on every list screen. */
+/* Printed on in_admin_header, outside both wrappers above. */
 .hf-list-header,
 .hf-list-header * {
     box-sizing: border-box;

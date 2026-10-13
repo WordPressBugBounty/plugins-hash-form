@@ -25,12 +25,7 @@ wp_nonce_field('hf-styles-nonce', 'hashform_styles_nonce');
         <div id="hf-form-panel" class="hf-style-form-panel">
             <div class="hf-form-wrap">
                 <?php
-                /*
-                 * The same canvas header the builder and the form Style tab
-                 * carry, so a style template is built on the same surface a
-                 * form is. The right slot names the form being previewed;
-                 * admin-settings.js keeps it in step with the select.
-                 */
+                // Same canvas header as the builder; admin-settings.js keeps the form name in step with the select.
                 ?>
                 <div class="hf-canvas-header">
                     <span class="hf-canvas-title"><?php esc_html_e('Style Preview', 'hash-form'); ?></span>
@@ -44,25 +39,11 @@ wp_nonce_field('hf-styles-nonce', 'hashform_styles_nonce');
     </div>
 
     <?php
-    /*
-     * A template that has never been published is offered Publish; one that has
-     * is offered Update. Read from the template itself rather than from the
-     * query string, which only carried the answer while this panel lived inside
-     * the post editor.
-     */
     $hashform_is_published = ($post_id && 'publish' === get_post_status($post_id));
     ?>
     <div class="hf-footer">
         <?php
-        /*
-         * The buttons, and nothing else. This used to be wrapped in #submitpost
-         * > #major-publishing-actions > #publishing-action with a hidden
-         * original_publish field - the post editor's submit box, reproduced
-         * around a form that is not the post editor's and saved over ajax. The
-         * ids it brought were styled through a .post-type-hashform-styles body
-         * class that only exists on a post screen, so on the builder they drew
-         * nothing at all.
-         */
+        // Plain buttons, not the post editor's submit box; the template saves over ajax.
         ?>
         <div class="hf-preview-close">
             <a class="button button-secondary" href="<?php echo esc_url(admin_url('edit.php?post_type=hashform-styles')); ?>"><?php esc_html_e('Close', 'hash-form'); ?></a>

@@ -43,7 +43,7 @@ class HashFormBuilder {
     }
 
     public function includes() {
-        include HASHFORM_PATH . 'admin/forms/sanitization.php';
+        include HASHFORM_PATH . 'includes/sanitization.php';
     }
 
     public function add_menu() {
@@ -116,8 +116,7 @@ class HashFormBuilder {
                 $form_table = new HashFormListing();
                 $form_status = HashFormHelper::get_var('status', 'sanitize_title', 'published');
 
-                // Prepared up front so the screen can tell an empty list from
-                // a search that found nothing before deciding what to print.
+                // Prepared early so an empty list can be told apart from an empty search.
                 $form_table->prepare_items();
                 $is_searching = '' !== (string) HashFormHelper::get_var('s');
                 ?>
@@ -129,7 +128,7 @@ class HashFormBuilder {
                         <?php
                         $form_table->views();
 
-                        // A search box over nothing is just noise on a first run.
+                        // No search box until there is something to search.
                         if ($form_table->has_items() || $is_searching) {
                             $form_table->search_box(esc_html__('Search', 'hash-form'), 'search');
                         }
@@ -144,8 +143,7 @@ class HashFormBuilder {
     }
 
     /**
-     * Totals for the header bar. Empty on a brand new install, where zeroes
-     * say nothing.
+     * Totals for the header bar. Empty on a new install.
      */
     private static function list_stats() {
         $stats = HashFormListing::get_stats();
@@ -178,7 +176,7 @@ class HashFormBuilder {
     }
 
     /**
-     * The bar across the top of the Forms list, through the shared renderer.
+     * Header bar for the Forms list.
      */
     public function list_header() {
         if (!self::is_list_view()) {
@@ -203,8 +201,7 @@ class HashFormBuilder {
 
         $name = trim(HashFormHelper::get_post('name'));
 
-        // The dialog checks this too, but a form with no name is only ever
-        // reachable as "No Title" in the list, so do not create one.
+        // Refuse an empty name; the dialog checks this too.
         if ('' === $name) {
             echo wp_json_encode(array('error' => esc_html__('Please give the form a name.', 'hash-form')));
             wp_die();
@@ -286,11 +283,7 @@ class HashFormBuilder {
         $message = '<span class="mdi mdi-check-circle"></span>' . esc_html__('Form was successfully updated.', 'hash-form');
 
         if (defined('DOING_AJAX')) {
-            /*
-             * The span is allowed a class: without one, kses stripped it and
-             * the tick that goes with the message never reached the page —
-             * only the empty element it should have been drawn in.
-             */
+            // span needs its class allowed or kses drops the check icon.
             wp_die(wp_kses($message, array(
                 'a' => array('href' => array(), 'target' => array()),
                 'span' => array('class' => array()),
@@ -413,11 +406,7 @@ class HashFormBuilder {
             $form_id = $wpdb->insert_id;
             $map = HashFormFields::duplicate_fields($id, $form_id);
 
-            /*
-             * The rules were written above with the source form's field ids,
-             * which the copy does not have. Rewritten here, once the copy's own
-             * fields exist and the two can be matched up.
-             */
+            // The copy's fields now exist, so point its formulas and rules at the new ids.
             self::remap_calculation_formulas($form_id, $map);
 
             if (!empty($settings['condition_action'])) {
@@ -456,12 +445,6 @@ class HashFormBuilder {
         $form_title = $form->name;
         ?>
         <?php
-        /*
-         * Two rows: what is being edited and what can be done to it on top,
-         * where you are underneath. A single row had the form name, four tabs
-         * and four actions competing for the same line, which left no room for
-         * a long form title and no hierarchy between them.
-         */
         $status = isset($form->status) ? $form->status : 'published';
         $is_published = ('published' === $status);
         ?>
@@ -570,12 +553,7 @@ class HashFormBuilder {
     }
 
     /**
-     * The forms a visitor could actually be shown.
-     *
-     * get_all_forms() means all of them, trashed included, which is right for
-     * anything looking back at what exists. It is wrong for a chooser: every
-     * dropdown that offers a form to display was listing forms their owner had
-     * thrown away, and picking one rendered it on the page.
+     * Forms a visitor can be shown. Unlike get_all_forms(), excludes trashed forms.
      *
      * @return array
      */
@@ -592,12 +570,7 @@ class HashFormBuilder {
         global $wpdb;
 
         /**
-         * Supply a form without one being stored.
-         *
-         * Return anything other than null and the query below is skipped. It is
-         * what lets a form be rendered from a definition held in memory - the
-         * template demos read their forms out of a json file rather than
-         * writing one row per template into the database just to look at it.
+         * Supply a form without one being stored. Return non-null to skip the database query.
          *
          * @param object|null $form null to load it as usual.
          * @param int         $id
@@ -765,14 +738,8 @@ class HashFormBuilder {
     /**
      * Fields a rule can point at.
      *
-     * Layout fields hold no answer, so they can neither be watched nor be
-     * usefully shown and hidden. The trigger side excludes a little more:
-     * name and address post several values under one id, which the comparison
-     * has no way to pick between.
-     *
-     * This list used to be written out four times — twice in the panel and
-     * twice in the AJAX handler that appends a row — and the copies had
-     * already drifted.
+     * Layout fields hold no answer. The trigger side also excludes name and
+     * address, which post several values under one id.
      *
      * @param object[] $fields Form fields.
      * @param bool     $trigger Whether this is the watched side of a rule.
@@ -782,9 +749,7 @@ class HashFormBuilder {
         $skip = array('heading', 'paragraph', 'separator', 'spacer', 'image', 'captcha');
 
         if ($trigger) {
-            // html and multi_step post nothing, so a rule watching one could
-            // never match. They stay available on the other side, where a
-            // rule can still show and hide them.
+            // html and multi_step post nothing, so cannot be watched; they can still be shown and hidden.
             $skip = array_merge($skip, array('name', 'address', 'html', 'multi_step'));
         }
 
@@ -800,11 +765,7 @@ class HashFormBuilder {
     }
 
     /**
-     * One rule, as shown in the Conditional Logic panel.
-     *
-     * The panel and the AJAX handler that appends a row both render through
-     * here, so a newly added rule cannot look different from a saved one —
-     * which it did: the saved rows carried untranslated English labels.
+     * One rule row in the Conditional Logic panel. Also used by the AJAX add-row handler.
      *
      * @param object[] $fields Form fields.
      * @param array    $row    Saved rule, or empty for a new one.
@@ -880,13 +841,9 @@ class HashFormBuilder {
     }
 
     /**
-     * Discards conditional logic rules that name no fields.
+     * Discard conditional logic rules that name no fields. The panel saves over AJAX, so browser validation never runs.
      *
-     * The panel is saved over AJAX from serializeArray(), so the browser's
-     * own required checks never run — a rule left half-filled used to be
-     * stored, then read back on every page load as a rule that can never
-     * match. The five columns are parallel arrays, so they are rebuilt
-     * together or they fall out of step.
+     * The five columns are parallel arrays and must be rebuilt together.
      *
      * @param array $vars Posted settings.
      * @return array
@@ -937,16 +894,7 @@ class HashFormBuilder {
     /**
      * Point a copied form's rules at the copy's own fields.
      *
-     * A rule stores field ids. Duplicating a form, importing one, or starting
-     * from a template all build fresh fields with fresh ids, and the rules
-     * were carried across untouched - so every one of them named a field that
-     * did not exist on the new form. Nothing was shown or hidden, and the
-     * Conditional Logic panel offered "Select a field" for both ends.
-     *
-     * A rule whose ends cannot both be mapped is dropped rather than kept
-     * pointing at a stranger: the id it holds may since have been handed to an
-     * unrelated field on another form, and a rule that silently governs the
-     * wrong field is worse than no rule.
+     * A rule whose ends cannot both be mapped is dropped: the old id may now belong to an unrelated field.
      *
      * @param array $settings The new form's settings, conditions included.
      * @param array $map      old field id => new field id.
@@ -993,15 +941,7 @@ class HashFormBuilder {
     }
 
     /**
-     * Point a copied form's calculation formulas at the copy's own fields.
-     *
-     * A formula refers to its inputs as #field_id_12, and a repeater column as
-     * #repeater_12_0 - field ids again, with the same problem the show and hide
-     * rules had: copy the form and every tag names a field that is not there,
-     * so the total silently stops adding up.
-     *
-     * Runs over the new form's own fields once they exist, so it is given the
-     * form to walk rather than the values to rewrite.
+     * Point a copied form's calculation formulas (#field_id_12, #repeater_12_0) at the copy's own fields.
      *
      * @param int   $form_id The form that has just been built.
      * @param array $map     old field id => new field id.
@@ -1025,9 +965,7 @@ class HashFormBuilder {
 
             $formula = $options['formula'];
 
-            // Both tag shapes in one pass, so a formula that mixes them cannot
-            // half-update. The id is looked up as it is met; anything the map
-            // does not know is left exactly as it was rather than guessed at.
+            // Both tag shapes in one pass; ids missing from the map are left as they are.
             $updated = preg_replace_callback(
                     '/#(field_id|repeater)_(\d+)(_\d+)?/',
                     function ($m) use ($map) {
@@ -1059,16 +997,9 @@ class HashFormBuilder {
     }
 
     /**
-     * Which fields a form's rules touch, and what each rule says.
+     * Fields a form's rules touch, with a description of each rule. Cached per request.
      *
-     * A rule names two fields: compare_from is the one shown or hidden, and
-     * compare_to is the one whose answer decides it. Both ends are worth
-     * marking on the canvas - a field that disappears for some visitors, and a
-     * field that is doing the deciding - so this returns an entry for each,
-     * keyed by field id.
-     *
-     * Read once per form and held for the request, because it is called from
-     * inside the loop that renders every field.
+     * compare_from is the field shown or hidden; compare_to is the field whose answer decides it.
      *
      * @param int $form_id
      * @return array field id => array( 'target' => string[], 'trigger' => string[] )
@@ -1102,18 +1033,12 @@ class HashFormBuilder {
             $target = isset($row['compare_from']) ? (int) $row['compare_from'] : 0;
             $trigger = isset($row['compare_to']) ? (int) $row['compare_to'] : 0;
 
-            // A half-filled rule does nothing on the front end, so it says
-            // nothing here either.
+            // A half-filled rule does nothing on the front end.
             if (!$target || !$trigger) {
                 continue;
             }
 
-            /*
-             * Raw strings here, escaped where they are printed. Building them
-             * with esc_html__() turned the quotes into entities before the
-             * sentence was assembled, which then had to survive a second pass
-             * to come out right.
-             */
+            // Raw strings; escaped where they are printed.
             $is_show = !isset($row['condition_action']) || 'hide' !== $row['condition_action'];
             $operator = isset($operators[$row['compare_condition']])
                     ? strtolower($operators[$row['compare_condition']])
@@ -1123,9 +1048,7 @@ class HashFormBuilder {
             $target_name = isset($names[$target]) ? $names[$target] : $unknown;
             $value = isset($row['compare_value']) ? $row['compare_value'] : '';
 
-            // "Show"/"Hide" name the rule on the settings panel, where they are
-            // an instruction. Here they describe a field, so they need the
-            // participle: "Shown when ...", not "Show when ...".
+            // Describes a field, so the participle: "Shown when ...", not "Show when ...".
             $hints[$target]['target'][] = $is_show
                     /* translators: 1: the field being watched, 2: the comparison, 3: the value compared against. */
                     ? sprintf(__('Shown when "%1$s" %2$s "%3$s"', 'hash-form'), $trigger_name, $operator, $value)
@@ -1161,15 +1084,10 @@ class HashFormBuilder {
         $sizeLimit = HashFormHelper::get_var('sizeLimit');
         $upload_dir = wp_upload_dir();
 
-        // One shared list, defined in admin/forms/sanitization.php, so this
-        // and the field's own sanitizer cannot disagree about a format.
+        // Shared with the field sanitizer (includes/sanitization.php). HashFormFileUploader also applies get_allowed_mime_types().
         $default_allowed_extenstions = hashform_allowed_file_extensions();
 
-        // get_allowed_mime_types() is applied again inside HashFormFileUploader,
-        // so anything this site has not actually enabled is still refused.
-
-        // The request controls the shape of this value; a scalar would emit a
-        // warning into the middle of the JSON response below.
+        // A scalar here would emit a warning into the JSON response.
         $allowedExtensions = is_array($allowedExtensions) ? $allowedExtensions : array();
 
         $filtered_allowed_extenstions = array();
@@ -1179,33 +1097,17 @@ class HashFormBuilder {
             }
         }
 
-        /*
-         * Tested after filtering rather than before. A request naming only
-         * extensions this plugin does not recognise used to satisfy a check on
-         * the raw list and then hand the uploader an empty one, which it read
-         * as "no restriction configured".
-         *
-         * Answered rather than dropped: an empty body left the uploader
-         * waiting on a response it could not parse, so the file appeared
-         * to hang instead of failing.
-         */
+        // Checked after filtering: an empty list reads as "no restriction" to the uploader.
         if (!$filtered_allowed_extenstions) {
             wp_send_json(array('error' => esc_html__('This type of file is not allowed.', 'hash-form')));
         }
 
-        // Never trust the request for the size limit beyond what the
-        // server would accept anyway.
+        // Cap at what the server accepts.
         $sizeLimit = min(absint($sizeLimit), wp_max_upload_size());
 
         $uploader = new HashFormFileUploader($filtered_allowed_extenstions, $sizeLimit);
 
-        /*
-         * Anything the upload machinery prints - a php notice from a host
-         * with a hardened open_basedir, a warning out of the mime sniffing -
-         * would land in front of the json and leave the browser unable to
-         * parse the reply. Whatever gets emitted is captured and dropped so
-         * the response is only ever the json below.
-         */
+        // Capture stray notices so the response stays valid JSON.
         ob_start();
         $result = $uploader->handleUpload($upload_dir['basedir'] . HASHFORM_UPLOAD_DIR, false, $upload_dir['baseurl'] . HASHFORM_UPLOAD_DIR);
         $stray_output = ob_get_clean();
@@ -1227,9 +1129,7 @@ class HashFormBuilder {
                 $upload_dir = wp_upload_dir();
                 $temp_dir = $upload_dir['basedir'] . HASHFORM_UPLOAD_DIR . '/temp';
 
-                // Unlike wp_delete_file(), this confirms the resolved path sits
-                // inside the temp directory and returns a usable bool on every
-                // supported WordPress version.
+                // Unlike wp_delete_file(), confirms the path is inside the temp directory.
                 if (wp_delete_file_from_directory($temp_dir . '/' . $file, $temp_dir)) {
                     die('success');
                 }
@@ -1243,7 +1143,6 @@ class HashFormBuilder {
         $upload_dir = wp_upload_dir();
         $temp_dir = $upload_dir['basedir'] . HASHFORM_UPLOAD_DIR . '/temp/';
 
-        // Remove old temp files
         if (is_dir($temp_dir) and ($dir = opendir($temp_dir))) {
             while (($file = readdir($dir)) !== false) {
                 $temp_file_path = $temp_dir . $file;
@@ -1347,8 +1246,7 @@ class HashFormBuilder {
 
 
     public function register_translation_strings() {
-        // Without WPML there is nothing to register; skip the full forms +
-        // fields scan that would otherwise run on every request.
+        // Nothing to register without WPML; skip the forms and fields scan.
         if (!has_action('wpml_register_single_string')) {
             return;
         }

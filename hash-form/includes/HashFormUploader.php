@@ -19,14 +19,11 @@ class HashFormUploadedFileXhr {
             require_once(ABSPATH . '/wp-admin/includes/file.php');
             // Attempt direct connection; if it fails, this might prompt for credentials elsewhere
             if (!WP_Filesystem()) {
-                // Log error or handle failure to initialize filesystem
-                // error_log('Failed to initialize WP_Filesystem.');
                 return false;
             }
         }
 
         // Read the raw input stream into memory
-        // (This replaces the initial fopen("php://input"), stream_copy_to_stream, and fclose($input))
         $raw_input_data = file_get_contents('php://input');
 
         if ($raw_input_data === false) {
@@ -35,25 +32,19 @@ class HashFormUploadedFileXhr {
 
         $realSize = strlen($raw_input_data);
 
-        // Perform size validation
         if ($realSize != $this->getSize()) {
-            // Clear the data from memory
             $raw_input_data = null;
             return false;
         }
 
-        // Write data to the target file using WP_Filesystem
-        // (This replaces tmpfile(), fseek(), fopen($path), stream_copy_to_stream, and fclose($target))
         $result = $wp_filesystem->put_contents(
             $path,
             $raw_input_data,
             FS_CHMOD_FILE // Optional: Sets recommended file permissions (e.g., 0644)
         );
 
-        // Clear the data from memory after writing
         $raw_input_data = null;
 
-        // Return success status
         return $result; // put_contents returns true on success, false on failure.
     }
 
@@ -78,7 +69,6 @@ class HashFormFileUploader {
 
     function __construct(array $allowedExtensions = array(), $sizeLimit = 10485760) {
         $allowedExtensions = array_map('strtolower', $allowedExtensions);
-        //$unallowed_extensions = array('php', 'exe', 'ini', 'perl');
         $exts = array_keys(get_allowed_mime_types());
 
         $available_exts = array();
@@ -175,20 +165,13 @@ class HashFormFileUploader {
             return array('error' => esc_html__('File is too large', 'hash-form'));
         }
 
-        /*
-         * The visitor names the file, so the name is scrubbed before it is
-         * ever used to build a path. pathinfo() already drops any directory
-         * part, and sanitize_file_name() takes care of the rest: control
-         * characters, the shell and url metacharacters, the leading dots that
-         * would hide the file, and the double extensions ("shell.php.jpg")
-         * that some servers happily hand back to mod_php.
-         */
+        // The visitor names the file: sanitize_file_name() strips path parts, metacharacters,
+        // leading dots and double extensions such as "shell.php.jpg".
         $pathinfo = pathinfo(sanitize_file_name(wp_basename($this->file->getName())));
         $filename = isset($pathinfo['filename']) ? $pathinfo['filename'] : '';
         $ext = isset($pathinfo['extension']) ? $pathinfo['extension'] : '';
 
-        // Nothing usable survived the scrub, or the name was only an
-        // extension. Rather than write a dotfile, give it one of our own.
+        // Nothing usable survived, or the name was only an extension: generate one rather than write a dotfile.
         if ('' === trim($filename)) {
             $filename = 'file-' . wp_generate_password(8, false, false);
         }
@@ -201,12 +184,7 @@ class HashFormFileUploader {
             return array('error' => esc_html__('This type of file is not allowed.', 'hash-form'));
         }
 
-        /*
-         * An empty list means nothing is permitted, not that everything is.
-         * This class is only ever constructed with a list the caller has
-         * already filtered, so an empty one is a caller that ended up with
-         * no usable extensions rather than one asking for no restriction.
-         */
+        // An empty list means nothing is permitted, not everything.
         if (!$this->allowedExtensions) {
             return array('error' => esc_html__('This type of file is not allowed.', 'hash-form'));
         }
@@ -232,13 +210,7 @@ class HashFormFileUploader {
             );
         }
 
-        /*
-         * Everything above this point trusts the extension the visitor typed.
-         * Now that the bytes are on disk they can be asked what they actually
-         * are, which is the only check a crafted upload cannot talk its way
-         * past. A file whose contents do not match its name is removed again
-         * rather than left sitting in a web-reachable directory.
-         */
+        // With the bytes on disk, check what they actually are; a mismatch is deleted.
         $content_error = $this->verifyFileContents($stored_path, $stored_name);
 
         if ($content_error) {
@@ -258,8 +230,7 @@ class HashFormFileUploader {
      *
      * @param string $path Absolute path to the freshly written file.
      * @param string $name The name it was stored under.
-     * @return string Empty when the file is acceptable, otherwise the message
-     *                to show the visitor.
+     * @return string Empty when acceptable, otherwise the message to show the visitor.
      */
     protected function verifyFileContents($path, $name) {
         if (!file_exists($path)) {
@@ -268,12 +239,7 @@ class HashFormFileUploader {
 
         $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
 
-        /*
-         * Reads the file's magic bytes where the server can (finfo), and
-         * compares the type it finds against the type the extension claims.
-         * On a host without fileinfo it falls back to the extension alone,
-         * which is no worse than the check that used to be here.
-         */
+        // Compares the file's magic bytes (finfo, where available) with the type its extension claims.
         $check = wp_check_filetype_and_ext($path, $name);
 
         if (empty($check['ext']) || empty($check['type'])) {
@@ -296,12 +262,8 @@ class HashFormFileUploader {
             }
         }
 
-        /*
-         * Belt and braces for the svg and html-ish types a site may have
-         * deliberately allowed: refuse anything carrying a php open tag, so
-         * a permissive mime list cannot become code execution on a server
-         * that ignores the .htaccess written alongside.
-         */
+        // Refuse anything with a PHP open tag, in case the site allows SVG or HTML-like types and the
+        // server ignores the .htaccess.
         $head = file_get_contents($path, false, null, 0, 8192);
 
         if (false !== $head && preg_match('/<\?php|<\?=/i', $head)) {
@@ -342,12 +304,7 @@ class HashFormFileUploader {
             $wp_filesystem->mkdir($path . '/temp', 0755);
         }
 
-        /*
-         * Written whenever it is absent rather than only alongside a fresh
-         * mkdir. A directory left behind by a version that did not write these
-         * rules would otherwise never receive them, and this file is what stops
-         * the handlers running in here.
-         */
+        // Written whenever missing, including in existing directories: it stops script handlers running here.
         if (is_dir($path) && !file_exists($path . '/.htaccess')) {
             $wp_filesystem->put_contents($path . '/.htaccess', $htaccess);
         }

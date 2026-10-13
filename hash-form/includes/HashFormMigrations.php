@@ -3,33 +3,14 @@
 defined('ABSPATH') || die();
 
 /**
- * Ordered, resumable schema migrations.
+ * Ordered, resumable schema migrations. Each step is named, idempotent and recorded as soon as it succeeds.
  *
- * Before this existed, each schema change carried its own boolean option -
- * hashform_entries_read_migrated, hashform_options_noautoload,
- * hashform_transactions_has_status and so on - so there was no order between
- * them, no record of a partial run, and no single answer to "what shape is
- * this database in".
- *
- * A step here is named, ordered, and idempotent. Each one is recorded the
- * moment it succeeds, so a run interrupted half way through - a timeout on a
- * large table is the usual way - resumes at the step it stopped on rather
- * than starting again.
- *
- * This does not replace HashFormCreateTable. dbDelta still owns creating
- * tables and adding columns; this owns everything dbDelta cannot express or
- * cannot be trusted with, which in practice means indexes and column types.
- *
- * The existing per-change flags are deliberately left where they are. They
- * are idempotent and the code that reads them still works; rewriting that to
- * be tidier would risk a migration re-running on a live site for no gain.
+ * dbDelta (HashFormCreateTable) still creates tables and adds columns; this handles indexes and column types.
  */
 class HashFormMigrations {
 
     /**
-     * Bump when a step is added. Steps themselves are keyed by name, so the
-     * number is a fast "is there anything to do" check, not the source of
-     * truth about what has run.
+     * Bump when a step is added. Only a quick "anything to do" check; completed steps are tracked by name.
      */
     const VERSION = 2;
 
@@ -44,12 +25,7 @@ class HashFormMigrations {
     const LOCK_TTL = 10 * MINUTE_IN_SECONDS;
 
     public function __construct() {
-        /*
-         * Schema changes belong to an administrator's request, WP-CLI or
-         * cron - never to a visitor loading a page with a form on it. A
-         * front-end request must not pay for an ALTER, and must not be the
-         * thing that gets killed half way through one.
-         */
+        // Admin requests, WP-CLI or cron only: a front-end visitor must never run an ALTER.
         add_action('admin_init', array(__CLASS__, 'maybe_migrate'));
 
         if (defined('WP_CLI') && WP_CLI) {
@@ -58,19 +34,13 @@ class HashFormMigrations {
     }
 
     /**
-     * Every step, in the order they must run.
-     *
-     * Steps are named rather than handed over as callables: they are internal
-     * to this class, and a callable pointing at a private method only works
-     * because of where it happens to be invoked from. Naming them keeps the
-     * dispatch explicit and the methods properly private.
+     * Every step, in the order they must run. Named rather than callables so the methods stay private.
      *
      * @return array key => method name on this class
      */
     public static function steps() {
         return array(
-            // The entries list orders by created_at within a status. Without
-            // this every view of the screen scans the table.
+            // The entries list orders by created_at within a status.
             'entries_status_created' => 'step_entries_status_created',
 
             // Filtering to one form, still ordered by date.
@@ -80,19 +50,16 @@ class HashFormMigrations {
             'entries_status_read' => 'step_entries_status_read',
             'entries_status_starred' => 'step_entries_status_starred',
 
-            // Every read of an answer looks up an entry and a field together,
-            // but the table only had them indexed separately.
+            // Answers are read by entry and field together.
             'entry_meta_item_field' => 'step_entry_meta_item_field',
 
             // The forms dashboard filters by status.
             'forms_status' => 'step_forms_status',
 
-            // An IP is at most 45 characters; storing it as text means it
-            // cannot be indexed and costs an off-page read to compare.
+            // An IP is at most 45 characters, and a text column cannot be indexed.
             'entries_ip_varchar' => 'step_entries_ip_varchar',
 
-            // A scheduled event left behind by an older version, which no
-            // code has answered for some time.
+            // A leftover scheduled event that nothing handles.
             'clear_stale_payment_cron' => 'step_clear_stale_payment_cron',
         );
     }
@@ -111,12 +78,7 @@ class HashFormMigrations {
             return false;
         }
 
-        /*
-         * Two admins loading wp-admin at the same moment would otherwise both
-         * start migrating. The steps are idempotent, so the worst case is
-         * wasted work rather than damage, but an ALTER running twice on a
-         * large table is worth avoiding.
-         */
+        // Lock so two simultaneous admin requests do not both run an ALTER.
         if (get_transient(self::LOCK)) {
             return false;
         }
@@ -136,11 +98,7 @@ class HashFormMigrations {
     }
 
     /**
-     * Run every step not already recorded as done.
-     *
-     * A step that fails stops the run without recording itself, so the next
-     * request picks up from there rather than skipping past a change the rest
-     * may depend on.
+     * Run every step not already recorded as done. A failing step stops the run unrecorded, so the next request retries it.
      *
      * @return bool Whether every outstanding step completed.
      */
@@ -229,11 +187,7 @@ class HashFormMigrations {
     }
 
     /**
-     * Narrow entries.ip from text to varchar(45).
-     *
-     * Refuses rather than truncates: if anything stored is longer than an
-     * IPv6 address can be, that is a sign the column is being used for
-     * something else and silently cutting it would destroy data.
+     * Narrow entries.ip from text to varchar(45). Refuses rather than truncates if any stored value is longer.
      */
     private static function step_entries_ip_varchar() {
         global $wpdb;
@@ -268,13 +222,7 @@ class HashFormMigrations {
     }
 
     /**
-     * Remove a cron event nothing listens for any more.
-     *
-     * hashform_pro_payments_maintenance is scheduled on sites that ran an
-     * earlier build, but no code registers or handles it: it fires daily,
-     * finds no callback, and reschedules itself forever. Clearing it is not a
-     * schema change, but it is exactly the kind of one-off tidy-up that needs
-     * to happen once, in order, and be recorded - which is what this is for.
+     * Remove hashform_pro_payments_maintenance, a daily cron event nothing handles.
      *
      * @return bool
      */
@@ -296,12 +244,7 @@ class HashFormMigrations {
      * ------------------------------------------------------------------- */
 
     /**
-     * Add an index if it is not already there.
-     *
-     * Identifiers cannot be passed through $wpdb->prepare, so every one is
-     * checked against a strict pattern before it reaches a query. They are
-     * all literals defined in this file, but a typo should fail loudly here
-     * rather than become part of a statement.
+     * Add an index if it is not already there. Identifiers are validated, since prepare() cannot bind them.
      *
      * @param string $table   Unprefixed table name.
      * @param string $name    Index name.
@@ -367,8 +310,7 @@ class HashFormMigrations {
 
         $full = $wpdb->prefix . $table;
 
-        // SHOW INDEX takes the table as an identifier but the key name as a
-        // value, so that half is prepared.
+        // Only the table name reaches the query; the key name is matched below.
         // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $full is $wpdb->prefix plus a table name already checked by table_exists().
         $found = $wpdb->get_results("SHOW INDEX FROM `{$full}`", ARRAY_A);
 
@@ -440,11 +382,7 @@ class HashFormMigrations {
      * ------------------------------------------------------------------- */
 
     /**
-     * Forget that migrations have run, without touching the schema.
-     *
-     * Only for tests and for a support case where a step has to be re-run;
-     * every step checks the database before changing it, so re-running is
-     * safe by construction.
+     * Forget that migrations have run, without touching the schema. Safe because every step checks the database first.
      */
     public static function reset_progress() {
         delete_option(self::PROGRESS);

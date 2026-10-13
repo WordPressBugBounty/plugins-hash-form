@@ -7,8 +7,6 @@ class HashFormFieldCaptcha extends HashFormFieldType {
 
     protected function field_settings_for_type() {
         return array(
-            // No 'captcha_size' here: nothing reads that key, and the size is
-            // a setting of its own rather than something field_attrs() prints.
             'required' => false,
             'invalid' => true,
             'default' => false,
@@ -17,8 +15,7 @@ class HashFormFieldCaptcha extends HashFormFieldType {
     }
 
     /**
-     * Whether the widget is the visible checkbox kind, which is what the size
-     * and theme settings describe. A v3 widget draws nothing.
+     * Whether the widget is the visible v2 checkbox; size and theme apply only to it.
      */
     public static function is_v2() {
         $settings = HashFormSettings::get_settings();
@@ -27,10 +24,7 @@ class HashFormFieldCaptcha extends HashFormFieldType {
     }
 
     /**
-     * The sizes and themes reCAPTCHA v2 accepts.
-     *
-     * Both are written into data attributes the Google script reads, so a
-     * value it does not know leaves the widget on its own defaults.
+     * The sizes reCAPTCHA v2 accepts.
      */
     public static function captcha_sizes() {
         return array(
@@ -122,8 +116,6 @@ class HashFormFieldCaptcha extends HashFormFieldType {
     protected function captcha_theme() {
         $theme = isset($this->field['captcha_theme']) ? $this->field['captcha_theme'] : '';
 
-        // Written out even when empty before, which is not a theme the script
-        // recognises.
         return array_key_exists($theme, self::captcha_themes()) ? $theme : 'light';
     }
 
@@ -165,12 +157,7 @@ class HashFormFieldCaptcha extends HashFormFieldType {
     }
 
     public function validate($args) {
-        /*
-         * Without a site key no widget is rendered, so there is no response to
-         * verify. Failing validation here meant a form carrying this field
-         * could never be submitted, and the error pointed at a field that was
-         * not on the page. The field is skipped instead.
-         */
+        // Without a site key no widget is rendered, so there is nothing to verify.
         if (!self::should_show_captcha()) {
             return array();
         }

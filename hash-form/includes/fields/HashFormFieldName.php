@@ -147,14 +147,7 @@ class HashFormFieldName extends HashFormFieldType {
                 ?>
 
                 <?php
-                /*
-                 * Each part of the name needs a name of its own. The visible
-                 * caption under the box is a plain div, so on its own the
-                 * control was announced only as whatever the whole field is
-                 * called - "Name, edit text" three times over, with no way to
-                 * tell first from last. Prefer the site's own wording for the
-                 * part and fall back to the built-in caption.
-                 */
+                // Label each part "<field> <part>" for screen readers; the caption below is a plain div.
                 $sub_label = ('' !== trim((string) $label)) ? $label : $sub_field['label'];
                 $sub_label = trim((string) $sub_label);
                 $aria_label = $sub_label ? $field['name'] . ' ' . $sub_label : $field['name'];

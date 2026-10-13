@@ -1,16 +1,13 @@
 /**
  * Form builder.
  *
- * Loaded after admin-style.css so these rules win, letting the builder move to
- * the token system without unpicking 2,600 lines of legacy CSS in one go. The
- * remaining screens follow the same pattern as they are reworked.
+ * Loaded after admin-style.css so these rules win over the legacy ones.
  */
 
 /* ---------- Shell ---------- */
 
-/* The workspace sits a shade darker than the panels on it, which is what lets
-   the header, sidebar and canvas read as separate surfaces without needing a
-   border between every pair. */
+/* A shade darker than the panels, so header, sidebar and canvas read as
+   separate surfaces without borders. */
 .hf-content {
     --hf-workspace: #eef1f6;
     background: var(--hf-workspace);
@@ -73,9 +70,7 @@
 
 /* ---------- Sidebar tabs ---------- */
 
-/* A segmented control rather than underlined tabs: it reads as one component,
-   matches the language of the header, and makes the active panel obvious
-   without a second border under an already bordered sidebar. */
+/* A segmented control rather than underlined tabs. */
 .hf-content .hf-fields-tabs {
     background: var(--hf-surface);
     border-bottom: 1px solid var(--hf-border);
@@ -189,9 +184,8 @@
 
 /* ---------- Panel controls ---------- */
 
-/* WordPress gives selects a line-height of their own, which our min-height
-   does not override — so a select came out 43px against a 34px input sitting
-   right beside it. Matching the line-height puts them on the same height. */
+/* WordPress gives selects their own line-height, which min-height does not
+   override; matching it keeps selects level with the inputs beside them. */
 .hf-content .hf-form-row select,
 .hf-content .hf-settings-row select,
 .hf-content .hf-fields-settings select {
@@ -199,19 +193,15 @@
     min-height: 34px;
 }
 
-/* Rows in these panels are grid children, so the grid's own gap already
-   separates them; the inherited margin was adding a second gap on top and
-   leaving about 31px between every field. */
+/* The grid gap already separates these rows, so drop the inherited margin. */
 .hf-content .hf-grid-container > .hf-form-row {
     margin-bottom: 0;
 }
 
 /* ---------- Settings tab ---------- */
 
-/* Every field in these sections is marked hf-grid-3 — half of the six column
-   grid — and each sits alone on its row, so in a 900px card each input had an
-   equal patch of nothing beside it. The card narrows to a readable measure and
-   the fields fill it. */
+/* Each field sits alone on its hf-grid-3 row, so the card narrows to a
+   readable measure and the fields fill it. */
 .hf-content .hf-form-wrap:has(#hf-settings-form) {
     max-width: 760px;
 }
@@ -220,8 +210,7 @@
     grid-column: span 6;
 }
 
-/* Adding another recipient is a secondary action; it was styled as the
-   screen's primary button. */
+/* Adding another recipient is a secondary action. */
 .hf-content #hf-settings-form .hf-add-email {
     background: var(--hf-surface);
     border: 1px solid var(--hf-border-strong);
@@ -249,8 +238,7 @@
     padding: var(--hf-space-2);
 }
 
-/* A saturated red circle for every row read as an error state. Quiet until
-   you reach for it, destructive when you do. */
+/* Quiet until hovered, destructive when it is. */
 .hf-content .hf-delete-email-row {
     background: none;
     border-radius: var(--hf-radius-sm);
@@ -267,7 +255,6 @@
     color: var(--hf-danger);
 }
 
-/* Was inline style="color:red" on a description paragraph. */
 .hf-content .hf-settings-note {
     background: #fcf5e6;
     border-left: 3px solid var(--hf-warning);
@@ -279,8 +266,7 @@
     padding: var(--hf-space-2) var(--hf-space-3);
 }
 
-/* The tag picker sat right-aligned above one field and left-aligned below
-   another; it now always follows its label on the same line. */
+/* The tag picker follows its label on the same line. */
 .hf-content #hf-settings-form .hf-label-with-attr {
     align-items: center;
     display: flex;
@@ -342,8 +328,7 @@
 }
 
 .hf-content .hf-style-mode-input {
-    /* Native radios draw themselves in the admin colour scheme, which is the
-       one thing on this screen that still was not the brand accent. */
+    /* Brand accent rather than the admin color scheme. */
     accent-color: var(--hf-accent);
     flex: 0 0 auto;
     margin: 2px 0 0;
@@ -384,8 +369,7 @@
     margin: 0 0 var(--hf-space-3);
 }
 
-/* A secondary action, styled like the rest of the sidebar rather than left as
-   a bare wp-admin button in the admin colour scheme. */
+/* A secondary action, styled like the rest of the sidebar. */
 .hf-content .hf-style-template-cta .button {
     background: var(--hf-surface);
     border: 1px solid var(--hf-border-strong);
@@ -419,11 +403,8 @@
 
 /* ---------- Style tab: preview canvas ---------- */
 
-/* The same canvas header the builder carries, so the two tabs read as one
-   surface. The builder pulls it out over the wrap's 24px padding with
-   negative margins; this panel is deliberately full bleed so the preview
-   reports a true width, so here the header just sits at the top of the card
-   and keeps its own padding. */
+/* The builder's canvas header at the top of the card; this panel is full
+   bleed so the preview reports a true width. */
 .hf-content .hf-style-form-panel .hf-canvas-header {
     margin: 0;
 }
@@ -432,9 +413,8 @@
     min-height: 200px;
 }
 
-/* The style editor's demo form is markup in the page rather than the Style
-   tab's width-accurate iframe, so it can have room to breathe without
-   misrepresenting anything. */
+/* The demo form is in-page markup rather than the width-accurate iframe, so
+   it can take padding. */
 .hf-content .hf-style-form-panel .hf-template-preview {
     padding: var(--hf-space-5, 24px);
     height: calc(100% - 55px);
@@ -442,11 +422,8 @@
 
 /* ---------- Payment field preview ---------- */
 
-/* Every enabled gateway is a method tile, and with twenty of them switched on
-   the field ran the height of the canvas and pushed the rest of the form out
-   of view. The tiles are what gets columned — putting the grid on the
-   container instead spread the summary card, the tiles and the secure note
-   into three columns of their own, which is not the field the visitor sees. */
+/* The method tiles are columned (not the container) so a form with many
+   gateways stays short. */
 .hf-content .hf-editor-field-elements .hf-payment-container {
     display: block;
 }
@@ -479,16 +456,9 @@
 
 /* ---------- Builder header ---------- */
 
-/* Two rows: identity and actions on top, navigation beneath. The old header
-   put a form name, four tabs and four buttons on one line, all uppercase, so
-   nothing had priority and a long form name had nowhere to go.
-   admin-style.css still carries the single-row rules, so these reset the
-   parts that would otherwise fight it. */
-/* The chrome floats above a tinted page as rounded panels, so depth does the
-   separating rather than a grid of hairlines.
-   Not sticky: the builder shell gives the sidebar and the canvas their own
-   scroll, and a sticky header here overlapped the sidebar's own sticky tab
-   bar. */
+/* Two rows: identity and actions on top, navigation beneath. Resets the
+   single-row rules still in admin-style.css. Not sticky: the sidebar and
+   canvas scroll on their own. */
 .hf-content .hf-header-nav {
     align-items: stretch;
     background: var(--hf-surface);
@@ -541,8 +511,7 @@
     min-width: 0;
 }
 
-/* A mark for the form, so the title has something to sit against and the
-   header has an anchor of its own. */
+/* A mark for the form beside the title. */
 .hf-content .hf-header-mark {
     align-items: center;
     background: var(--hf-accent-soft);
@@ -557,8 +526,7 @@
     width: 36px;
 }
 
-/* Sentence case at a readable size, and free to take the width it needs —
-   the old rule fixed it to 360px, centred and uppercase. */
+/* Sentence case, free to take the width it needs. */
 .hf-content .hf-header-nav .hf-header-title {
     color: var(--hf-text);
     font-size: 22px;
@@ -671,9 +639,7 @@
 
 /* ---------- Builder tabs ---------- */
 
-/* Centred and raised into a segmented control: the four sections are the main
-   way around the builder, so they get the middle of the header rather than
-   trailing off to one side, and the active one is a card rather than a line. */
+/* A centered segmented control; the active section is a card. */
 .hf-content .hf-header-bottom {
     background: var(--hf-surface-sunken);
     border-radius: 0 0 var(--hf-radius-lg) var(--hf-radius-lg);
@@ -753,9 +719,7 @@
 
 /* ---------- Header actions ---------- */
 
-/* Was a hardcoded #10a0ff that matched nothing else on the screen and fought
-   the black primary beside it. Embed is the secondary action, so it reads as
-   one. */
+/* Embed is the secondary action. */
 .hf-content .hf-header-nav .hf-embed-button,
 .hf-header-nav .hf-embed-button {
     background: var(--hf-surface, #fff);
@@ -775,12 +739,8 @@
 
 /* ---------- Field group colours ---------- */
 
-/* The palette was fifty identical white tiles with grey hairlines, which made
-   the groups structural but invisible and the whole panel characterless. Each
-   group carries a hue, used on its heading marker and on the icon tile of
-   every field in it, so the sidebar reads at a glance and has some life. The
-   hue only ever tints an icon or a marker — labels and surfaces stay neutral,
-   which keeps it from turning into a paintbox. */
+/* Each group carries a hue, used only on its heading marker and field icon
+   tiles; labels and surfaces stay neutral. */
 .hf-content .hf-field-group {
     --hf-group: #475569;
     --hf-group-tint: #f1f5f9;
@@ -830,9 +790,7 @@
 
 /* ---------- Field groups ---------- */
 
-/* Around fifty field types is too many for one run of tiles, so they sit in
-   collapsible groups. The first opens by default; the rest stay shut until
-   asked for, which keeps the whole palette roughly one screen tall. */
+/* Collapsible groups; the first opens by default. */
 .hf-content .hf-field-group {
     border-bottom: 1px solid var(--hf-border);
 }
@@ -940,8 +898,7 @@
 
 /* ---------- Field list ---------- */
 
-/* Three to a row: the palette runs to about fifty types, and at two per row a
-   group like Choice pushed everything after it off screen. */
+/* Three to a row so large groups stay short. */
 .hf-content .hf-fields-list {
     display: grid;
     gap: 6px;
@@ -977,9 +934,7 @@
     width: 100%;
 }
 
-/* The icon carries the group's colour on a tinted tile. Previously every icon
-   was the same thin grey glyph floating on white, which is most of why the
-   panel felt flat. */
+/* The icon carries the group's hue on a tinted tile. */
 .hf-content .hf-fields-list .hf-drag-field svg,
 .hf-content .hf-fields-list .hf-drag-field i {
     align-items: center;
@@ -1169,10 +1124,8 @@
     text-transform: uppercase;
 }
 
-/* Sub-field controls — the First/Last parts of a name, the pieces of an
-   address — are laid out on the same six column grid the form settings use.
-   Three of them side by side in a 300px sidebar left ~90px each, with the
-   captions wrapping onto two lines, so in this panel they take a row apiece. */
+/* Sub-field controls (name parts, address pieces) take a row apiece; three
+   across a 300px sidebar is too narrow. */
 .hf-content .hf-fields-settings .hf-grid-container > .hf-form-row.hf-grid-2 {
     grid-column: span 6;
 }
@@ -1202,8 +1155,7 @@
 
 /* ---------- Canvas ---------- */
 
-/* Same elevation as the sidebar and header, so the three read as panels of
-   one workspace rather than a card sitting inside a padded box. */
+/* Same elevation as the sidebar and header. */
 .hf-content .hf-form-wrap {
     background: var(--hf-surface);
     border: 1px solid var(--hf-border);
@@ -1231,22 +1183,15 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    /* Not narrower than 330: the WordPress colour picker on the style
-       template editor is a fixed 257px widget, and with the panel padding
-       around it anything under this clips it against the sidebar's
-       overflow. */
+    /* Not narrower than 330: the style editor's fixed 257px color picker
+       would clip against the sidebar's overflow. */
     .hf-content .hf-fields-sidebar {
         flex-basis: 330px;
         width: 330px;
     }
 }
 
-/*
- * builder.js marks a field as newly added and clears the mark a second later,
- * which only makes sense as a flash telling you where the field you just
- * dropped has landed. No rule had ever answered it, so the mark came and went
- * with nothing to show for it. The timing here matches that one second.
- */
+/* Flash on a field builder.js has just added; the 1s timing matches its timer. */
 .hf-newly-added {
     animation: hf-field-flash 1s ease-out;
 }
@@ -1273,27 +1218,14 @@
 
 /* ---------- Conditional logic hint ---------- */
 
-/* A field a rule shows, hides, or decides on.
- *
- * The rules are set up on the Settings tab, so the canvas gave no sign that a
- * field is only shown to some visitors - or that a field is the one deciding.
- *
- * Built like .hf-header-status: the same sunken pill the rest of the screen
- * uses for state, with a coloured dot carrying which kind of state it is. It is
- * positioned rather than in the flow, because .hf-editor-field-container is a
- * flex row and a child there would push the label and the input across.
- */
-/* The chip gets a strip of its own at the foot of the field, rather than being
-   dropped on top of the input's bottom edge. Only fields that carry one pay
-   for it.
-   
-   Carries the #hf-editor-fields id because that is what sets the field's
-   padding in admin-style.css, and an id beats any number of classes however
-   late this sheet loads. */
+/* Room at the foot of the field for the condition chip. Carries the
+   #hf-editor-fields id to beat the field padding set in admin-style.css. */
 #hf-editor-fields .hf-editor-form-field:has(> .hf-editor-field-container > .hf-editor-condition-hint) {
     padding-bottom: 28px;
 }
 
+/* Chip on a field a rule shows, hides, or decides on. Positioned because
+   .hf-editor-field-container is a flex row that would push the label across. */
 .hf-content .hf-editor-condition-hint {
     align-items: center;
     background: var(--hf-surface-sunken);
@@ -1342,15 +1274,12 @@
     background: var(--hf-text-faint);
 }
 
-/* The icon is the fork used on the rules panel itself, so the two read as the
-   same feature. */
+/* The same fork icon as the rules panel. */
 .hf-content .hf-editor-condition-hint .mdi {
     font-size: 13px;
 }
 
-/* The action buttons appear on hover across the top of the field, so the chip
-   sits at the bottom and the two never overlap. It lifts on hover to stay
-   legible against the highlighted field. */
+/* Lifts on hover to stay legible against the highlighted field. */
 .hf-content .hf-editor-form-field:hover .hf-editor-condition-hint {
     background: var(--hf-surface);
     border-color: var(--hf-text-faint);

@@ -25,12 +25,7 @@ class HashFormFieldHidden extends HashFormFieldType {
     /**
      * Where a hidden field takes its value from.
      *
-     * Split deliberately, because the two halves do not offer the same promise.
-     * The account and date sources are worked out on the server at submit time
-     * and cannot be influenced by the visitor. The page sources are derived from
-     * the address the form was submitted from, which the browser supplies, so
-     * they are useful for attribution but must not be trusted as proof of
-     * anything. The field description says so in as many words.
+     * Account and date sources are resolved on the server; page sources come from the browser and are not trustworthy.
      */
     public static function value_sources() {
         return array(
@@ -61,20 +56,14 @@ class HashFormFieldHidden extends HashFormFieldType {
     }
 
     /**
-     * The address the form was submitted from.
-     *
-     * Sent alongside the entry by frontend.js. Not the referer header, which on
-     * an admin-ajax request only ever points back at the form's own page.
+     * The address the form was submitted from, as posted by frontend.js (the referer is unusable on admin-ajax).
      */
     private static function submitted_from() {
         return HashFormHelper::get_post('location', 'esc_url_raw');
     }
 
     /**
-     * Resolve the value to store.
-     *
-     * Runs on the server for every source, so what a hidden input carried in the
-     * page is never what gets saved.
+     * Resolve the value to store. Always server-side; the posted value is ignored.
      */
     public static function resolve_value($field) {
         $options = is_array($field) ? $field : (array) $field;
@@ -134,8 +123,7 @@ class HashFormFieldHidden extends HashFormFieldType {
             return isset($args[$param]) ? sanitize_text_field($args[$param]) : '';
         }
 
-        // url_to_postid() returns 0 for anything it cannot match, such as an
-        // archive or the front page when that is not a static page.
+        // url_to_postid() returns 0 for archives and a non-static front page.
         $post_id = url_to_postid($location);
 
         if (!$post_id) {
@@ -150,11 +138,7 @@ class HashFormFieldHidden extends HashFormFieldType {
     }
 
     /**
-     * The settings as one flat array.
-     *
-     * get_field_vars() hands back an object keeping its settings under
-     * field_options, while the builder has already flattened them. Both reach
-     * this class, so neither shape can be assumed.
+     * The settings as one flat array, from either the nested (field_options) or the already-flattened shape.
      */
     private static function flatten_field($field) {
         if (!is_object($field)) {
@@ -193,11 +177,7 @@ class HashFormFieldHidden extends HashFormFieldType {
             <?php } ?>
             <?php
         } else {
-            /*
-             * No value attribute. set_value_before_save() resolves this on the
-             * server and ignores whatever was posted, so printing it into the
-             * page only exposed it for no gain.
-             */
+            // No value attribute: set_value_before_save() resolves it on the server.
             ?>
             <input type="hidden" id="<?php echo esc_attr($this->html_id()); ?>" name="<?php echo esc_attr($this->html_name()); ?>" />
             <?php

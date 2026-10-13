@@ -35,9 +35,8 @@ class HashFormFieldText extends HashFormFieldType {
 
     public static function format($field) {
         $pattern = HashFormFields::get_option($field, 'format');
-        // Escape raw delimiters so an admin pattern containing "/" cannot
-        // break the expression (preg_match would then always fail). Already
-        // escaped slashes are normalized first to avoid double escaping.
+        // Escape "/" delimiters so an admin pattern cannot break the regex;
+        // already-escaped slashes are normalized first to avoid double escaping.
         $pattern = str_replace('\/', '/', $pattern);
         return '/' . str_replace('/', '\/', $pattern) . '/';
     }

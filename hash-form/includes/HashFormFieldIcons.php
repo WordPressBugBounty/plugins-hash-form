@@ -2,11 +2,9 @@
 defined('ABSPATH') || die();
 
 /**
- * Inline SVG icons for the field sidebar.
+ * Inline SVG icons for the field sidebar: a stroked 24x24 set that inherits text color.
  *
- * One consistent stroked set drawn on a 24x24 grid, so the icons stay crisp at
- * any size and inherit colour from the surrounding text. Add-ons register their
- * own through the hashform_field_icons filter.
+ * Add-ons register their own through the hashform_field_icons filter.
  */
 class HashFormFieldIcons {
 
@@ -47,20 +45,13 @@ class HashFormFieldIcons {
         );
 
         /**
-         * Register icons for custom field types.
-         *
-         * Values are the inner markup of a 24x24 stroked icon; the wrapper is
-         * supplied by render().
+         * Register icons for custom field types. Values are the inner markup of a 24x24 stroked icon.
          */
         return apply_filters('hashform_field_icons', $icons);
     }
 
     /**
-     * The mark for the plugin itself: a form with two fields and a button.
-     *
-     * Drawn on the same 24x24 grid as the field icons so the Elementor widget
-     * sits in the same family as everything else, and kept apart from
-     * get_icons() because that map is keyed by field type and add-ons filter it.
+     * The plugin's own mark, on the same 24x24 grid. Kept out of get_icons(), which is keyed by field type.
      */
     public static function widget_icon() {
         return '<rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/>'
@@ -69,11 +60,7 @@ class HashFormFieldIcons {
     }
 
     /**
-     * Icon markup for a field type. Never empty.
-     *
-     * A type with no icon of its own gets a neutral one rather than nothing:
-     * the sidebar used to fall back to an icon font glyph, and that font has
-     * been removed, so an unknown type would otherwise draw a blank space.
+     * Icon markup for a field type. Never empty: unknown types get a neutral icon.
      */
     public static function render($type, $class = 'hf-field-icon') {
         $icons = self::get_icons();
@@ -92,12 +79,7 @@ class HashFormFieldIcons {
     }
 
     /**
-     * The widget mark as a css rule.
-     *
-     * Elementor's get_icon() takes a class name, not markup, so the only way to
-     * give it an svg is to mask a box with one. Masking rather than a
-     * background image keeps it inheriting currentColor, which is what the icon
-     * font it replaces did.
+     * The widget mark as a CSS rule. Elementor's get_icon() takes a class, so the SVG is applied as a mask to inherit currentColor.
      */
     public static function elementor_icon_css() {
         $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' . self::widget_icon() . '</svg>';
@@ -110,7 +92,7 @@ class HashFormFieldIcons {
     }
 
     /**
-     * kses needs to be told about svg, which it does not allow by default.
+     * SVG tags and attributes for kses, which does not allow them by default.
      */
     public static function allowed_svg() {
         $shared = array(

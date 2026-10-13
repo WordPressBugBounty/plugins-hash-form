@@ -27,8 +27,6 @@ class HashFormFieldNumber extends HashFormFieldType {
         $this->remove_commas_from_number($args);
 
         if (!is_numeric($args['value']) && '' !== $args['value'])
-            // $args is the parameter, not a property: $this->args does not
-            // exist, so the form title resolved from null on every failure.
             $errors['field' . $args['id']] = apply_filters('hashform_translate_string', HashFormFields::get_error_msg($this->field, 'invalid'), 'Hash Form', HashFormBuilder::get_form_title(isset($args['form_id']) ? $args['form_id'] : 0) . ' - ' . $args['id'] . ' - ' . 'Field Validation Message');
 
         if ($args['value'] != '') {

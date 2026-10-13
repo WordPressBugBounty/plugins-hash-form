@@ -1,10 +1,5 @@
 <?php
 defined('ABSPATH') || die();
-/*
- * A template, included from inside a class method - never loaded on its own.
- * The variables below are locals of the method that includes it, not globals,
- * which is what the prefix sniff assumes about a file-scope assignment.
- */
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
 $id = get_the_ID();
 ?>
@@ -13,11 +8,17 @@ $id = get_the_ID();
     <label class="hf-setting-label"><?php esc_html_e('Choose Form to Preview', 'hash-form'); ?></label>
     <select id="hf-template-preview-form-id">
         <?php
-        // A chooser, so trashed templates' owners do not get offered
-        // forms they threw away.
+        // Published forms only, so trashed forms are not offered.
         $forms = HashFormBuilder::get_published_forms();
+
+        /**
+         * Form id for the "Default Demo Form" preview; empty renders the built-in static demo.
+         *
+         * @param int|string $demo_form_id
+         */
+        $demo_form_id = apply_filters('hashform_style_builder_demo_form_id', '');
         ?>
-        <option value=""><?php esc_html_e('Default Demo Form', 'hash-form'); ?></option>
+        <option value="<?php echo esc_attr($demo_form_id); ?>"><?php esc_html_e('Default Demo Form', 'hash-form'); ?></option>
         <?php
         foreach ($forms as $form) {
             ?>
@@ -25,6 +26,27 @@ $id = get_the_ID();
         <?php } ?>
     </select>
 </div>
+
+<?php
+/**
+ * Fires at the top of the style builder sidebar, after the preview form picker.
+ *
+ * @param array $hashform_styles Current style values, already defaulted.
+ */
+if (defined('HASH_FORM_PRO_VERSION')) {
+    do_action('hashform_style_builder_top', $hashform_styles);
+} else {
+    ?>
+    <div class="hf-settings-row hf-form-row">
+        <p class="hf-desc">
+            <?php esc_html_e('Want to start from a finished look instead of blank?', 'hash-form'); ?>
+            <a href="<?php echo esc_url(HashFormUpgrade::topic_url('templates')); ?>"><?php esc_html_e('Hash Form Pro', 'hash-form'); ?></a>
+            <?php esc_html_e('adds ready-made style templates you can import in one click.', 'hash-form'); ?>
+        </p>
+    </div>
+    <?php
+}
+?>
 
 <h2 class="hf-settings-heading"><?php esc_html_e('Form', 'hash-form'); ?><span class="mdi mdi-chevron-down"></span></h2>
 
@@ -1013,7 +1035,7 @@ $id = get_the_ID();
                     </div>
                     <input type="file" name="hashform_import_file" class="hf-dropzone">
                 </div>
-                <?php // icofont is not among the plugin's icon fonts, so the old <i> rendered nothing. ?>
+                <?php // mdi icon: icofont is not loaded in the admin. ?>
                 <button class="button button-primary" id="hashform_import" type="submit" name="hashform_import"><span class="mdi mdi-tray-arrow-up" aria-hidden="true"></span> <?php esc_html_e("Import", "hash-form") ?></button>
                 <input type="hidden" name="hashform_imex_action" value="import_style" />
                 <input type="hidden" name="hashform_style_id" value="<?php echo esc_attr($id); ?>" />

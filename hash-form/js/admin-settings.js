@@ -18,6 +18,25 @@
         };
     }
 
+    // Let the preview's controls respond, but block what leaves the preview:
+    // submitting a form and following a link.
+    function guardPreview(doc) {
+        doc.addEventListener('submit', (e) => {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+        }, true);
+
+        doc.addEventListener('click', (e) => {
+            const target = e.target.closest ? e.target : e.target.parentElement;
+
+            // Not stopped: scripts that drive links still run, the browser
+            // just does not follow them.
+            if (target && target.closest('a[href]')) {
+                e.preventDefault();
+            }
+        }, true);
+    }
+
     /* -----------------------------------------------------------------------
      * Color picker
      * -------------------------------------------------------------------- */
@@ -94,7 +113,6 @@
         });
     });
 
-    // Update the slider when the input loses focus, as it has most likely changed.
     $('.hf-range-input-selector').on('blur', function () {
         const input = $(this);
         let value = isNaN(input.val()) ? '' : input.val();
@@ -129,8 +147,18 @@
         // stylesheet (re)loaded.
         if (!STANDARD_FONTS.includes(fontFamily)) {
             const fontId = $select.attr('id');
+            const fontHref = 'https://fonts.googleapis.com/css?family=' + fontFamily.replace(/ /g, '+') + ':100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&subset=latin,latin-ext&display=swap';
             $('link#' + fontId).remove();
-            $('head').append('<link rel="stylesheet" id="' + fontId + '" href="https://fonts.googleapis.com/css?family=' + fontFamily + ':100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&subset=latin,latin-ext&display=swap" type="text/css" media="all">');
+            $('head').append('<link rel="stylesheet" id="' + fontId + '" href="' + fontHref + '" type="text/css" media="all">');
+
+            // The style builder's preview is its own document, and a font
+            // loaded into this page never reaches it.
+            const previewFrame = $('#hf-template-preview-iframe')[0];
+            const previewDoc = previewFrame && (previewFrame.contentDocument || (previewFrame.contentWindow && previewFrame.contentWindow.document));
+            if (previewDoc && previewDoc.head) {
+                $(previewDoc).find('link#' + fontId).remove();
+                $(previewDoc.head).append($('<link>', { rel: 'stylesheet', id: fontId, href: fontHref, type: 'text/css', media: 'all' }));
+            }
         }
 
         const $styleField = $select.closest('.hf-typography-font-family-field').next('.hf-typography-font-style-field');
@@ -148,12 +176,7 @@
             success: function (response) {
                 $styleField.find('select').html(response).trigger('chosen:updated').trigger('change');
             },
-            /*
-             * Clearing the wait belongs here rather than in success alone. The
-             * class had no styling of its own, so a request that failed left
-             * behind a mark nobody could see; now that it draws a spinner, the
-             * same failure would leave the field spinning for good.
-             */
+            // In complete rather than success, so a failed request does not leave the spinner running.
             complete: function () {
                 $styleField.removeClass('hf-typography-loading');
             }
@@ -171,13 +194,8 @@
     function hfDynamicCss(control, style, val) {
         const iframe = $('#hf-template-preview-iframe')[0];
 
-        /*
-         * The preview is fetched over ajax, so for the first second of the
-         * page there is no iframe to write into. Reading .contentDocument off
-         * nothing threw, which killed the handler for the control that was
-         * touched. The value is picked up anyway: the whole form is
-         * serialised when the preview is built.
-         */
+        // The preview loads over ajax, so the iframe may not exist yet; the
+        // value is included when the preview is built.
         if (!iframe) {
             return;
         }
@@ -257,10 +275,7 @@
                     doc.write(response.data);
                     doc.close();
 
-                    // The preview is display-only: swallow interactions.
-                    doc.addEventListener('click', (e) => e.preventDefault(), true);
-                    doc.addEventListener('mousedown', (e) => e.preventDefault(), true);
-                    doc.addEventListener('mouseup', (e) => e.preventDefault(), true);
+                    guardPreview(doc);
                 }, 0);
 
                 $('.hf-form-wrap').removeClass('hf-content-loading');
@@ -360,25 +375,11 @@
         }
     });
 
-    /* The embed dialog's copy buttons now go through the shared
-       [data-hf-clipboard] handler in backend.js, which already handles the
-       insecure-context fallback and the copied confirmation. The bespoke
-       #hf-copy-shortcode handler and its copyToClipboard helper that used to
-       live here were the only users of either. */
-
     /* -----------------------------------------------------------------------
      * WP Mail SMTP install/activate
      * -------------------------------------------------------------------- */
 
-    /*
-     * Puts the button back the way it was found.
-     *
-     * Every one of these requests could only ever end well. A stale nonce, a
-     * user without the capability, a download that fails, an activation that
-     * throws — none of them were handled, so the button kept its spinner and
-     * its "Installing…" label for as long as the page stayed open, with no way
-     * to try again short of a reload.
-     */
+    // Show the error, then restore the button label so it can be retried.
     function smtpFailed(button, label) {
         button.removeClass('updating-message').html(hashform_admin_js_obj.error);
 
@@ -400,9 +401,7 @@
         }).done(function (response) {
             var result;
 
-            // A capability failure or a fatal answers with something that is
-            // not JSON, and parsing it threw inside the success path where
-            // nothing was watching.
+            // A capability failure or fatal returns non-JSON, which would throw here.
             try {
                 result = (typeof response === 'string') ? JSON.parse(response) : response;
             } catch (e) {
@@ -423,7 +422,7 @@
         e.preventDefault();
         const button = $(this);
 
-        // Nothing stopped a second click starting a second request.
+        // Ignore a second click while a request is running.
         if (button.hasClass('updating-message')) {
             return;
         }
@@ -472,11 +471,6 @@
 
     /* -----------------------------------------------------------------------
      * Import/Export panel: import over AJAX
-     *
-     * Was a plain POST, so a rejected file replaced the whole screen with a
-     * bare wp_die() page and the panel was lost. The request is reported back
-     * here instead: spinner while it runs, message in place if it fails, and
-     * a reload only once the form has actually been written.
      * -------------------------------------------------------------------- */
 
     $(document).on('submit', '.hf-settings-import-form', function (e) {

@@ -9,17 +9,9 @@ use Elementor\Plugin;
 class HashFormElement extends Widget_Base {
 
     /**
-     * The widget's key.
+     * Widget key. Must be a slug, because Elementor builds a CSS class from it.
      *
-     * A slug, because Elementor builds a css class out of it: the old name
-     * carried a space, so every widget came out as
-     * class="... elementor-widget-Hash Form", which a browser reads as two
-     * classes - elementor-widget-Hash, and a stray global Form that could
-     * collide with anything on the page. Nothing could target the widget
-     * either, since the class it advertised did not exist.
-     *
-     * Pages built before this keep working: HashFormElementLegacy below is
-     * registered under the old name and renders exactly the same.
+     * HashFormElementLegacy below answers to the former name "Hash Form".
      */
     public function get_name() {
         return 'hashform';
@@ -347,14 +339,14 @@ class HashFormElement extends Widget_Base {
         $this->add_group_control(
             \Elementor\Group_Control_Box_Shadow::get_type(), [
                 'name' => 'fields_box_shadow_focus',
-                'selector' => '{{WRAPPER}} .hf-container input[type="text"]:focus, {{WRAPPER}} .hf-container input[type="email"]:focus, {{WRAPPER}} .hf-container input[type="url"]:focus, {{WRAPPER}} .hf-container input[type="password"]:focus, {{WRAPPER}} .hf-container input[type="search"]:focus, {{WRAPPER}} .hf-container input[type="number"]:focus, {{WRAPPER}} .hf-container input[type="tel"]:focus, {{WRAPPER}} .hf-container input[type="range"]:focus, {{WRAPPER}} .hf-container input[type="date"]:focus, {{WRAPPER}} .hf-container input[type="month"]:focus, {{WRAPPER}} .hf-container input[type="week"]:focus, {{WRAPPER}} .hf-container input[type="time"]:focus, {{WRAPPER}} .hf-container input[type="datetime"]:focus, {{WRAPPER}} .hf-container input[type="datetime-local"]:focus, {{WRAPPER}} .hf-container input[type="color"]:focus, {{WRAPPER}} .hf-container textarea:focus, {{WRAPPER}} .hf-container select'
+                'selector' => '{{WRAPPER}} .hf-container input[type="text"]:focus, {{WRAPPER}} .hf-container input[type="email"]:focus, {{WRAPPER}} .hf-container input[type="url"]:focus, {{WRAPPER}} .hf-container input[type="password"]:focus, {{WRAPPER}} .hf-container input[type="search"]:focus, {{WRAPPER}} .hf-container input[type="number"]:focus, {{WRAPPER}} .hf-container input[type="tel"]:focus, {{WRAPPER}} .hf-container input[type="range"]:focus, {{WRAPPER}} .hf-container input[type="date"]:focus, {{WRAPPER}} .hf-container input[type="month"]:focus, {{WRAPPER}} .hf-container input[type="week"]:focus, {{WRAPPER}} .hf-container input[type="time"]:focus, {{WRAPPER}} .hf-container input[type="datetime"]:focus, {{WRAPPER}} .hf-container input[type="datetime-local"]:focus, {{WRAPPER}} .hf-container input[type="color"]:focus, {{WRAPPER}} .hf-container textarea:focus, {{WRAPPER}} .hf-container select:focus'
             ]
         );
 
         $this->add_group_control(
             \Elementor\Group_Control_Border::get_type(), [
                 'name' => 'fields_border_focus',
-                'selector' => '{{WRAPPER}} .hf-container input[type="text"]:focus, {{WRAPPER}} .hf-container input[type="email"]:focus, {{WRAPPER}} .hf-container input[type="url"]:focus, {{WRAPPER}} .hf-container input[type="password"]:focus, {{WRAPPER}} .hf-container input[type="search"]:focus, {{WRAPPER}} .hf-container input[type="number"]:focus, {{WRAPPER}} .hf-container input[type="tel"]:focus, {{WRAPPER}} .hf-container input[type="range"]:focus, {{WRAPPER}} .hf-container input[type="date"]:focus, {{WRAPPER}} .hf-container input[type="month"]:focus, {{WRAPPER}} .hf-container input[type="week"]:focus, {{WRAPPER}} .hf-container input[type="time"]:focus, {{WRAPPER}} .hf-container input[type="datetime"]:focus, {{WRAPPER}} .hf-container input[type="datetime-local"]:focus, {{WRAPPER}} .hf-container input[type="color"]:focus, {{WRAPPER}} .hf-container textarea:focus, {{WRAPPER}} .hf-container select'
+                'selector' => '{{WRAPPER}} .hf-container input[type="text"]:focus, {{WRAPPER}} .hf-container input[type="email"]:focus, {{WRAPPER}} .hf-container input[type="url"]:focus, {{WRAPPER}} .hf-container input[type="password"]:focus, {{WRAPPER}} .hf-container input[type="search"]:focus, {{WRAPPER}} .hf-container input[type="number"]:focus, {{WRAPPER}} .hf-container input[type="tel"]:focus, {{WRAPPER}} .hf-container input[type="range"]:focus, {{WRAPPER}} .hf-container input[type="date"]:focus, {{WRAPPER}} .hf-container input[type="month"]:focus, {{WRAPPER}} .hf-container input[type="week"]:focus, {{WRAPPER}} .hf-container input[type="time"]:focus, {{WRAPPER}} .hf-container input[type="datetime"]:focus, {{WRAPPER}} .hf-container input[type="datetime-local"]:focus, {{WRAPPER}} .hf-container input[type="color"]:focus, {{WRAPPER}} .hf-container textarea:focus, {{WRAPPER}} .hf-container select:focus'
             ]
         );
 
@@ -1037,9 +1029,7 @@ class HashFormElement extends Widget_Base {
             add_filter('hashform_enable_style', '__return_false');
         }
 
-        // absint before it is built into a shortcode string: the value comes
-        // from the page's own saved data, which anyone who can edit the page
-        // can put anything into.
+        // absint: the value comes from page data that any page editor controls.
         $form_id = isset($settings['hf_form_id']) ? absint($settings['hf_form_id']) : 0;
 
         if ($form_id && 'published' === HashFormListing::get_status($form_id)) {
@@ -1072,12 +1062,7 @@ class HashFormElement extends Widget_Base {
 }
 
 /**
- * The widget under the name it used to have.
- *
- * Elementor stores the widget type in the page's own data, so a page built
- * before the rename asks for "Hash Form" and would otherwise be told there is
- * no such widget. This answers to that name and behaves identically; it is kept
- * out of the panel so nobody adds a new one.
+ * The widget under its former name "Hash Form", so existing pages keep rendering. Hidden from the panel.
  */
 class HashFormElementLegacy extends HashFormElement {
 

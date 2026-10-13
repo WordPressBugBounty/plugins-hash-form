@@ -49,16 +49,11 @@ qq.indexOf = function (arr, elt, from) {
 };
 
 /**
- * File preparers.
+ * File preparers: an extension point for replacing a File before upload (e.g. resizing).
  *
- * An extension point for anything that needs to replace a File on its way to
- * the server, such as resizing an image before it is sent. A preparer is called
- * with (file, options) and returns a File, or a Promise for one. Returning
- * anything else, or throwing, leaves the file exactly as it was: a preparer that
- * fails must never cost the visitor their upload.
- *
- * Register with qq.addFilePreparer(fn). Preparers run in registration order,
- * each receiving the previous one's result, and they run before validation.
+ * Register with qq.addFilePreparer(fn). Each is called with (file, options) in
+ * registration order, before validation, and returns a File or a Promise for one;
+ * anything else, or a throw, leaves the file unchanged.
  */
 qq.filePreparers = [];
 
@@ -71,8 +66,7 @@ qq.addFilePreparer = function (fn) {
 qq.prepareFiles = function (files, options, callback) {
     var list = Array.prototype.slice.call(files);
 
-    // With nothing registered this stays synchronous, so the queue behaves
-    // exactly as it did before the seam existed.
+    // With nothing registered this stays synchronous.
     if (!qq.filePreparers.length || typeof Promise === 'undefined') {
         callback(list);
         return;
@@ -495,9 +489,7 @@ qq.FileUploaderBasic.prototype = {
     _uploadFileList: function (files) {
         var self = this;
 
-        // Preparers run before validation on purpose: a photo shrunk by one is
-        // then measured against the size limit at its new size, which is the
-        // only ordering that lets an oversized image become an allowed one.
+        // Preparers run before validation so a resized image is checked at its new size.
         qq.prepareFiles(files, this._options, function (prepared) {
             var goodFiles = [];
             for (var i = 0; i < prepared.length; i++) {
@@ -835,9 +827,8 @@ qq.extend(qq.FileUploader.prototype, {
             qq.addClass(item, this._classes.fail);
         }
         if (result.path) {
-            // Dropped into the file line when the template provides one, so it
-            // sits beside the name rather than on a row of its own. Falls back
-            // to the item for any caller still using the old flat template.
+            // Placed in the file line beside the name, or on the item when the
+            // template has no .hf-file-row.
             var row = jQuery(item).find('.hf-file-row');
             var target = row.length ? row : jQuery(item);
             target.append('<span class="hf-preview-remove" data-path="' + result.path + '" data-remove-id="hf-uploaded-' + id + '">' + hashform_file_vars.remove_txt + '</span>');

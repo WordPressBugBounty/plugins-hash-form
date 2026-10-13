@@ -1,10 +1,5 @@
 <?php
 defined('ABSPATH') || die();
-/*
- * A template, included from inside a class method - never loaded on its own.
- * The variables below are locals of the method that includes it, not globals,
- * which is what the prefix sniff assumes about a file-scope assignment.
- */
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
 
 $image_id = '';
@@ -23,7 +18,7 @@ if (isset($settings['header_image'])) {
 
             <div class="hf-image-preview-wrap<?php echo ($image ? '' : ' hf-hidden'); ?>">
                 <div class="hf-image-preview-box">
-                    <?php // esc_url, not esc_attr, and omitted entirely when empty. ?>
+                    <?php // No src when empty: an empty src makes the browser re-request the page. ?>
                     <img id="hf-image-preview-header-image" alt="" <?php echo $image ? 'src="' . esc_url($image) . '"' : ''; ?> />
                 </div>
 

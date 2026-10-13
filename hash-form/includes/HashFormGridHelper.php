@@ -73,9 +73,7 @@ class HashFormGridHelper {
     }
 
     /**
-     * Every field of a column row carries the whole row, as group:width pairs,
-     * so the row survives a reload even where nobody dropped a field. Returns
-     * the columns in order, each as a group and a width.
+     * Parse a column row (group:width pairs, carried by every field in the row) into ordered columns.
      */
     public static function parse_column_row($column_row) {
         if (empty($column_row)) {
@@ -194,9 +192,7 @@ class HashFormGridHelper {
             return false === $this->find_spec_index($group);
         }
 
-        // Forms saved before the row was written out have only the columns their
-        // fields name, so those group by sitting next to each other. Such a row
-        // still takes columns, and only columns.
+        // Rows saved without a column row group by adjacency, and still take only columns.
         if ($this->row_has_columns) {
             return '' === $group;
         }

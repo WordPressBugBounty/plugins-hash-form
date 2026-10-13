@@ -14,14 +14,12 @@ class HashFormImportExport {
         // Process a style import from a json file
         add_action('admin_init', array($this, 'process_style_import'));
 
-        // The panel imports through this, so it can hold a spinner and report
-        // a bad file in place. The admin_init handler stays as the no-JS path.
+        // AJAX import for the panel; the admin_init handler remains the no-JS path.
         add_action('wp_ajax_hashform_import_form_settings', array($this, 'ajax_import_form_settings'));
     }
 
     /**
-     * Form import over AJAX. Same checks as the plain POST path; the outcome
-     * is JSON so the panel can stay on screen when a file is rejected.
+     * Form import over AJAX, with the same checks as the POST path. Responds with JSON.
      */
     public function ajax_import_form_settings() {
         if (!HashFormCapabilities::user_can('hashform_edit_forms')) {
@@ -51,12 +49,7 @@ class HashFormImportExport {
     }
 
     public function process_settings_export() {
-        /*
-         * These four run on admin_init, so they see every admin page load and
-         * must fall through quietly when the request is not theirs. Dying here
-         * would take out the whole of wp-admin for anyone without the
-         * capability.
-         */
+        // Runs on every admin page load via admin_init, so fall through quietly rather than die.
         if (!HashFormCapabilities::user_can('hashform_edit_forms')) {
             return;
         }
@@ -87,12 +80,7 @@ class HashFormImportExport {
             $exfield = array();
             foreach ($fields as $field) {
                 $efield = array();
-                /*
-                 * Carried so the show and hide rules can be pointed at the
-                 * fields they mean once those fields are recreated with ids of
-                 * their own. Nothing restores this id; it is a reference key
-                 * for this file and no more.
-                 */
+                // Reference key only, so rules and formulas can be remapped to the recreated fields.
                 $efield['id'] = absint($field->id);
                 $efield['name'] = $field->name;
                 $efield['description'] = $field->description;
@@ -130,12 +118,7 @@ class HashFormImportExport {
     }
 
     public function process_style_export() {
-        /*
-         * These four run on admin_init, so they see every admin page load and
-         * must fall through quietly when the request is not theirs. Dying here
-         * would take out the whole of wp-admin for anyone without the
-         * capability.
-         */
+        // Runs on every admin page load via admin_init, so fall through quietly rather than die.
         if (!HashFormCapabilities::user_can('hashform_edit_forms')) {
             return;
         }
@@ -168,12 +151,7 @@ class HashFormImportExport {
     }
 
     /**
-     * Reads an uploaded .json export and returns it as an array.
-     *
-     * Shared with the Pro plugin's Create New Form dialog, which uploads the
-     * same kind of file under a different field name. Every caller used to
-     * carry its own copy of these checks, and they drifted: the hardening
-     * here had to be applied three times, and twice it was not.
+     * Read an uploaded .json export as an array. Also used by the Pro Create New Form dialog.
      *
      * @param string $file_key Key within $_FILES.
      * @return array|WP_Error
@@ -225,10 +203,9 @@ class HashFormImportExport {
     }
 
     /**
-     * Writes a decoded export onto an existing form, replacing its fields.
+     * Write a decoded export onto an existing form, replacing its fields.
      *
-     * The single copy of what used to live in three places. Assumes the
-     * caller has already checked capability, nonce and that $imdat is valid.
+     * The caller must already have checked capability, nonce and is_valid_export().
      *
      * @param int   $form_id Form to write onto.
      * @param array $imdat   Decoded export.
@@ -301,17 +278,8 @@ class HashFormImportExport {
             }
         }
 
-        /*
-         * The rules name fields by id, and the ids in the file belong to the
-         * form it was taken from. Rewritten now that this form's own fields
-         * exist, which is also why the settings are written twice: the form row
-         * has to exist before a field can point at it.
-         *
-         * A file exported before ids were carried has nothing to match on, so
-         * its rules cannot be salvaged - remap_conditions() drops them rather
-         * than leave the form carrying rules that can never fire.
-         */
-        // Calculation formulas name their inputs by field id too.
+        // Point formulas and show/hide rules at the new field ids. Rules from files
+        // exported without field ids cannot be matched and are dropped.
         HashFormBuilder::remap_calculation_formulas($form_id, $map);
 
         if (!empty($settings['condition_action'])) {
@@ -337,12 +305,7 @@ class HashFormImportExport {
      * Plain POST entry point for the per-form Import/Export panel.
      */
     public function process_settings_import() {
-        /*
-         * These four run on admin_init, so they see every admin page load and
-         * must fall through quietly when the request is not theirs. Dying here
-         * would take out the whole of wp-admin for anyone without the
-         * capability.
-         */
+        // Runs on every admin page load via admin_init, so fall through quietly rather than die.
         if (!HashFormCapabilities::user_can('hashform_edit_forms')) {
             return;
         }
@@ -373,12 +336,7 @@ class HashFormImportExport {
     }
 
     public function process_style_import() {
-        /*
-         * These four run on admin_init, so they see every admin page load and
-         * must fall through quietly when the request is not theirs. Dying here
-         * would take out the whole of wp-admin for anyone without the
-         * capability.
-         */
+        // Runs on every admin page load via admin_init, so fall through quietly rather than die.
         if (!HashFormCapabilities::user_can('hashform_edit_forms')) {
             return;
         }

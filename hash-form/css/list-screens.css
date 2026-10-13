@@ -1,10 +1,5 @@
 /**
- * Forms and Entries list screens.
- *
- * Both were plain WP list tables with no header and no surface, which stood
- * out once the Modules screen was reworked. Same tokens and the same header /
- * card language, applied over the list table markup rather than replacing it —
- * WP_List_Table output is not ours to restructure.
+ * Forms and Entries list screens, styled over the WP_List_Table markup.
  *
  * Scoped to .hf-list-screen so nothing here reaches other admin screens.
  */
@@ -32,28 +27,17 @@
     display: none;
 }
 
-/* All three lists print the bar on in_admin_header, so it lands as a direct
-   child of #wpcontent. clear:both would clear the floated admin menu and push
-   the screen a thousand pixels down; the negative margin cancels the 20px
-   #wpcontent keeps clear of that menu so the bar spans the column. */
+/* A direct child of #wpcontent. clear:none so it does not clear the floated
+   admin menu; the negative margin cancels #wpcontent's 20px offset. */
 #wpcontent > .hf-list-header {
     clear: none;
     margin-left: -20px;
     width: calc(100% + 20px);
 }
 
-/* ---------- Core CPT list (style templates) ----------
- *
- * The style templates list is a core list table, but it is re-emitted inside
- * .hf-content.hf-list-screen (HashFormStyles::wrap_list_body()), so it gets
- * the same shell as the plugin's own lists and needs almost nothing of its
- * own. Core prints its H1 and Add New above the table; the bar already
- * carries both.
- */
+/* ---------- Core CPT list (style templates) ---------- */
 
-/* On the style templates list core prints its own .wrap inside ours, so it is
-   flattened — one measure for the notices and the table. Matches nothing on
-   the other two lists, which have no nested wrap. */
+/* Flatten the .wrap core prints inside ours on the style templates list. */
 .hf-list-wrap .wrap {
     margin: 0;
     max-width: none;
@@ -68,18 +52,8 @@ body.hf-styles-list .wrap > .wp-header-end {
 
 /* ---------- Header ---------- */
 
-/* WP floats #screen-meta-links (the Screen Options tab) at the top of the
-   content area, ahead of anything a plugin prints. Left in flow it either
-   pushes the header bar down, leaving a strip of page background above it,
-   or — since a flex container is a block formatting context and will not
-   overlap a float — squeezes the bar's contents out of line with the table.
-
-   Taking it out of flow removes both problems: the bar starts at the very
-   top and spans the full width, and the tab hangs over its top right corner
-   the way it normally hangs over the top of a list screen.
-
-   :has() is the scope. Where it is unsupported the tab stays in flow and the
-   clear below keeps the old, safe behaviour. */
+/* Take the Screen Options tab out of flow so the header bar starts at the top
+   and spans the full width; the tab hangs over its top right corner. */
 #wpbody-content:has(.hf-list-screen) {
     position: relative;
 }
@@ -93,9 +67,7 @@ body.hf-styles-list .wrap > .wp-header-end {
     z-index: 100;
 }
 
-/* The bar itself is edge to edge: it sits outside .wrap, so nothing caps its
-   width, and .hf-list-screen is already pulled flush to the left of the
-   content area. */
+/* Edge to edge: the bar sits outside .wrap. */
 .hf-list-header {
     background: var(--hf-surface, #fff);
     border-bottom: 1px solid var(--hf-border, #e2e5ea);
@@ -103,11 +75,8 @@ body.hf-styles-list .wrap > .wp-header-end {
     padding: 0;
 }
 
-/* The padding lives here so the title and the Add New button line up with
-   the table below rather than with the far edges of a wide screen. */
-/* Everything inside the bar is scoped to .hf-list-header rather than to
-   .hf-list-screen: the bar is printed on in_admin_header, so it sits outside
-   the wrapper that carries that class. */
+/* The padding lines the title and Add New up with the table. Everything in the
+   bar is scoped to .hf-list-header: it is printed outside .hf-list-screen. */
 .hf-list-header-inner {
     align-items: center;
     display: flex;
@@ -199,13 +168,44 @@ body.hf-styles-list .wrap > .wp-header-end {
     color: var(--hf-text-inverse, #fff);
 }
 
-/* ---------- Header stats ----------
- *
- * These sit in the bar now, between the title and Add New, so they are chips
- * on one line rather than the stacked cards they were when they had a row of
- * their own below the header. Scoped to .hf-list-header for the same reason
- * as the rest of the bar: it is printed outside .hf-list-screen.
+/* ---------- Documentation link ---------- */
+
+/*
+ * The documentation link in the shared page bar, matching the Modules screen's
+ * (.hf-version a in Pro's modules-ui.css). margin-left:auto groups it with the
+ * action button on the right.
  */
+.hf-list-header .hf-list-docs {
+    margin: 0 0 0 auto;
+}
+
+.hf-list-header .hf-list-docs a {
+    align-items: center;
+    border: 1px solid var(--hf-border-strong, #d3d8e0);
+    border-radius: var(--hf-radius-sm, 4px);
+    color: var(--hf-text, #1e2327);
+    display: inline-flex;
+    font-size: var(--hf-font-base, 13px);
+    gap: var(--hf-space-2, 8px);
+    min-height: 32px;
+    padding: 0 var(--hf-space-3, 12px);
+    text-decoration: none;
+    transition: background-color var(--hf-transition, .15s ease), border-color var(--hf-transition, .15s ease);
+}
+
+.hf-list-header .hf-list-docs a:hover,
+.hf-list-header .hf-list-docs a:focus {
+    background: var(--hf-surface-sunken, #fafbfc);
+    border-color: var(--hf-text-faint, #8c9196);
+    color: var(--hf-text, #1e2327);
+}
+
+.hf-list-header .hf-list-docs a:focus-visible {
+    outline: 2px solid var(--hf-accent, #dd823b);
+    outline-offset: 1px;
+}
+
+/* ---------- Header stats ---------- */
 
 .hf-list-header .hf-list-stats {
     align-items: center;
@@ -267,11 +267,8 @@ body.hf-styles-list .wrap > .wp-header-end {
 
 /* ---------- Status links and filters ----------
  *
- * One set of declarations for both shapes of view switcher. The plugin's own
- * lists render <div class="hf-view-tabs subsubsub"><a class="hf-view-tab">,
- * while the core list table renders <ul class="subsubsub"><li><a> with a
- * pipe between each — different markup, same control, so the selectors are
- * paired rather than the rules written twice.
+ * Selectors are paired for the plugin's .hf-view-tab links and core's
+ * <ul class="subsubsub"> markup.
  */
 
 /* Status tabs and the search box share one row above the table. */
@@ -288,9 +285,7 @@ body.hf-styles-list .wrap > .wp-header-end {
 .hf-list-screen .subsubsub {
     display: flex;
     flex-wrap: wrap;
-    /* Left, as core has it: the search box that follows floats right and
-       wraps alongside. They are printed into different parents on the core
-       list, so no flex container can hold both. */
+    /* Floated like core, so the search box in a different parent can wrap alongside. */
     float: left;
     gap: 2px;
     margin: 0;
@@ -383,27 +378,14 @@ body.hf-styles-list .wrap > .wp-header-end {
     display: none;
 }
 
-/* Core hides two things in here with display:none, and the flex rules above
-   were quietly outranking both.
-
-   A table with no bulk actions still prints the bulk-actions block and marks
-   it .hidden. Forced back to flex it stayed a flex item - zero wide, but with
-   the row's 8px gap after it - which pushed the filter controls 9px to the
-   right of the table and the status tabs they sit above.
-
-   The pager is marked .no-pages when there is nothing to page through, and was
-   being shown as an item count on a list with no items. */
+/* Restore core's display:none on the hidden bulk-actions block and the no-pages pager. */
 .hf-list-screen .tablenav .actions.hidden,
 .hf-list-screen .tablenav .hidden,
 .hf-list-screen .tablenav .no-pages {
     display: none;
 }
 
-/* The row is a flex line, so its gap is the only thing that should be putting
-   space between these controls. Core gives each one its own margins as well -
-   `select { margin: 0 6px 0 1px }` among them - which both knocked the first
-   control a pixel out of line with the table and made the space between a
-   control and its button 14px where the rest of the row uses 8px. */
+/* The flex gap spaces these controls, so core's own margins are removed. */
 .hf-list-screen .tablenav .actions > select,
 .hf-list-screen .tablenav .actions > input,
 .hf-list-screen .tablenav .actions > .button,
@@ -411,16 +393,11 @@ body.hf-styles-list .wrap > .wp-header-end {
     margin: 0;
 }
 
-/* width is reset from the token sheet, which stretches every field to 100%
-   for the stacked settings panels. Here a control shares a line with the
-   button that acts on it, so a full-width field pushes that button onto the
-   next row.
-
-   Not on the Settings screen: it borrows this shell for its header and its
-   measure but is a stack of settings panels, which is exactly the case the
-   token sheet's 100% is for. */
+/* Undo the token sheet's 100% width so a control stays on a line with its
+   button. Not on the Settings screen, which is a stack of settings panels, and
+   not the Modules sidebar search, which fills its column. */
 .hf-list-screen:not(.hf-settings-screen) select,
-.hf-list-screen:not(.hf-settings-screen) input[type="search"],
+.hf-list-screen:not(.hf-settings-screen) input[type="search"]:not(.hf-modules-search-input),
 .hf-list-screen:not(.hf-settings-screen) input[type="text"] {
     border: 1px solid var(--hf-border-strong, #d3d8e0);
     border-radius: var(--hf-radius-sm, 4px);
@@ -439,13 +416,11 @@ body.hf-styles-list .wrap > .wp-header-end {
     outline: 0;
 }
 
-/* The secondary buttons around the table — Bulk actions, Apply, Search.
-   Scoped to .wrap so it cannot reach the header bar's Add New: on the style
-   templates list .hf-list-screen is on <body>, which put the header inside
-   its reach and turned that button's label dark on the accent fill. The
-   Settings screen is excluded for the same reason — its only .button is the
-   accent-filled Save. */
-.hf-list-screen:not(.hf-settings-screen) .wrap .button:not(.hf-trigger-modal) {
+/* The secondary buttons around the table: Bulk actions, Apply, Search. Scoped
+   to .wrap to keep the header's Add New and the Settings Save button out, and
+   primary buttons with them: they are white on the accent colour, and this rule
+   would repaint that label in the body text colour. */
+.hf-list-screen:not(.hf-settings-screen) .wrap .button:not(.hf-trigger-modal):not(.button-primary) {
     border-color: var(--hf-border-strong, #d3d8e0);
     border-radius: var(--hf-radius-sm, 4px);
     color: var(--hf-text, #1e2327);
@@ -453,7 +428,7 @@ body.hf-styles-list .wrap > .wp-header-end {
     min-height: 34px;
 }
 
-.hf-list-screen:not(.hf-settings-screen) .wrap .button:not(.hf-trigger-modal):hover {
+.hf-list-screen:not(.hf-settings-screen) .wrap .button:not(.hf-trigger-modal):not(.button-primary):hover {
     background: var(--hf-surface-sunken, #fafbfc);
     border-color: var(--hf-text-faint, #8c9196);
     color: var(--hf-text, #1e2327);
@@ -575,9 +550,7 @@ body.hf-styles-list .wrap > .wp-header-end {
     width: 64px;
 }
 
-/* Now that cells align to the top, the checkbox lines up with the top of the
-   title's line box rather than its centre. A pixel down reads level with the
-   text. */
+/* Nudge the checkbox down a pixel to sit level with the top-aligned text. */
 .hf-list-screen .wp-list-table tbody .check-column {
     padding-top: 13px;
 }
@@ -723,10 +696,7 @@ body.hf-styles-list .wrap > .wp-header-end {
 
 /* ---------- Pagination ----------
  *
- * Core floats this block and sizes its arrows with rules that the button
- * styling above overrode piecemeal, so the count, the arrows and the page
- * input all ended up on slightly different heights. Rebuilt as one flex row
- * placed after the button rules, which it ties with on specificity. */
+ * One flex row, placed after the button rules it ties with on specificity. */
 
 .hf-list-screen .tablenav-pages {
     align-items: center;

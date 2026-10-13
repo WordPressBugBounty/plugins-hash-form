@@ -102,14 +102,7 @@ class HashFormStyles {
     }
 
     /**
-     * The style settings panel.
-     *
-     * admin/styles/main.php reaches back with self::get_typography_fields()
-     * and self::get_style_vars(), and `self` inside an included file is
-     * whichever class the include ran in - not the file's own. The builder
-     * comes through here so that class is always this one; a builder that
-     * included the template itself got
-     * "undefined method HashFormStyleBuilder::get_typography_fields()".
+     * The style settings panel. Included from this class so `self` in admin/styles/main.php resolves here.
      */
     public static function render_settings_panel() {
         include HASHFORM_PATH . 'admin/styles/settings.php';
@@ -118,33 +111,41 @@ class HashFormStyles {
     public static function save_metabox_settings() {
         HashFormCapabilities::require_cap_ajax('hashform_edit_forms');
 
-        if (wp_verify_nonce(HashFormHelper::get_post('hashform_styles_nonce'), 'hf-styles-nonce')) {
-            $postID = HashFormHelper::get_post('post_ID');
-            $newLayout = !get_post($postID);
-
-            if ($newLayout) {
-                $postID = wp_insert_post([
-                    'ID' => $postID
-                ]);
-            }
-            wp_update_post([
-                'ID' => $postID,
-                'post_type' => 'hashform-styles',
-                'post_title' => HashFormHelper::get_post('post_title'),
-                'post_status' => 'publish'
-            ]);
-            $hashform_styles = HashFormHelper::get_post('hashform_styles', 'sanitize_text_field', '', self::get_styles_sanitize_array());
-            update_post_meta($postID, 'hashform_styles', $hashform_styles);
-            /*
-             * A template that has just been created has to be reloaded rather
-             * than left in place: the form still carries an id of 0, so saving
-             * again from here would create a second one. An existing template
-             * only needs to be told it saved.
-             */
-            wp_send_json_success($newLayout
-                    ? array('redirect' => HashFormStyleBuilder::url($postID))
-                    : array('message' => esc_html__('Saved successfully!', 'hash-form')));
+        if (!wp_verify_nonce(HashFormHelper::get_post('hashform_styles_nonce'), 'hf-styles-nonce')) {
+            wp_send_json_error();
         }
+
+        $postID = HashFormHelper::get_post('post_ID', 'absint');
+        $newLayout = !$postID;
+
+        $postarr = array(
+            'post_type' => 'hashform-styles',
+            'post_title' => HashFormHelper::get_post('post_title'),
+            'post_status' => 'publish',
+        );
+
+        if ($newLayout) {
+            // Insert with the post type set: a bare `post` with no content is refused as empty.
+            $postID = wp_insert_post($postarr, true);
+        } elseif ('hashform-styles' === get_post_type($postID)) {
+            $postarr['ID'] = $postID;
+            $postID = wp_update_post($postarr, true);
+        } else {
+            // post_ID comes from the browser. Updating anything else with
+            // this post type would turn it into a style template.
+            wp_send_json_error();
+        }
+
+        if (is_wp_error($postID) || !$postID) {
+            wp_send_json_error();
+        }
+
+        $hashform_styles = HashFormHelper::get_post('hashform_styles', 'sanitize_text_field', '', self::get_styles_sanitize_array());
+        update_post_meta($postID, 'hashform_styles', $hashform_styles);
+        // A new template reloads into the builder; its form still has id 0, so saving again would duplicate it.
+        wp_send_json_success($newLayout
+                ? array('redirect' => HashFormStyleBuilder::url($postID))
+                : array('message' => esc_html__('Saved successfully!', 'hash-form')));
     }
 
     public static function default_font_array() {
@@ -365,28 +366,39 @@ class HashFormStyles {
     }
 
     /**
-     * The Google Fonts stylesheet a form needs, if any.
-     *
-     * Returns '' when the site has turned Google Fonts off, so no request is
-     * made to fonts.googleapis.com and no visitor address reaches Google. Also
-     * filterable, for sites that would rather decide this in code.
+     * Whether Google Fonts may load. When off, no request reaches fonts.googleapis.com.
      */
-    public static function fonts_url() {
+    public static function google_fonts_enabled() {
         $settings = HashFormSettings::get_settings();
         $enabled = !isset($settings['load_google_fonts']) || 'on' === $settings['load_google_fonts'];
 
-        if (!apply_filters('hashform_load_google_fonts', $enabled)) {
+        return (bool) apply_filters('hashform_load_google_fonts', $enabled);
+    }
+
+    public static function fonts_url() {
+        if (!self::google_fonts_enabled()) {
             return '';
         }
 
+        return self::google_fonts_url(self::custom_fonts());
+    }
+
+    /**
+     * The Google Fonts stylesheet for a set of font families.
+     *
+     * Standard fonts and anything the font list does not know are skipped.
+     *
+     * @param array $font_families
+     * @return string '' when there is nothing to load.
+     */
+    public static function google_fonts_url($font_families) {
         $fonts_url = '';
         $subsets = 'latin,latin-ext';
         $fonts = $font_family_array = $variants_array = array();
         $standard_fonts = ['inherit', 'Helvetica', 'Verdana', 'Arial', 'Times', 'Georgia', 'Courier', 'Trebuchet', 'Tahoma', 'Palatino'];
         $all_font = self::font_array();
-        $custom_fonts = self::custom_fonts();
 
-        $font_family_array = array_unique($custom_fonts);
+        $font_family_array = array_unique((array) $font_families);
         $font_family_array = array_diff($font_family_array, $standard_fonts);
 
         foreach ($font_family_array as $font_family) {
@@ -407,13 +419,6 @@ class HashFormStyles {
             ), 'https://fonts.googleapis.com/css');
         }
 
-        /*
-         * There was a local-hosting branch here guarded by a hardcoded false.
-         * It required inc/wptt-webfont-loader.php, which is not in the plugin,
-         * so flipping that flag would have been a fatal rather than the feature
-         * it looked like. Removed rather than left as a trap; serving the fonts
-         * from the server needs that loader added first.
-         */
         return $fonts_url;
     }
 
@@ -607,6 +612,23 @@ class HashFormStyles {
         <?php
     }
 
+    /**
+     * Style keys whose value is written out in pixels, matched on the key at any depth.
+     *
+     * A key added here needs data-unit="px" on its builder input as well.
+     *
+     * @return array
+     */
+    public static function px_style_keys() {
+        static $keys = null;
+
+        if (null === $keys) {
+            $keys = (array) apply_filters('hashform_style_px_keys', array('column_gap', 'row_gap', 'top', 'right', 'bottom', 'left', 'font_size', 'letter_spacing', 'spacing', 'x', 'y', 'blur', 'spread', 'height', 'handle_size', 'size'));
+        }
+
+        return $keys;
+    }
+
     public static function get_style_vars($array, $prefix) {
 
         foreach ($array as $key => $value) {
@@ -615,7 +637,7 @@ class HashFormStyles {
             } else {
                 if ($value || is_numeric($value)) {
                     $unit = '';
-                    if (in_array($key, array('column_gap', 'row_gap', 'top', 'right', 'bottom', 'left', 'font_size', 'letter_spacing', 'spacing', 'x', 'y', 'blur', 'spread', 'height', 'handle_size', 'size'))) {
+                    if (in_array($key, self::px_style_keys(), true)) {
                         $unit = 'px';
                     }
 
@@ -1231,16 +1253,7 @@ class HashFormStyles {
         remove_action('wp_head', 'print_emoji_detection_script', 7);
         remove_action('wp_print_styles', 'print_emoji_styles');
 
-        /*
-         * The preview is a whole document assembled here, so nothing has asked
-         * for the frontend form assets yet. A real form picks them up inside
-         * get_form_contents(), but that runs after wp_head() has printed, and
-         * the demo markup below is static so it never reached that call at
-         * all - the default preview rendered with none of the form CSS the
-         * style variables are read by. Hooking the enqueue rather than calling
-         * it here lets the handles register first, and puts the stylesheets in
-         * the head for both branches.
-         */
+        // Hooked rather than called so the handles are registered first and the form CSS lands in the head.
         add_action('wp_enqueue_scripts', array('HashFormLoader', 'enqueue_form_assets'), 20);
 
         wp_head();
@@ -1248,6 +1261,23 @@ class HashFormStyles {
         $form_id = HashFormHelper::get_post('form_id', 'absint');
         $template_id = HashFormHelper::get_post('template_id', 'absint');
         $hashform_styles = HashFormHelper::get_post('hashform_styles', 'sanitize_text_field', '', self::get_styles_sanitize_array());
+
+        // Also load the fonts the template being edited uses right now, saved or not.
+        if (is_array($hashform_styles) && self::google_fonts_enabled()) {
+            $families = array();
+
+            foreach ($hashform_styles as $section) {
+                if (is_array($section) && isset($section['typo']['font_family'])) {
+                    $families[] = $section['typo']['font_family'];
+                }
+            }
+
+            $preview_fonts_url = self::google_fonts_url($families);
+
+            if ($preview_fonts_url) {
+                echo '<link rel="stylesheet" id="hf-preview-fonts" href="' . esc_url($preview_fonts_url) . '" media="all">'; // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- written into the preview document after wp_head(), which has already printed its styles.
+            }
+        }
 
         add_filter('hashform_form_classes', array($this, 'update_form_class'));
         if (empty($form_id)) {
@@ -1274,12 +1304,7 @@ class HashFormStyles {
     }
 
     public function enqueue_scripts() {
-        /*
-         * The builder is the only screen that saves a template. It used to load
-         * on any hashform-styles post screen as well, which since the builder
-         * took over the editor meant only the templates list - a screen with
-         * nothing to save.
-         */
+        // Only the builder saves a template.
         if (!HashFormStyleBuilder::is_builder()) {
             return;
         }
@@ -1293,11 +1318,11 @@ class HashFormStyles {
         ));
     }
 
-    /**
-     * Is this the style templates list table?
-     */
     private static $body_buffering = false;
 
+    /**
+     * Whether this is the style templates list table.
+     */
     private function is_list_screen() {
         $screen = function_exists('get_current_screen') ? get_current_screen() : null;
 
@@ -1309,9 +1334,7 @@ class HashFormStyles {
      */
     public function list_body_class($classes) {
         if ($this->is_list_screen()) {
-            // Marks the screen for the few rules that have to reach outside
-            // the wrapper; the wrapper itself carries hf-content and
-            // hf-list-screen, exactly as the Forms and Entries lists do.
+            // For the few rules that reach outside the wrapper.
             $classes .= ' hf-styles-list';
         }
 
@@ -1319,12 +1342,8 @@ class HashFormStyles {
     }
 
     /**
-     * Everything #wpbody-content holds on this screen, captured.
-     *
-     * The notices and the core list table are printed straight into
-     * #wpbody-content, and core offers no hook between the end of the table
-     * and the tag that closes it — so the only way to put them inside the
-     * wrapper the plugin's own lists use is to buffer the lot and re-emit it.
+     * Capture #wpbody-content on this screen so it can be re-emitted inside the list wrapper.
+     * Core has no hook between the end of the list table and the closing tag.
      */
     public function buffer_list_body() {
         if (!$this->is_list_screen()) {
@@ -1336,14 +1355,9 @@ class HashFormStyles {
     }
 
     /**
-     * Re-emits the captured markup inside .hf-content.hf-list-screen.
+     * Re-emit the captured markup inside .hf-content.hf-list-screen.
      *
-     * By the time in_admin_footer runs, admin-footer.php has already printed
-     * the tags that close #wpbody-content, #wpbody and #wpcontent, so the
-     * wrapper has to close before the first of them. That position is found
-     * from the comment core leaves after it, and if it is ever not there the
-     * capture is echoed exactly as it came — no wrapper, but nothing broken
-     * either.
+     * The wrapper closes before core's wpbody-content comment; if that comment is missing, the capture is echoed unwrapped.
      */
     public function wrap_list_body() {
         if (!self::$body_buffering) {
@@ -1371,10 +1385,7 @@ class HashFormStyles {
     }
 
     /**
-     * The bar across the top, matching the Forms and Entries lists.
-     *
-     * Printed on in_admin_header so it lands above .wrap and spans the screen,
-     * which is where the other two put theirs.
+     * Header bar, matching the Forms and Entries lists.
      */
     public function list_header() {
         if (!$this->is_list_screen()) {
@@ -1386,8 +1397,7 @@ class HashFormStyles {
         $trashed = isset($counts->trash) ? (int) $counts->trash : 0;
         $stats = array();
 
-        // Zeroes say nothing on an empty list, so the chips wait until there
-        // is something to count — the same rule the Forms screen uses.
+        // No stat chips on an empty list, as on the Forms screen.
         if ($published || $trashed) {
             $in_use = self::forms_using_a_template();
 
@@ -1422,16 +1432,12 @@ class HashFormStyles {
     }
 
     /**
-     * How many forms are set to use a style template.
-     *
-     * The styles column is serialised, so the forms are read rather than
-     * matched with a LIKE that would break the moment the shape changed.
+     * How many forms use a style template. Styles are serialized, so forms are read rather than matched with LIKE.
      */
     private static function forms_using_a_template() {
         $count = 0;
 
-        // A count of forms a template is styling, so a form in the trash
-        // is not one of them.
+        // Trashed forms do not count.
         foreach (HashFormBuilder::get_published_forms() as $form) {
             $styles = isset($form->styles) ? $form->styles : '';
 
@@ -1450,11 +1456,7 @@ class HashFormStyles {
     public function hf_alert() {
         ?>
         <?php
-        /*
-         * No close control: nothing was ever bound to the one that used to be
-         * here, so it looked dismissible and was not, and the builder's toast
-         * does not have one either — both clear themselves.
-         */
+        /* No close control; the alert clears itself, like the builder's toast. */
         ?>
         <div class="hf-alert" role="status">
             <span class="hf-alert-message"></span>

@@ -1,13 +1,8 @@
 <?php
 defined('ABSPATH') || die();
-/*
- * A template, included from inside a class method - never loaded on its own.
- * The variables below are locals of the method that includes it, not globals,
- * which is what the prefix sniff assumes about a file-scope assignment.
- */
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
 
-// Settings saved before this section existed have none of these keys.
+// Older saved settings may lack these keys.
 $settings = array_merge(HashFormHelper::get_form_settings_default(), (array) $settings);
 ?>
 
@@ -27,14 +22,13 @@ $settings = array_merge(HashFormHelper::get_form_settings_default(), (array) $se
     </div>
 
     <?php
-    // Scheduling, entry limits and login requirements live in the Pro plugin,
-    // which adds its own section when active.
+    // Pro adds scheduling, entry limits and login rules in its own section.
     if (!defined('HASH_FORM_PRO_VERSION')) {
         ?>
         <div class="hf-form-row">
             <p class="hf-desc">
                 <?php esc_html_e('Looking to schedule this form, cap the number of entries or require visitors to log in?', 'hash-form'); ?>
-                <a href="https://hashthemes.com/plugin/hash-form-pro/" target="_blank" rel="noopener"><?php esc_html_e('Hash Form Pro', 'hash-form'); ?></a>
+                <a href="<?php echo esc_url(HashFormUpgrade::topic_url('entries')); ?>"><?php esc_html_e('Hash Form Pro', 'hash-form'); ?></a>
                 <?php esc_html_e('adds those under Schedule &amp; Restriction.', 'hash-form'); ?>
             </p>
         </div>

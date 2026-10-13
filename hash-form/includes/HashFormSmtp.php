@@ -45,7 +45,7 @@ class HashFormSmtp {
     }
 
     /**
-     * The plugin this screen exists to switch on, free edition or Pro.
+     * The installed WP Mail SMTP plugin file, free or Pro.
      *
      * @return string Plugin file of whichever edition is installed, or ''.
      */
@@ -62,24 +62,14 @@ class HashFormSmtp {
     }
 
     public static function activate_plugin() {
-        /*
-         * activate_plugins, not manage_options. They are the same person on a
-         * single site, and a different one on multisite, where a site
-         * administrator has the second and not the first.
-         */
+        // activate_plugins, not manage_options: on multisite a site admin has only the latter.
         if (!current_user_can('activate_plugins')) {
             wp_send_json(array('success' => false));
         }
 
         check_ajax_referer('hashform_admin_settings_ajax', 'admin_setting_nonce');
 
-        /*
-         * The plugin to switch on is decided here, not taken from the request.
-         * The slug and file used to arrive by POST and were joined into a path
-         * and activated, so anyone who could reach this endpoint could switch
-         * on any plugin already sitting on the site by naming it. The script
-         * only ever sent the one value, so nothing is lost by looking it up.
-         */
+        // The plugin file is looked up here, never taken from the request.
         $plugin_file = self::smtp_plugin_file();
         $success = false;
 
@@ -95,17 +85,8 @@ class HashFormSmtp {
     }
 
     public static function redirect_to_smtp_settings() {
-        /*
-         * Either edition counts. Only the free plugin's folder was named here
-         * and in the markup, so a site running WP Mail SMTP Pro — a different
-         * folder, same settings page — was told to install the free one it
-         * already had a paid version of.
-         *
-         * function_exists() stays alongside is_plugin_active(): the plugin
-         * only defines it once its own requirement checks have passed, and
-         * without that a site where it is active but has bailed would be sent
-         * to a settings page that was never registered.
-         */
+        // Either edition counts. function_exists() as well: the plugin defines wp_mail_smtp()
+        // only after its own requirement checks pass, and otherwise registers no settings page.
         $plugin_file = self::smtp_plugin_file();
         $is_active = $plugin_file && is_plugin_active($plugin_file);
 

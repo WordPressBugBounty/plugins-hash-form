@@ -1,10 +1,5 @@
 <?php
 defined('ABSPATH') || die();
-/*
- * A template, included from inside a class method - never loaded on its own.
- * The variables below are locals of the method that includes it, not globals,
- * which is what the prefix sniff assumes about a file-scope assignment.
- */
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
 
 $id = htmlspecialchars_decode(HashFormHelper::get_var('id', 'absint'));
@@ -34,13 +29,7 @@ $form_style_template = isset($styles['form_style_template']) ? $styles['form_sty
                 <input type="hidden" name="id" id="hf-form-id" value="<?php echo absint($id); ?>" />
                 <div class="hf-form-container">
                     <?php
-                    /*
-                     * The three modes are a visual choice, so they are shown as
-                     * cards rather than hidden in a dropdown. The select below
-                     * stays as the value that gets serialised on save and as
-                     * the element the data-condition rules watch — the radios
-                     * carry no name of their own, so nothing is posted twice.
-                     */
+                    // Shown as cards; the select below holds the saved value and drives the data-condition rules.
                     $style_modes = array(
                         'no-style' => array(
                             'label' => esc_html__('No Style', 'hash-form'),
@@ -66,13 +55,8 @@ $form_style_template = isset($styles['form_style_template']) ? $styles['form_sty
                                 <label class="hf-style-mode<?php echo ($form_style === $mode_value) ? ' hf-selected' : ''; ?>">
                                     <?php
                                     /*
-                                     * Named so the three behave as one radio
-                                     * group, but pointed at a form id that does
-                                     * not exist so they are not part of
-                                     * #hf-style-form. update_style() serialises
-                                     * whatever the form posts without a
-                                     * whitelist, and this control's value is
-                                     * already carried by the select below.
+                                     * Detached from #hf-style-form via a non-existent form id:
+                                     * update_style() saves every posted key, and the select carries the value.
                                      */
                                     ?>
                                     <input type="radio" name="hf_style_mode" form="hf-style-mode-detached" class="hf-style-mode-input" value="<?php echo esc_attr($mode_value); ?>" <?php checked($form_style, $mode_value); ?> />
@@ -126,7 +110,7 @@ $form_style_template = isset($styles['form_style_template']) ? $styles['form_sty
                         </select>
                     </div>
 
-                    <?php // Was inline-styled with a hardcoded blue; on the tokens it follows the admin colour scheme. ?>
+                    <?php // Follows the admin colour scheme. ?>
                     <div class="hf-form-row hf-style-template-cta" data-condition-toggle="hf-form-style-select" data-condition-val="custom-style">
                         <p class="hf-style-template-cta-text"><?php esc_html_e('Build fast with a style template — style your forms in seconds.', 'hash-form'); ?></p>
                         <a class="button" href="<?php echo esc_url(admin_url('edit.php?post_type=hashform-styles')); ?>" target="_blank"><?php esc_html_e('Create/Edit Style Template', 'hash-form'); ?></a>
@@ -138,12 +122,7 @@ $form_style_template = isset($styles['form_style_template']) ? $styles['form_sty
         <div id="hf-form-panel" class="hf-style-form-panel">
             <div class="hf-form-wrap">
                 <?php
-                /*
-                 * The same slim header the builder canvas carries, so the two
-                 * screens read as one surface. Where the builder counts fields
-                 * this names the style in force; backend.js keeps it in step
-                 * when a different card is picked.
-                 */
+                // Same header as the builder canvas; backend.js updates the style label when a card is picked.
                 ?>
                 <div class="hf-canvas-header">
                     <span class="hf-canvas-title"><?php echo esc_html($form->name); ?></span>

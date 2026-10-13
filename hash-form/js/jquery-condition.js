@@ -1,11 +1,9 @@
 /**
  * Show/hide elements based on the state of other form controls.
  *
- * Usage: give the toggled element `data-condition-toggle="id1,id2+id3"` where
- * each comma-separated part is a condition (OR) and `+` combines controls that
- * must all match (AND). Controls carrying `data-condition="toggle"` re-run the
- * scan on change. `data-condition-val` restricts select matches to the listed
- * values, or excludes one with a `!` prefix.
+ * `data-condition-toggle="id1,id2+id3"`: commas are OR, `+` is AND. Controls with
+ * `data-condition="toggle"` re-run the scan on change. `data-condition-val` lists
+ * the select values that match, or excludes one with a `!` prefix.
  */
 (function ($) {
     'use strict';
@@ -44,7 +42,7 @@
         });
     }
 
-    // Does the control with this id currently match?
+    // Whether the control with this id currently matches.
     function isToggle(id, pick) {
         const element = $('#' + id);
         if ('select' === element.prop('tagName').toLowerCase()) {

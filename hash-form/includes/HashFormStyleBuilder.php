@@ -2,19 +2,9 @@
 defined('ABSPATH') || die();
 
 /**
- * The style template builder screen.
+ * The style template builder screen. The post editor is redirected here, and this screen owns the whole page.
  *
- * A style template is a set of panels, not a document, so the post editor
- * around it - title box, publish box, screen options - is chrome nobody uses.
- * Two of those boxes were already being removed one by one; this takes the
- * editor out of the picture instead. The editor is redirected here and this
- * screen owns the whole page.
- *
- * The panel itself is untouched: this includes admin/styles/settings.php, so
- * the sidebar, the live preview, the fields and the footer are exactly what
- * they were. The builder is addressed with the same `post` query argument the
- * editor used, which is what that panel reads to decide between Publish and
- * Update, so it needed no change at all.
+ * Addressed with the `post` query argument, which admin/styles/settings.php reads.
  */
 class HashFormStyleBuilder {
 
@@ -37,12 +27,7 @@ class HashFormStyleBuilder {
 
         add_action('in_admin_header', array($this, 'list_header'));
 
-        /*
-         * The admin footer belongs to a document-shaped screen. This one is a
-         * full-height editor with its own save bar pinned to the bottom, and
-         * "Thank you for creating with WordPress" underneath it just pushes
-         * that bar off the fold.
-         */
+        // The builder's save bar is pinned to the bottom; the footer text would push it off the fold.
         add_filter('admin_footer_text', array($this, 'footer_text'));
         add_filter('update_footer', array($this, 'footer_text'), 11);
     }
@@ -50,20 +35,8 @@ class HashFormStyleBuilder {
     /**
      * The builder URL for a template.
      *
-     * `post` rather than a name of its own: admin/styles/settings.php already
-     * reads that argument to work out whether the template is published, and
-     * addressing the builder the same way the editor was keeps the panel
-     * working untouched.
-     *
-     * Deliberately nothing else. A new template used to be addressed with
-     * post_type as well, the way post-new.php was, and that argument is what
-     * wp-admin/admin.php reads into $typenow - so core resolved this screen's
-     * hook against `admin.php?post_type=hashform-styles`, a parent with no
-     * entry in $admin_page_hooks, looked for admin_page_hashform-style-builder
-     * rather than the hash-form_page_ name the submenu is registered under,
-     * found nothing and died with "Cannot load hashform-style-builder". The
-     * panel does not need it: it reads Publish or Update off the template's
-     * own post status.
+     * Only `post`, which admin/styles/settings.php reads. Adding post_type makes core resolve the page
+     * hook against the wrong parent and fail with "Cannot load hashform-style-builder".
      *
      * @param int $post_id
      * @return string
@@ -124,6 +97,13 @@ class HashFormStyleBuilder {
             return;
         }
 
+        // post.php also handles Trash, Restore and Delete, and this runs first; only opening the editor is redirected.
+        $action = HashFormHelper::get_var('action', 'sanitize_key');
+
+        if ($action && 'edit' !== $action) {
+            return;
+        }
+
         // Somebody who cannot edit it should meet the editor's own message
         // rather than a builder that will not save.
         if (!current_user_can('edit_post', $post_id)) {
@@ -176,13 +156,7 @@ class HashFormStyleBuilder {
     }
 
     /**
-     * The template being edited.
-     *
-     * A new one is a post object that exists only for this request. post-new.php
-     * used to write an auto-draft just for opening the screen, which is why the
-     * templates list collects rows nobody asked for; nothing is written here
-     * until Save, and the panel reads its defaults from an id of 0 quite
-     * happily.
+     * The template being edited. A new one exists only in memory until Save.
      *
      * @return WP_Post|null
      */
@@ -214,27 +188,19 @@ class HashFormStyleBuilder {
             wp_die(esc_html__('That style template no longer exists.', 'hash-form'));
         }
 
-        // The panel reads the template from the global, exactly as it did
-        // inside the metabox.
+        // The panel reads the template from the global.
         $GLOBALS['post'] = $post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
         setup_postdata($post);
 
         $this->editing = $post;
         ?>
         <?php
-        /*
-         * No .wrap of its own: admin/styles/settings.php opens the .hf-content
-         * the panel's styles are scoped to, and the bar above comes from
-         * in_admin_header like every other screen. Wrapping the panel in a
-         * second frame is what broke the sidebar headings.
-         */
+        /* No .wrap: admin/styles/settings.php opens its own .hf-content, and a second frame breaks the sidebar headings. */
         ?>
         <form method="post" id="post" class="hf-style-builder">
             <input type="hidden" id="post_ID" name="post_ID" value="<?php echo absint($post->ID); ?>"/>
             <?php
-            // The panel, unchanged. Rendered through HashFormStyles so that
-            // `self` inside the template resolves to that class, which is where
-            // the helpers it calls live.
+            // Rendered through HashFormStyles so `self` in the template resolves to that class.
             HashFormStyles::render_settings_panel();
             ?>
         </form>
@@ -244,11 +210,7 @@ class HashFormStyleBuilder {
 
 
     /**
-     * The bar across the top, through the shared renderer.
-     *
-     * Printed on in_admin_header like every other hashform screen, so this
-     * reads as the same product as the list it came from rather than carrying
-     * a header of its own.
+     * Header bar for the builder, through the shared renderer.
      */
     public function list_header() {
         if (!self::is_builder()) {
@@ -267,8 +229,7 @@ class HashFormStyleBuilder {
             $trash = get_delete_post_link($post->ID);
 
             if ($trash) {
-                // post.php sends the browser back where it came from, which
-                // here is a builder for a template that no longer exists.
+                // Return to the list after trashing, not to the builder of a template that no longer exists.
                 $actions[] = array(
                     'label' => esc_html__('Trash', 'hash-form'),
                     'url' => add_query_arg('_wp_http_referer', rawurlencode(self::list_url()), $trash),
@@ -286,12 +247,7 @@ class HashFormStyleBuilder {
             'title' => $post->ID
                     ? esc_html__('Style template name', 'hash-form')
                     : esc_html__('Add New Style Template', 'hash-form'),
-            /*
-             * The name lives in the bar rather than in a row of its own. The
-             * form attribute is what carries it: this is printed on
-             * in_admin_header, outside the builder's form, and a field that is
-             * not associated with that form is simply dropped on save.
-             */
+            // The name field sits in the bar, outside the builder's form, so it is tied to the form with the form attribute.
             'title_field' => array(
                 'name' => 'post_title',
                 'value' => $post->post_title,

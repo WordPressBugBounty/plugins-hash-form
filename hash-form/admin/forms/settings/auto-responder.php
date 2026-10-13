@@ -1,10 +1,5 @@
 <?php
 defined('ABSPATH') || die();
-/*
- * A template, included from inside a class method - never loaded on its own.
- * The variables below are locals of the method that includes it, not globals,
- * which is what the prefix sniff assumes about a file-scope assignment.
- */
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
 ?>
 
@@ -18,9 +13,7 @@ defined('ABSPATH') || die();
     </div>
 
     <?php
-    // Everything below only applies once the responder is on, so it is
-    // grouped and hung off the switch rather than sitting there looking
-    // active while nothing sends. One group, not one rule per row.
+    // Shown only while the auto responder is on.
     ?>
     <div data-condition-toggle="hf-enable-ar">
         <div class="hf-form-row">

@@ -1,10 +1,5 @@
 <?php
 defined('ABSPATH') || die();
-/*
- * A template, included from inside a class method - never loaded on its own.
- * The variables below are locals of the method that includes it, not globals,
- * which is what the prefix sniff assumes about a file-scope assignment.
- */
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
 
 $field_count = is_array($fields) ? count($fields) : 0;
@@ -39,13 +34,8 @@ $field_count = is_array($fields) ? count($fields) : 0;
                 <?php wp_nonce_field('hashform_imex_export_nonce', 'hashform_imex_export_nonce'); ?>
                 <?php
                 /*
-                 * type="button" on purpose. HTML has no nested forms, so the
-                 * parser drops the <form> above and hands its contents to the
-                 * settings form this partial is rendered inside. An untyped
-                 * button defaults to submit, which made this the settings
-                 * form's default button: pressing Enter in any field on the
-                 * screen downloaded an export and threw away the edits. The
-                 * export is posted from js/backend.js instead.
+                 * type="button": this <form> is nested in the settings form and dropped by the parser,
+                 * so a submit button here would become the settings form's default. js/backend.js posts the export.
                  */
                 ?>
                 <button type="button" class="button button-primary" id="hashform_export" name="hashform_export">
@@ -68,7 +58,7 @@ $field_count = is_array($fields) ? count($fields) : 0;
                 </div>
             </div>
 
-            <?php // The importer deletes this form's fields before writing the new ones, so say so before the file is chosen rather than after. ?>
+            <?php // The importer deletes this form's fields first, so warn before a file is chosen. ?>
             <p class="hf-imex-warning">
                 <span class="mdi mdi-alert-outline" aria-hidden="true"></span>
                 <span><?php esc_html_e('Importing replaces this form. Its current fields, settings and style are overwritten and cannot be recovered — export a copy first if you may want it back.', 'hash-form'); ?></span>

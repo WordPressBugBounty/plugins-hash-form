@@ -4,14 +4,7 @@ defined('ABSPATH') || die();
 class HashFormPreview {
 
     public function __construct() {
-        /*
-         * Logged in only, and only for someone who may look at forms.
-         *
-         * The preview is opened from the builder and from the forms list, both
-         * of which are already behind that capability, so nothing legitimate
-         * reaches this without it. It used to be registered for nopriv as well,
-         * which let anyone walk the form ids and render each one.
-         */
+        // Logged-in only: a nopriv handler would let anyone render any form by id.
         add_action('wp_ajax_hashform_preview', array($this, 'preview'));
     }
 
@@ -28,23 +21,13 @@ class HashFormPreview {
         $id = htmlspecialchars_decode(HashFormHelper::get_var('form', 'absint'));
         $form = HashFormBuilder::get_form_vars($id);
 
-        // This endpoint is public, so an unknown or trashed id must not reach
-        // the template, which dereferences $form before it checks anything.
+        // The template dereferences $form before checking it, so stop unknown or trashed ids here.
         if (!$form || $form->status === 'trash') {
             wp_die(esc_html__('Please select a valid form', 'hash-form'));
         }
 
-        /*
-         * Two documents behind one URL. The outer one is a plain shell — a
-         * toolbar and an iframe — and the inner one is the form on its own,
-         * rendered with the theme and every front-end asset exactly as a
-         * visitor would get it.
-         *
-         * The width buttons have to change a real viewport to be worth
-         * anything: narrowing a div would leave the form's own media queries
-         * reading the desktop window and reporting a mobile layout that is
-         * not what a phone gets.
-         */
+        // The outer document is a toolbar and an iframe; the inner one is the form alone,
+        // so the width buttons resize a real viewport and the form's media queries apply.
         if (HashFormHelper::get_var('hf_frame', 'absint')) {
             require HASHFORM_PATH . 'admin/forms/preview/preview.php';
         } else {
@@ -55,16 +38,9 @@ class HashFormPreview {
     }
 
     /**
-     * Mark the fields a rule acts on, for the preview only.
+     * Mark the fields a rule acts on, and list currently hidden ones, for the preview only.
      *
-     * The preview runs the rules for real, so a hidden field is simply not
-     * there and nothing says why. This marks both ends - the field a rule shows
-     * or hides, and the field deciding it - and reports anything hidden at the
-     * moment in a bar along the bottom.
-     *
-     * Printed here rather than in the field markup because it must never reach
-     * a visitor: this file is only ever included by the preview screen, which
-     * is behind a capability check.
+     * Must never reach a visitor; only the capability-gated preview screen includes this.
      *
      * @param int $form_id
      */
@@ -148,15 +124,7 @@ class HashFormPreview {
                     var el = document.createElement('span');
                     el.className = 'hf-preview-rule' + (isTarget ? '' : ' hf-preview-rule-trigger');
 
-                    /*
-                     * The rule itself, the same as on the canvas: a chip that
-                     * only says "Conditional" sends you off to the Settings tab
-                     * to find out which rule it meant.
-                     *
-                     * In its own element because the chip is a flex container,
-                     * and text-overflow has nothing to trim on one of those -
-                     * it needs a block of its own to ellipsis.
-                     */
+                    // Own element so text-overflow can ellipsis inside the flex chip.
                     var text = document.createElement('span');
                     text.className = 'hf-preview-rule-text';
                     text.textContent = rules[0];
@@ -183,17 +151,8 @@ class HashFormPreview {
                             return;
                         }
 
-                        /*
-                         * A rule that has already hidden the field leaves
-                         * nothing to mark, so it is counted instead.
-                         *
-                         * The test is the inline display the rule engine
-                         * writes - frontend.js hides with jQuery's toggle() -
-                         * and not whether the field is on screen. On a
-                         * multi-step form every field of every other step is
-                         * off screen too, and reporting those as hidden by a
-                         * rule would be wrong.
-                         */
+                        // Count fields a rule has hidden. Checks the inline display the rule engine writes,
+                        // not visibility, so fields on other multi-step steps are not counted.
                         if (box.style.display === 'none') {
                             hidden++;
                             return;
@@ -223,28 +182,9 @@ class HashFormPreview {
                     note.textContent = <?php echo wp_json_encode(__('Hidden by a rule right now:', 'hash-form')); ?> + ' ' + hidden;
                 }
 
-                /*
-                 * Watch the containers rather than listen for events.
-                 *
-                 * The rules are wired up on jQuery ready and settled with a
-                 * trigger('change') that a plain listener on document does not
-                 * reliably see, so painting once on DOMContentLoaded marked a
-                 * field that was hidden a moment later. The engine hides by
-                 * writing an inline style, and that is exactly what this
-                 * watches - so the marks follow the rules however they are
-                 * re-evaluated, including as the visitor types.
-                 */
+                // Repaint whenever the rule engine changes a field container's inline style.
                 function watch() {
-                    /*
-                     * Coalesced rather than painted per mutation.
-                     *
-                     * Changing one answer re-evaluates every rule, and each
-                     * one that flips writes its own style. Painting on the
-                     * first of those counted a state the cascade had not
-                     * finished reaching, so the tally could read one high
-                     * until something else moved. Waiting for the burst to
-                     * stop counts once, on the settled state.
-                     */
+                    // Debounced so a cascade of rule changes is counted once it settles.
                     var pending = null;
                     var observer = new MutationObserver(function () {
                         window.clearTimeout(pending);
@@ -287,9 +227,7 @@ class HashFormPreview {
     }
 
     /**
-     * Widths the preview can be shown at.
-     *
-     * Values are the iframe width in pixels; 0 means fill the window.
+     * Widths the preview can be shown at: iframe width in pixels, 0 to fill the window.
      */
     public static function preview_widths() {
         return array(

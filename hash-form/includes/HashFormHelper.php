@@ -21,16 +21,47 @@ class HashFormHelper {
         return array_merge($form_options_defaults, $values);
     }
 
-    /*
-     * The three request accessors. Each one unslashes, then hands the value
-     * to sanitize_value() with the callback the caller chose - which is the
-     * only way a form builder can work, since what counts as valid depends on
-     * the field. Nothing leaves here unsanitized.
+    /**
+     * Check a token printed into a public form, and say whose it is.
      *
-     * The sniffs cannot follow a callback, and read accessors are not the
-     * place to check a nonce: the caller acting on the value is. Both are
-     * silenced for these three functions only.
+     * A token not valid for the current user is checked again as a logged-out
+     * visitor's, since the page may have been rendered for a guest (cached page,
+     * admin-only login cookie, expired session). It then grants guest rights only.
+     *
+     * @param string $nonce
+     * @param string $action
+     * @return string 'user', 'guest' when valid only as a logged-out visitor's, or '' when neither.
      */
+    public static function verify_public_nonce($nonce, $action) {
+        $nonce = (string) $nonce;
+
+        if ('' === $nonce) {
+            return '';
+        }
+
+        if (wp_verify_nonce($nonce, $action)) {
+            return 'user';
+        }
+
+        // wp_verify_nonce() for a guest, computed directly: core only checks the current user and
+        // mixes in the session token, so try both with and without it.
+        $uid = (int) apply_filters('nonce_user_logged_out', 0, $action);
+        $tick = wp_nonce_tick($action);
+
+        foreach (array_unique(array('', wp_get_session_token())) as $token) {
+            foreach (array($tick, $tick - 1) as $i) {
+                $expected = substr(wp_hash($i . '|' . $action . '|' . $uid . '|' . $token, 'nonce'), -12, 10);
+
+                if (hash_equals($expected, $nonce)) {
+                    return 'guest';
+                }
+            }
+        }
+
+        return '';
+    }
+
+    /* Request accessors: each unslashes, then sanitizes with the caller's callback. */
     // phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by the caller-supplied callback in sanitize_value(); nonces belong to the code that acts on the value.
 
     /* Sanitizes value and returns param value */
@@ -176,15 +207,7 @@ class HashFormHelper {
     }
 
     /**
-     * A stored date, time or date-and-time as a person should read it.
-     *
-     * These fields keep whatever the browser submitted, and for a date and time
-     * control that is an ISO string with a T wedged in the middle. That is a
-     * storage format, not something to show someone, and it was reaching both
-     * the entry screen and the notification email untouched.
-     *
-     * A value that cannot be read is handed back exactly as it came in rather
-     * than guessed at, so nothing is ever lost to a format this does not know.
+     * A stored date, time or date-and-time formatted for display. Unreadable values are returned unchanged.
      *
      * @param mixed  $value Stored value.
      * @param string $type  Field type.
@@ -335,9 +358,8 @@ class HashFormHelper {
             'error_message' => esc_html__('Sorry, An error Occurred! Your form cannot be submitted.', 'hash-form'),
             'show_page_id' => '',
             'redirect_url_page' => '',
-            // Restrictions. Scheduling, entry limits and login requirements
-            // are provided by the Pro plugin, which registers them through the
-            // hashform_form_restrictions filter.
+            // Restrictions. Scheduling, entry limits and login requirements come from Pro
+            // through the hashform_form_restrictions filter.
             'one_entry_per_user' => 'off',
             'duplicate_message' => esc_html__('You have already submitted this form.', 'hash-form'),
         );
@@ -789,24 +811,14 @@ class HashFormHelper {
     }
 
     /**
-     * Record a diagnostic message.
-     *
-     * Silent unless the site has debugging switched on, so a production
-     * install writes nothing and nothing the plugin logs can ever reach a
-     * visitor. Everything the plugin needs to report about a failure that it
-     * handled - a refused mail, an integration that answered badly, output
-     * where there should have been none - goes through here rather than being
-     * echoed or left to a bare error_log() call.
+     * Record a diagnostic message. Silent unless logging is enabled.
      *
      * @param string $message
      * @param string $context Optional label for the subsystem reporting.
      */
     public static function log($message, $context = 'hash-form') {
         /**
-         * Whether the plugin should write diagnostics at all.
-         *
-         * Defaults to the site's own debug logging setting, so turning
-         * WP_DEBUG_LOG off in production is enough to silence it.
+         * Whether the plugin writes diagnostics. Defaults to WP_DEBUG.
          */
         $enabled = apply_filters('hashform_enable_logging', defined('WP_DEBUG') && WP_DEBUG);
 
@@ -876,12 +888,7 @@ class HashFormHelper {
             delete_transient($key);
             ?>
             <?php
-            /*
-             * The same toast the builder shows after an AJAX save. It used to
-             * be its own component — a plain `green` bar in ALL CAPS — so the
-             * one action looked like two different products depending on
-             * whether the screen saved over AJAX or through a redirect.
-             */
+            /* Same toast the builder shows after an AJAX save. */
             ?>
             <div class="hf-updated-info" role="status">
                 <span class="mdi mdi-check-circle"></span>
@@ -892,15 +899,9 @@ class HashFormHelper {
     }
 
     /**
-     * The bar across the top of a list screen.
+     * Header bar for list screens: Forms, Entries, style templates and the Pro screens.
      *
-     * Shared by the Forms, Entries and style template lists here and by the
-     * Pro screens, so all of them are one component rather than four copies
-     * that drift. Print it on in_admin_header: that lands it in #wpcontent,
-     * above #wpbody, flush under the admin bar and clear of the Screen
-     * Options tab.
-     *
-     * The screen body then goes in:
+     * Print it on in_admin_header so it sits above #wpbody. The screen body then goes in:
      *   <div class="hf-content hf-list-screen">
      *       <div class="hf-list-wrap wrap"> … </div>
      *   </div>
@@ -915,13 +916,8 @@ class HashFormHelper {
     public static function render_list_header($args) {
         $args = wp_parse_args($args, array(
             'title' => '',
-            /*
-             * An editable title, for a screen that edits one thing and has
-             * nowhere else to name it. Takes name, value and placeholder, and
-             * a form id: this bar is printed on in_admin_header, which is
-             * outside every form on the page, so the field is tied to its form
-             * with the form attribute rather than by sitting inside it.
-             */
+            // Editable title: name, value, placeholder and form id. The bar sits outside
+            // every form, so the input is tied to its form with the form attribute.
             'title_field' => array(),
             'action' => array(),
             'actions' => array(),
@@ -968,12 +964,7 @@ class HashFormHelper {
                 <?php } ?>
 
                 <?php
-                /*
-                 * The way to the manual, in the same place on every screen that
-                 * offers one. The Modules screen has had this since it was
-                 * built, out on the right of its own header; the screens that
-                 * use this shared bar had nowhere to put it.
-                 */
+                // Documentation link, in the same place on every screen.
                 if (!empty($args['docs'])) {
                     ?>
                     <div class="hf-list-docs">
@@ -999,8 +990,7 @@ class HashFormHelper {
     }
 
     /**
-     * One status tab for a list screen. Shared by the Forms and Entries
-     * tables so a single count keeps looking the same on both.
+     * One status tab for a list screen, shared by the Forms and Entries tables.
      */
     public static function view_tab($url, $label, $count, $is_current) {
         $classes = 'hf-view-tab' . ($is_current ? ' current' : '');
@@ -1012,10 +1002,7 @@ class HashFormHelper {
     }
 
     /**
-     * Renders the tabs built by view_tab(). The subsubsub class is kept so
-     * anything hooked to the usual list-screen markup still finds it, but the
-     * ul/li and the pipe separators are gone: these read as a segmented
-     * control now, not a sentence.
+     * Render the tabs built by view_tab(). Keeps the subsubsub class for code that targets core list markup.
      */
     public static function render_view_tabs($views) {
         if (empty($views)) {
@@ -1054,21 +1041,15 @@ class HashFormHelper {
     }
 
     /**
-     * A field description, sanitized for the kind of field it belongs to.
-     *
-     * The HTML field keeps its markup in this column, so the plain-text
-     * sanitizer every new row used to get emptied every tag out of it.
+     * A field description, sanitized for its field type. The HTML field keeps its markup.
      */
     public static function sanitize_field_description($description, $type) {
         return 'html' === $type ? self::sanitize_html_field_content($description) : sanitize_text_field($description);
     }
 
     /**
-     * Markup for the HTML field.
-     *
-     * wp_kses_post() takes the tags off a script but keeps what was between
-     * them, so a pasted tracking snippet ended up printed on the page as text.
-     * The whole element goes first, then everything else goes through kses.
+     * Markup for the HTML field. Script elements are removed whole (wp_kses_post() would leave
+     * their contents as text), then the rest goes through kses.
      */
     public static function sanitize_html_field_content($html) {
         $html = (string) $html;
@@ -1212,11 +1193,7 @@ class HashFormHelper {
     /**
      * A repeater's rows as a table.
      *
-     * Entries saved before the field kept its own column labels hold the cells
-     * grouped by column, so those are turned back into rows here; newer ones
-     * already carry 'columns' and 'rows'. Three copies of this used to sit in
-     * the entry screen, the email and here, each transposing by hand and each
-     * emitting a row's closing tag without its opening one.
+     * Older entries store cells grouped by column and are transposed here; newer ones carry 'columns' and 'rows'.
      */
     public static function render_repeater_table($value) {
         if (!is_array($value)) {
@@ -1266,15 +1243,8 @@ class HashFormHelper {
 
     public static function get_field_input_value($value) {
         $entry_val = '';
-        /*
-         * unserialize_or_decode, not maybe_unserialize: $value['value'] is the
-         * visitor-supplied entry value, and this helper feeds it into the Pro
-         * integrations (WooCommerce orders, mailing-list signups, Google
-         * Sheets rows, Trello cards, post creation). maybe_unserialize() would
-         * instantiate any class named in a crafted payload; this decodes the
-         * multi-value arrays it needs without native object unserialization,
-         * matching how HashFormEmail reads the same column.
-         */
+        // unserialize_or_decode, not maybe_unserialize: the value is visitor-supplied and feeds the
+        // Pro integrations, so a crafted object payload must not be instantiated.
         $entry_value = self::unserialize_or_decode($value['value']);
         $entry_type = self::unserialize_or_decode($value['type']);
         if (is_array($entry_value)) {

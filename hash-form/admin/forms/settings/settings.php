@@ -1,10 +1,5 @@
 <?php
 defined('ABSPATH') || die();
-/*
- * A template, included from inside a class method - never loaded on its own.
- * The variables below are locals of the method that includes it, not globals,
- * which is what the prefix sniff assumes about a file-scope assignment.
- */
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
 
 $id = HashFormHelper::get_var('id', 'absint', 0);
@@ -22,11 +17,7 @@ $settings = $form->settings ? $form->settings : HashFormHelper::get_form_setting
         )
     );
 
-    /*
-     * 'desc' is optional: it is the one line under the panel heading saying
-     * what the tab governs. Sections added through the filter below that do
-     * not set one simply get the heading on its own.
-     */
+    // 'desc' is optional: the line shown under the panel heading.
     $sections = array(
         'email-settings' => array(
             'name' => esc_html__('Email Settings', 'hash-form'),

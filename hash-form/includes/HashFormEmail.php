@@ -18,8 +18,7 @@ class HashFormEmail {
     }
 
     /**
-     * Set while replaying a deferred send, so the filter that held the email
-     * back does not hold it back a second time.
+     * Set while replaying a deferred send, so hashform_send_entry_emails does not defer it again.
      */
     public static $sending_deferred = false;
 
@@ -30,20 +29,12 @@ class HashFormEmail {
         $metas = $entry->metas;
 
         /**
-         * Lets an add-on postpone the notification and auto responder, which
-         * is what the payment gateways do so an abandoned checkout does not
-         * send an order confirmation.
+         * Whether to send the notification and auto responder now. Payment add-ons return false to defer them.
          *
          * Returning false must still let the submission finish normally.
          */
         if (!self::$sending_deferred && !apply_filters('hashform_send_entry_emails', true, $this->form, $this->entry_id, $metas)) {
-            do_action('hashform_after_email', array(
-                'form' => $this->form,
-                'entry_id' => $this->entry_id,
-                'form_settings' => $form_settings,
-                'metas' => $metas,
-                'location' => $this->location
-            ));
+            $this->run_after_email($form_settings, $metas);
 
             return true;
         }
@@ -75,7 +66,6 @@ class HashFormEmail {
             $count++;
             $reply_to_email = str_replace('#field_id_' . absint($item), $value['value'], $reply_to_email);
             $email_subject = str_replace('#field_id_' . absint($item), $value['value'], $email_subject);
-            $reply_to_ar = str_replace('#field_id_' . absint($item), $value['value'], $reply_to_ar);
             $entry_value = HashFormHelper::unserialize_or_decode($value['value']);
             $entry_type = HashFormHelper::unserialize_or_decode($value['type']);
             if (is_array($entry_value)) {
@@ -118,8 +108,7 @@ class HashFormEmail {
                 }
                 $entry_value = $upload_value;
             }
-            // Shared with the entry screen; the email was still sending the
-            // raw stored string, so the same submission read two ways.
+            // Same date formatting as the entry screen.
             $entry_value = HashFormHelper::format_date_value($entry_value, $entry_type);
 
             /** This filter is documented in admin/entries/entry-detail.php */
@@ -151,8 +140,9 @@ class HashFormEmail {
         // cannot smuggle extra mail headers.
         $reply_to_email = str_replace(array("\r", "\n"), '', $reply_to_email);
         $email_subject = str_replace(array("\r", "\n"), ' ', $email_subject);
-        // Becomes the recipient of the auto responder further down.
-        $reply_to_ar = str_replace(array("\r", "\n"), '', $reply_to_ar);
+        // The auto responder setting stores a bare field ID, so look the address up by ID.
+        $ar_field_id = absint(str_replace('#field_id_', '', $reply_to_ar));
+        $reply_to_ar = ($ar_field_id && isset($metas[$ar_field_id])) ? trim(str_replace(array("\r", "\n"), '', $metas[$ar_field_id]['value'])) : '';
 
         $email_message = empty($form_settings['email_message']) ? '' : wpautop($form_settings['email_message']);
 
@@ -198,7 +188,10 @@ class HashFormEmail {
                 $head = array();
                 $head[] = 'Content-Type: text/html; charset=UTF-8';
                 $head[] = 'From: ' . esc_html($from_ar_name) . ' <' . esc_html($from_ar) . '>';
-                wp_mail($reply_to_ar, $email_subject, $form_html, $head, $attachments);
+                // The field may be optional and left blank.
+                if (is_email($reply_to_ar)) {
+                    wp_mail($reply_to_ar, $email_subject, $form_html, $head, $attachments);
+                }
             }
             $redirect_url = '';
 
@@ -208,22 +201,13 @@ class HashFormEmail {
                 $redirect_url = $form_settings['redirect_url_page'];
             }
 
-            // A replay (resend from the admin, or a deferred payment email)
-            // must not run the post submission actions again: those dispatch
-            // payments and third party integrations, so repeating them would
-            // charge the customer a second time. There is also no ajax caller
-            // waiting for a json response.
+            // A replay (admin resend or deferred payment email) must not rerun the post submission
+            // actions, which would charge the customer again. No ajax caller is waiting either.
             if (self::$sending_deferred) {
                 return true;
             }
 
-            do_action('hashform_after_email', array(
-                'form' => $this->form,
-                'entry_id' => $this->entry_id,
-                'form_settings' => $form_settings,
-                'metas' => $metas,
-                'location' => $this->location
-            ));
+            $this->run_after_email($form_settings, $metas);
 
             if (!empty($redirect_url)) {
                 return wp_send_json(array(
@@ -236,9 +220,36 @@ class HashFormEmail {
                 'status' => 'success',
                 'message' => esc_html(apply_filters('hashform_translate_string', $form_settings['confirmation_message'], 'Hash Form', $form_title . ' - ' . 'Confirmation Message'))
             ));
-        } else {
+        }
+
+        if (self::$sending_deferred) {
             return false;
         }
+
+        /*
+         * The entry is stored, so post submission actions (payment hand-off,
+         * integrations) still run when the notification fails. Marked undelivered
+         * first, because a payment hand-off answers the request itself.
+         */
+        global $wpdb;
+        $wpdb->update($wpdb->prefix . 'hashform_entries', array('delivery_status' => 0), array('id' => $this->entry_id));
+
+        $this->run_after_email($form_settings, $metas);
+
+        return false;
+    }
+
+    /**
+     * Post submission actions: the payment hand-off, Pro integrations and anything a site adds.
+     */
+    private function run_after_email($form_settings, $metas) {
+        do_action('hashform_after_email', array(
+            'form' => $this->form,
+            'entry_id' => $this->entry_id,
+            'form_settings' => $form_settings,
+            'metas' => $metas,
+            'location' => $this->location
+        ));
     }
 
     public static function template1($title, $entry_value, $count) {

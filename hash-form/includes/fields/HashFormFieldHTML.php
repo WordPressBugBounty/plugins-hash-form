@@ -36,13 +36,8 @@ class HashFormFieldHTML extends HashFormFieldType {
                 );
                 $html_id = 'hf-field-desc_' . absint($field['id']);
 
-                /*
-                 * wp_editor() gives no way to put an attribute on the textarea
-                 * it prints, and the canvas has to know where to mirror what is
-                 * typed. handleTinyMceChange() already writes the editor back
-                 * to this textarea and fires change on it, so naming a target
-                 * here is all the live preview needs.
-                 */
+                // wp_editor() cannot add attributes to its textarea, so the_editor adds
+                // the data-changeme target the live canvas preview mirrors into.
                 $preview_id = self::preview_id($field['id']);
                 $add_target = function ($editor_html) use ($html_id, $preview_id) {
                     return str_replace(
@@ -79,21 +74,15 @@ class HashFormFieldHTML extends HashFormFieldType {
         $content = isset($field['description']) ? $field['description'] : '';
         $content = apply_filters('hashform_translate_string', $content, 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Description');
 
-        /*
-         * Sanitized again on the way out, not only on the way in: rows saved
-         * before that was done still hold whatever was pasted into them.
-         */
+        // Sanitized on output too: older rows may hold unsanitized content.
         $content = HashFormHelper::sanitize_html_field_content($content);
         ?>
         <div class="hf-custom-html-field"<?php echo is_admin() ? ' id="' . esc_attr(self::preview_id($field['id'])) . '" data-empty-text="' . esc_attr__('Custom HTML - nothing added yet', 'hash-form') . '"' : ''; ?>>
             <?php
-            if ('' === trim(wp_strip_all_tags($content)) && is_admin()) {
-                /*
-                 * The canvas used to show this whatever the field held, so
-                 * there was no way to see what you had written without saving
-                 * and looking at the page. What is drawn now is what the page
-                 * will draw, having been through the same sanitizer.
-                 */
+            // Same test as the builder's live preview (backend.js): text, or an element that shows without any.
+            $is_empty = '' === trim(wp_strip_all_tags($content)) && !preg_match('/<(img|hr|br|input|svg)\b/i', $content);
+
+            if ($is_empty && is_admin()) {
                 ?>
                 <div class="hf-custom-html-preview">
                     <?php esc_html_e('Custom HTML - nothing added yet', 'hash-form'); ?>

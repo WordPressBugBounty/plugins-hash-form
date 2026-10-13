@@ -14,12 +14,7 @@ class HashFormFieldSelect extends HashFormFieldType {
     }
 
     protected function extra_field_default_opts() {
-        /*
-         * Off, matching every other field type. A dropdown that sizes itself to
-         * its longest option is the odd one out in a form of full-width
-         * controls, and it changes width as soon as the options are edited, so
-         * it is something to turn on deliberately rather than to undo.
-         */
+        // Off by default so the dropdown is full width like every other control.
         return array(
             'auto_width' => 'off'
         );

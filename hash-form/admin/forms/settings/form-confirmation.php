@@ -1,14 +1,7 @@
 <?php
 defined('ABSPATH') || die();
-/*
- * A template, included from inside a class method - never loaded on its own.
- * The variables below are locals of the method that includes it, not globals,
- * which is what the prefix sniff assumes about a file-scope assignment.
- */
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
 
-// The unprefixed filter this file shipped with, still applied so an add-on
-// written against it keeps working.
 // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- kept for backward compatibility; hashform_confirmation_types is the prefixed name to use.
 $hf_confirmation_types = apply_filters('hf_confirmation_types', array(
     'show_message' => __('Message', 'hash-form'),

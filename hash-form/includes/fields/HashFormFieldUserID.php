@@ -23,11 +23,7 @@ class HashFormFieldUserID extends HashFormFieldType {
     }
 
     /**
-     * What this field can show for the person who submitted.
-     *
-     * The account id is always what gets stored; this only decides how it is
-     * rendered. Storing the id rather than the chosen text means a rename or an
-     * address change does not leave old entries pointing at something stale.
+     * How the submitter is shown. The user id is always what is stored.
      */
     public static function capture_choices() {
         return array(
@@ -39,16 +35,14 @@ class HashFormFieldUserID extends HashFormFieldType {
     }
 
     /**
-     * Render a stored user id for a human.
+     * Render a stored user id for display. Returns HTML-safe text.
      *
-     * Entry detail passes $link so the name goes to the profile; email does not,
-     * because a recipient may have no business in wp-admin. Returns text that is
-     * already safe to place in HTML.
+     * Only entry detail passes $link; emails do not link into wp-admin.
      */
     public static function format_value($stored, $capture = 'display_name', $link = false) {
         $user_id = absint($stored);
 
-        // Logged out submissions store 0, which reads like a real account.
+        // Logged-out submissions store 0; show Guest, not an id.
         if (!$user_id) {
             return esc_html__('Guest', 'hash-form');
         }
@@ -87,8 +81,7 @@ class HashFormFieldUserID extends HashFormFieldType {
     }
 
     /**
-     * The capture setting for a field, tolerating entries saved before the
-     * option existed.
+     * The capture setting for a field, defaulting to display_name when missing.
      */
     public static function capture_from_options($options) {
         $options = is_array($options) ? $options : array();

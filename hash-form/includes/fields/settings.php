@@ -1,10 +1,5 @@
 <?php
 defined('ABSPATH') || die();
-/*
- * A template, included from inside a class method - never loaded on its own.
- * The variables below are locals of the method that includes it, not globals,
- * which is what the prefix sniff assumes about a file-scope assignment.
- */
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
 ?>
 
@@ -44,12 +39,7 @@ defined('ABSPATH') || die();
             <?php
         }
 
-        /*
-         * Only for v2. A v3 widget is invisible, so neither of these describes
-         * anything that is drawn; both were stored and read when rendering the
-         * widget but had no control anywhere, leaving every captcha on normal
-         * and light whatever the site owner wanted.
-         */
+        // Size and theme apply to v2 only; a v3 widget is invisible.
         if ($field_type === 'captcha' && HashFormFieldCaptcha::should_show_captcha() && HashFormFieldCaptcha::is_v2()) {
             $captcha_size = isset($field['captcha_size']) ? $field['captcha_size'] : 'normal';
             $captcha_theme = isset($field['captcha_theme']) ? $field['captcha_theme'] : 'light';
@@ -87,7 +77,7 @@ defined('ABSPATH') || die();
 
             <div class="hf-form-row hf-grid-3">
                 <label><?php esc_html_e('Label Position', 'hash-form'); ?></label>
-                <?php // No space after the underscore: the save path looks up label_position_<id> and a stray one made this setting silently unsaveable. ?>
+                <?php // Exactly label_position_<id>, no space: the save path looks up that key. ?>
                 <select name="field_options[label_position_<?php echo absint($field_id); ?>]">
                     <option value="top" <?php isset($field['label_position']) ? selected($field['label_position'], 'top') : ''; ?>>
                         <?php esc_html_e('Top', 'hash-form'); ?>
@@ -129,9 +119,6 @@ defined('ABSPATH') || die();
         }
 
         if ($field_type === 'heading') {
-            // Looped rather than six near-identical blocks, each of which had
-            // to remember to fall back to the default when nothing was saved;
-            // none of them did, so an unsaved field always showed H1.
             $heading_type = isset($field['heading_type']) ? $field['heading_type'] : 'h3';
             ?>
             <div class="hf-form-row">
@@ -153,12 +140,7 @@ defined('ABSPATH') || die();
                 <label><?php esc_html_e('Content', 'hash-form'); ?></label>
                 <div class="hf-form-textarea">
                     <?php
-                    /*
-                     * Decoded first. What is stored is already entity-encoded,
-                     * so escaping it again for the textarea meant an author who
-                     * typed `5 < 10 & "quoted"` came back to
-                     * `5 &lt; 10 &amp; &quot;quoted&quot;`.
-                     */
+                    // Decode first: the stored value is already entity-encoded, and esc_textarea would double-encode it.
                     $content_value = isset($field['content']) ? html_entity_decode($field['content'], ENT_QUOTES, 'UTF-8') : '';
                     ?>
                     <textarea name="field_options[content_<?php echo esc_attr($field_id); ?>]" data-changeme="hf-field-<?php echo esc_attr($field_id) ?>"><?php echo esc_textarea($content_value); ?></textarea>
@@ -403,8 +385,6 @@ defined('ABSPATH') || die();
         }
 
         if ($field_type === 'separator') {
-            // Looped, like the heading levels: six near-identical blocks, none
-            // of which fell back to the default when nothing was saved.
             $border_style = isset($field['border_style']) ? $field['border_style'] : 'solid';
             $border_labels = array(
                 'solid' => esc_html__('Solid', 'hash-form'),
@@ -510,7 +490,7 @@ defined('ABSPATH') || die();
 
             <div class="hf-form-row">
                 <label><?php esc_html_e('Minimum File Size Allowed to Upload (KB)', 'hash-form'); ?></label>
-                <?php // isset: fields saved before this option existed have no such key until their next save. ?>
+                <?php // isset: older fields lack this key until saved again. ?>
                 <input type="number" name="field_options[min_upload_size_<?php echo absint($field_id); ?>]" value="<?php echo isset($field['min_upload_size']) ? esc_attr($field['min_upload_size']) : ''; ?>" min="0" />
                 <p class="description">
                     <?php esc_html_e('Rejects files smaller than this, which is the quickest way to catch an empty or truncated file. Leave empty for no minimum.', 'hash-form'); ?>
@@ -613,13 +593,7 @@ defined('ABSPATH') || die();
                 <input type="text" class="hf-format-input" value="<?php echo isset($field['format']) ? esc_attr($field['format']) : ''; ?>" name="field_options[format_<?php echo absint($field_id); ?>]" data-fid="<?php echo absint($field_id); ?>" />
 
                 <?php
-                /*
-                 * Offered rather than imposed. The pattern is written for
-                 * numbers ending in a four digit group, which is not how much
-                 * of the world writes a phone number, so switching it on for
-                 * every phone field would start rejecting values that submit
-                 * happily today.
-                 */
+                // Offered, not imposed: the pattern expects a trailing four-digit group, which many countries do not use.
                 if ('phone' === $field_type) {
                     ?>
                     <p class="hf-format-presets">
@@ -756,17 +730,11 @@ defined('ABSPATH') || die();
         }
 
         if (!empty($display['advanced_validation'])) {
-            /*
-             * Other fields on this form that a confirmation field could match.
-             * The rules live on HashFormFields because the builder rebuilds
-             * this list over ajax when a field is added or removed, and two
-             * copies of them would drift.
-             */
+            // Fields a confirmation field could match. Rules live in HashFormFields, shared with the builder's ajax refresh.
             static $form_fields_cache = array();
 
             if (!empty($field['form_id']) && !isset($form_fields_cache[$field['form_id']])) {
-                // The builder renders one settings panel per field, so without
-                // this the same form-fields query runs once for every field.
+                // Cached per form: the builder renders one settings panel per field.
                 $form_fields_cache[$field['form_id']] = HashFormFields::get_form_fields($field['form_id']);
             }
 

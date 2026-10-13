@@ -3,21 +3,9 @@
 defined('ABSPATH') || die();
 
 /**
- * The plugin's one scheduled event.
+ * Daily maintenance event. Add-ons hook `hashform_maintenance` rather than scheduling their own.
  *
- * Nothing was ever scheduled before this: there is no wp_schedule_event
- * anywhere in either plugin. That is why abandoned checkouts sat pending
- * forever, and why nothing that accumulates - analytics rows, generated pdfs,
- * uploads whose entry is long gone - was ever cleared up.
- *
- * One daily event rather than one per job, and add-ons hook it. Pro attaches
- * its own housekeeping to the same hook, so a site has a single cron entry to
- * see, disable or reschedule.
- *
- * Everything that DELETES is off unless the site turns it on. A plugin update
- * that quietly starts removing data on a timer is worse than the mess it
- * cleans up, so the default is to do nothing destructive and let the owner
- * decide. What runs unasked is limited to work that can be undone.
+ * Destructive tasks are opt-in; only reversible work runs by default.
  */
 class HashFormCron {
 
@@ -36,11 +24,7 @@ class HashFormCron {
      * ------------------------------------------------------------------- */
 
     /**
-     * Make sure the event exists.
-     *
-     * Checked on every load rather than only on activation: a site that
-     * updates the plugin without deactivating it never runs the activation
-     * hook, and would otherwise never get the event at all.
+     * Schedule the event if missing. Checked on every load because plugin updates skip the activation hook.
      */
     public static function ensure_scheduled() {
         if (wp_next_scheduled(self::HOOK)) {
@@ -62,8 +46,7 @@ class HashFormCron {
     }
 
     /**
-     * The first run, at a quiet hour in the site's own timezone rather than
-     * whenever the plugin happened to be activated.
+     * First run time: a quiet hour in the site's timezone.
      *
      * @return int
      */
@@ -83,8 +66,7 @@ class HashFormCron {
     }
 
     /**
-     * What is scheduled and what is turned on, for the site health screen,
-     * for support, and for tests.
+     * What is scheduled and which tasks are enabled, for site health and support.
      *
      * @return array
      */
@@ -109,10 +91,7 @@ class HashFormCron {
         );
 
         /**
-         * Daily maintenance.
-         *
-         * Pro hooks this for payments, analytics and generated files. Runs
-         * after the free plugin's own housekeeping.
+         * Daily maintenance. Runs after the free plugin's own housekeeping.
          */
         do_action('hashform_maintenance', $report);
 
@@ -125,12 +104,7 @@ class HashFormCron {
 
     private static function purging_orphaned_meta() {
         /**
-         * Whether to delete answers whose entry no longer exists.
-         *
-         * Off by default. These rows are unreachable - nothing can display an
-         * answer with no entry behind it - but they are still somebody's data,
-         * and a site should choose to remove them rather than find out
-         * afterwards.
+         * Whether to delete answers whose entry no longer exists. Off by default.
          *
          * @param bool $enabled
          */
@@ -138,8 +112,7 @@ class HashFormCron {
     }
 
     /**
-     * Answers left behind by an entry that was deleted without going through
-     * destroy_entry() - a manual database edit, or a crash part way through.
+     * Delete answers whose entry was removed without going through destroy_entry().
      *
      * @return int Rows removed.
      */
@@ -153,13 +126,7 @@ class HashFormCron {
         $meta = $wpdb->prefix . 'hashform_entry_meta';
         $entries = $wpdb->prefix . 'hashform_entries';
 
-        /*
-         * Found first, then deleted by id. MySQL refuses LIMIT on a
-         * multi-table DELETE, so the join and the batch cap cannot be
-         * expressed in one statement - and a DELETE that fails on syntax
-         * returns false, which reads as "nothing to do" rather than as an
-         * error. Two statements, both valid, and the cap survives.
-         */
+        // Select ids first, then delete: MySQL rejects LIMIT on a multi-table DELETE.
         // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $meta and $entries are $wpdb->prefix plus table name literals set above; the batch size is bound.
         $ids = $wpdb->get_col($wpdb->prepare(
                         "SELECT m.id FROM {$meta} AS m

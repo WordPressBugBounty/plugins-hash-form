@@ -13,9 +13,7 @@ class HashFormListing extends \WP_List_Table {
     private $status;
 
     /**
-     * One GROUP BY for every form on the screen instead of a COUNT(*) per
-     * row. Static because the header stats and the table both want it, and
-     * the screen builds more than one instance of this class per request.
+     * Entry counts for every form, from one GROUP BY. Static because the header stats and the table share it.
      */
     private static $entry_counts;
 
@@ -31,18 +29,14 @@ class HashFormListing extends \WP_List_Table {
     }
 
     /**
-     * Only reached when a search or filter came back empty; the "no forms at
-     * all" case is handled by empty_state() before the table is drawn.
+     * Shown when a search or filter is empty; a site with no forms gets empty_state() instead.
      */
     public function no_items() {
         esc_html_e('No forms matched your search.', 'hash-form');
     }
 
     /**
-     * A bare table with an empty body is a poor first impression, so the
-     * whole table is swapped for a panel when there is genuinely nothing to
-     * list. A search that returns nothing still gets the table, so the search
-     * box and column headers stay where the user left them.
+     * Replace the table with an empty-state panel when there are no forms. An empty search still gets the table.
      */
     public function display() {
         $searching = '' !== (string) HashFormHelper::get_var('s');
@@ -74,13 +68,12 @@ class HashFormListing extends \WP_List_Table {
             <p class="hf-empty-text"><?php esc_html_e('Create your first form, then drop it on any page with the shortcode or the Hash Form block.', 'hash-form'); ?></p>
             <a href="#" class="hf-btn hf-btn-primary hf-trigger-modal"><?php esc_html_e('Create your first form', 'hash-form'); ?></a>
             <?php
-            // Ready-made templates and the AI generator live in the Pro
-            // plugin, which replaces this same modal with its own.
+            // Pro replaces this modal with its own templates and AI generator.
             if (!defined('HASH_FORM_PRO_VERSION')) {
                 ?>
                 <p class="hf-empty-upsell">
                     <?php esc_html_e('Prefer to start from a template?', 'hash-form'); ?>
-                    <a href="https://hashthemes.com/plugin/hash-form-pro/" target="_blank" rel="noopener"><?php esc_html_e('Hash Form Pro', 'hash-form'); ?></a>
+                    <a href="<?php echo esc_url(HashFormUpgrade::topic_url('templates')); ?>"><?php esc_html_e('Hash Form Pro', 'hash-form'); ?></a>
                     <?php esc_html_e('adds a form template library and an AI form generator.', 'hash-form'); ?>
                 </p>
                 <?php
@@ -122,7 +115,6 @@ class HashFormListing extends \WP_List_Table {
         }
         $output .= '</strong>';
 
-        // Get actions.
         $actions = $this->get_action_links($item);
         $row_actions = array();
 
@@ -145,16 +137,14 @@ class HashFormListing extends \WP_List_Table {
         $hashform_columns = $this->get_columns();
         $hashform_sortable = $this->get_sortable_columns();
         $hashform_hidden = (is_array(get_user_meta(get_current_user_id(), 'managetoplevel_page_hashformcolumnshidden', true))) ? get_user_meta(get_current_user_id(), 'managetoplevel_page_hashformcolumnshidden', true) : array();
-        // The title column carries the row actions, so it is the one that
-        // must stay visible and hold the toggle on narrow screens.
+        // The title column carries the row actions, so it holds the toggle on narrow screens.
         $hashform_primary = 'name';
         $this->_column_headers = array($hashform_columns, $hashform_hidden, $hashform_sortable, $hashform_primary);
 
         $per_page = $this->get_items_per_page('forms_per_page', 10);
         $current_page = max(1, $this->get_pagenum());
 
-        // Counted and fetched separately, so only the forms being shown are
-        // loaded rather than every form on the site.
+        // Counted and fetched separately so only the forms on this page are loaded.
         $total_items = $this->count_rows();
         $page_rows = $total_items ? $this->get_table_data($per_page, ($current_page - 1) * $per_page) : array();
 
@@ -183,8 +173,7 @@ class HashFormListing extends \WP_List_Table {
 
 
     /**
-     * The WHERE half of the listing query, shared by the count and the page
-     * so the two can never disagree about what is being listed.
+     * The WHERE clause for the listing query, shared by the count and the page so the two agree.
      *
      * @return array
      */
@@ -205,11 +194,7 @@ class HashFormListing extends \WP_List_Table {
     }
 
     /**
-     * The ORDER BY clause, from a whitelist.
-     *
-     * The tie-break on id keeps pagination stable: two forms created in the
-     * same second must not be free to swap places between one page and the
-     * next, or one of them is shown twice and the other never.
+     * The ORDER BY clause, from a whitelist. Always ends with an id tie-break so pagination is stable.
      *
      * @return string
      */
@@ -326,8 +311,7 @@ class HashFormListing extends \WP_List_Table {
         }
 
         if ('top' === $which) {
-            // Where add-ons hang their own form tools, mirroring the entries
-            // list. Pro uses it; nothing in the free plugin does.
+            // Where add-ons add their own form tools, as on the entries list.
             do_action('hashform_forms_tablenav', $this->status);
         }
     }
@@ -387,8 +371,7 @@ class HashFormListing extends \WP_List_Table {
     public function get_entry_link($id) {
         $count = $this->get_entry_count($id);
 
-        // Dimmed at zero so the rows that actually have submissions are the
-        // ones the eye lands on when scanning the column.
+        // Dimmed at zero so forms with submissions stand out.
         $class = 'hf-entry-badge' . ($count ? '' : ' is-empty');
 
         return '<a class="' . esc_attr($class) . '" href="' . esc_url(admin_url('admin.php?page=hashform-entries&form_id=' . $id)) . '">' . esc_html(number_format_i18n($count)) . '</a>';
@@ -407,9 +390,7 @@ class HashFormListing extends \WP_List_Table {
     }
 
     /**
-     * The shortcode as a click-to-copy chip. A plain <button> rather than a
-     * link because this row sits inside the GET filter form, where a stray
-     * submit would reload the screen.
+     * The shortcode as a click-to-copy chip. type="button" because the row sits inside the GET filter form.
      */
     private function get_shortcode_chip($id) {
         $shortcode = '[hashform id="' . $id . '"]';
@@ -422,8 +403,7 @@ class HashFormListing extends \WP_List_Table {
     }
 
     /**
-     * Totals for the header bar. Static so the screen can print them without
-     * having to prepare the table first.
+     * Totals for the header bar. Static so they can be printed without preparing the table.
      */
     public static function get_stats() {
         $counts = self::get_count();
@@ -446,9 +426,7 @@ class HashFormListing extends \WP_List_Table {
         $counts = self::get_count();
 
         foreach ($statuses as $status => $name) {
-            // Trash only earns a tab once something is in it. All keeps its
-            // tab either way, so a lone Trash link never sits there on its
-            // own with no way back.
+            // Trash gets a tab only when it has items; All always keeps its tab.
             if ('published' !== $status && !$counts->{$status}) {
                 continue;
             }

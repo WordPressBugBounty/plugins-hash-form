@@ -18,12 +18,6 @@ class HashFormBlock {
     public function register_block() {
         $asset_file = include(HASHFORM_PATH . 'build/index.asset.php');
 
-        /*
-         * No 'style' handle: css/form-block.css was an empty file, and naming
-         * it here had WordPress request an empty stylesheet on every page that
-         * carries the block. The block's own appearance comes from the form
-         * styles, which the shortcode path loads as well.
-         */
         wp_register_style('hfb-editor', HASHFORM_URL . 'css/editor.css', array(), HASHFORM_VERSION);
         wp_register_script('hfb-blocks', HASHFORM_URL . 'build/index.js', $asset_file['dependencies'], $asset_file['version'], false);
 
@@ -404,35 +398,21 @@ class HashFormBlock {
     }
 
     /**
-     * The form's own stylesheet, where the block is actually drawn.
+     * Form stylesheets for the block editor canvas, admin only.
      *
-     * This is a dynamic block: the editor asks the server for its markup and
-     * injects what comes back, so nothing on that path enqueues the form's
-     * assets the way a front-end render does.
-     *
-     * It has to be this hook rather than enqueue_block_editor_assets. The
-     * editor canvas is an iframe, and that hook only dresses the editor around
-     * it - the stylesheet went into the outer document and never reached the
-     * block. enqueue_block_assets is the one WordPress carries into the canvas.
-     *
-     * Admin only: on the front end these are enqueued when a form actually
-     * renders, so a page without one still loads none of them.
+     * Uses enqueue_block_assets because the canvas is an iframe that enqueue_block_editor_assets does not reach.
      */
     public function enqueue_block_canvas_styles() {
         if (!is_admin()) {
             return;
         }
 
-        // Registered here as well as enqueued, because the front-end
-        // registration runs on wp_enqueue_scripts, which never fires in the
-        // admin - the handles would otherwise not exist to enqueue.
+        // Registered here too: the front-end registration runs on wp_enqueue_scripts, which never fires in admin.
         HashFormLoader::enqueue_styles();
         HashFormLoader::enqueue_form_styles();
     }
 
     public function enqueue_block_editor_assets() {
-        // The forms list is only needed inside the block editor; querying it
-        // on every request (init) was wasted work.
         $all_forms = HashFormHelper::get_all_forms_list_options();
         unset($all_forms['']);
 
@@ -456,19 +436,9 @@ class HashFormBlock {
             add_filter('hashform_enable_style', '__return_false');
             self::$stylesheet = $this->get_stylesheet($attr);
 
-            /*
-             * On a page the stylesheet goes out with wp_footer, which keeps it
-             * out of the middle of the content.
-             *
-             * The editor is different: it asks for this block through the
-             * block-renderer endpoint and injects only what comes back, and no
-             * footer ever runs there. The css has to travel with the markup, or
-             * the block sits in the editor stripped of its default styling and
-             * without the custom styling meant to replace it.
-             */
+            // The editor renders through the block-renderer endpoint, where wp_footer never runs, so the CSS goes inline.
             if (defined('REST_REQUEST') && REST_REQUEST) {
-                // Already stripped of markup in get_stylesheet(), which is
-                // where the attribute is read, so it cannot close the element.
+                // Markup is already stripped in get_stylesheet().
                 echo '<style>' . $this->strip_whitespace(self::$stylesheet) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- css, sanitised at source.
             } else {
                 add_action('wp_footer', array($this, 'print_stylesheet'), 11);
@@ -477,7 +447,7 @@ class HashFormBlock {
 
         if (!is_admin()) {
             // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() returns a ready-escaped attribute string, and is echoed unescaped by core itself.
-            echo '<div ' . get_block_wrapper_attributes(['class' => 'wp-block-hash-form', 'id' => esc_attr($attr['id'])]) . '>';
+            echo '<div ' . get_block_wrapper_attributes(['class' => 'wp-block-hash-form', 'id' => esc_attr(isset($attr['id']) ? $attr['id'] : '')]) . '>';
         }
 
         echo do_shortcode('[hashform id="' . $form_id . '"]');
@@ -527,12 +497,10 @@ class HashFormBlock {
             }
         }
 
-        // Get CSS for the Block. The attribute is arbitrary post content and
-        // ends up inside a <style> tag, so make sure no markup can survive —
-        // otherwise a "</style><script>" payload would execute for viewers.
+        // The attribute is post content placed inside a <style> tag, so strip markup to block a "</style><script>" payload.
         if (isset($blockAttrs['hfStyle'])) {
             $block_style = is_array($blockAttrs['hfStyle']) ? '' : $blockAttrs['hfStyle'];
-            $block_css_arr[$blockAttrs['id']] = str_replace('<', '', wp_strip_all_tags($block_style));
+            $block_css_arr[isset($blockAttrs['id']) ? $blockAttrs['id'] : ''] = str_replace('<', '', wp_strip_all_tags($block_style));
         }
 
         foreach ($block_css_arr as $val) {

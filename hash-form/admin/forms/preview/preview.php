@@ -11,7 +11,7 @@ remove_action('wp_print_styles', 'print_emoji_styles');
         <title><?php bloginfo('name'); ?> | <?php echo esc_html($form->name); ?></title>
         <meta charset="<?php bloginfo('charset'); ?>" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <?php // An admin tool rather than a page of the site, whoever reaches it. ?>
+        <?php // Admin tool, not a site page. ?>
         <meta name="robots" content="noindex, nofollow" />
         <?php wp_head(); ?>
     </head>

@@ -3,7 +3,7 @@ Contributors: hashthemes
 Tags: form, form builder, drag and drop, contact form
 Requires at least: 6.3
 Tested up to: 7.1
-Stable tag: 1.4.4
+Stable tag: 1.4.6
 Requires PHP: 7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -15,6 +15,8 @@ Create any kind of forms effortlessly with Hash Form – the ultimate drag & dro
 Hash Form is a free drag and drop form builder for WordPress. Build a form, style it to match your site, and embed it anywhere, with no code and no paywall on the features you actually need.
 
 Use it for contact, feedback, survey, registration and quote forms. Drag fields onto a row and column canvas, set the styling, add conditional logic, and publish. The full field set, entry storage, styling and email tools are all in the free plugin, not held back for a paid tier.
+
+<strong>Hash Form links: </strong><a href="https://hashformbuilder.com/">Hash Form Pro</a> | <a href="https://hashformbuilder.com/form-templates/">Form Template Demos</a> | <a href="https://hashformbuilder.com/form-styles/">Form Style Demos</a> | <a href="https://hashformbuilder.com/features/">Features</a> | <a href="https://hashformbuilder.com/integrations/">Integrations</a> | <a href="https://hashformbuilder.com/pricing/">Pricing</a> | <a href="https://hashthemes.com/documentation/hash-form-drag-and-drop-form-builder-documentation/">Documentation</a>
 
 <h3>Forms You Can Build</h3>
 Hash Form is not tied to one type of form. The same canvas and field set cover a two field contact box and a long, multi section application.
@@ -110,11 +112,96 @@ Works with WP Mail SMTP so notifications send over a configured SMTP connection 
 <h3>Import and Export</h3>
 Export a form to a file and import it on another site, without rebuilding it.
 
+<h3>Hash Form Pro</h3>
+The free plugin is a complete form builder. <a href="https://hashformbuilder.com/">Hash Form Pro</a> is for what comes after that: taking payments, generating forms with AI, starting from a finished template and sending submissions on to the tools you already use. It extends this plugin on the same canvas, with the same styling and the same entry storage, so nothing you have built needs redoing.
+
+Pro adds 23 field types (50 in all), 20 payment gateways, 79 form templates, 18 pre-built styles, form analytics and 73 modules. A site loads only the modules it switches on.
+
+<a href="https://hashformbuilder.com/">See everything in Hash Form Pro</a> | <a href="https://hashformbuilder.com/pricing/">View pricing</a>
+
+<h3>Pro: Form Templates</h3>
+79 finished forms, each with a preview, covering contact, feedback, bookings, registrations, applications, orders, surveys, support tickets, donations, payments and multi step forms. Pick one and it opens on the canvas as an ordinary form you can change however you like.
+
+<a href="https://hashformbuilder.com/form-templates/">Browse and try all 79 form templates</a>
+
+<h3>Pro: Pre-built Form Styles</h3>
+18 ready made looks, from minimal and corporate to dark and neon. Import one into a style template, adjust it, and apply it to any form.
+
+<a href="https://hashformbuilder.com/form-styles/">See the 18 form styles on a live form</a>
+
+<h3>Pro: Payments</h3>
+Turn any form into a paid one. Add a Payment field, price it with Product and Calculation fields, and let a Coupon field discount the total. Every amount is priced on the server.
+
+<ul>
+<li><strong>20 gateways: </strong>Stripe, PayPal, Mollie, Paystack, Razorpay, Authorize.Net, 2Checkout, Square, Flutterwave, Cashfree, Coinbase, Braintree, Paddle, Lemon Squeezy, PayU, Instamojo, Mercado Pago, PayFast, GoCardless and Adyen.</li>
+<li><strong>Fixed or calculated amounts: </strong>charge a set price, or total up the products, quantities and calculations on the form.</li>
+<li><strong>Subscriptions: </strong>recurring payments with an interval, a cycle count and an optional trial, on the gateways that support them.</li>
+<li><strong>Coupons: </strong>discount codes with a value, an expiry, a usage limit and the forms they apply to.</li>
+<li><strong>Payments screen: </strong>every transaction in one list, with a detail view for each.</li>
+<li><strong>Emails held until payment: </strong>an abandoned checkout sends no confirmation.</li>
+</ul>
+
+<a href="https://hashformbuilder.com/features/payments/">More about payment forms</a>
+
+<h3>Pro: AI Form Builder</h3>
+Describe the form you want in a sentence and have it built, with fields, labels, options and layout ready to edit. Use ChatGPT, Claude, Gemini, DeepSeek or Mistral with your own API key. A formula assistant also writes and checks Calculation formulas from a plain description, with no API key.
+
+<a href="https://hashformbuilder.com/features/ai-form-builder/">More about the AI form builder</a>
+
+<h3>Pro: Additional Field Types</h3>
+<ul>
+<li><strong>Choice: </strong>Checkbox Grid, Matrix Input, Sortable List, Rating Scale, Yes/No, Toggle, Advanced Select and Chained Select.</li>
+<li><strong>Advanced: </strong>Signature, Date &amp; Time, Calculation, Repeater Field, Multi Step, Color Picker, Coupon, Shortcode, Button and GDPR Agreement.</li>
+<li><strong>Payment: </strong>Payment and Product.</li>
+<li><strong>Spam protection: </strong>hCaptcha, Cloudflare Turnstile and Math Captcha, with Akismet and a honeypot alongside them.</li>
+</ul>
+
+<a href="https://hashformbuilder.com/features/multi-step-forms/">Multi step forms</a> | <a href="https://hashformbuilder.com/features/calculations/">Calculations</a> | <a href="https://hashformbuilder.com/features/field-types/">All 50 field types</a>
+
+<h3>Pro: Integrations</h3>
+<ul>
+<li><strong>Email marketing: </strong>Mailchimp, ActiveCampaign, Brevo, Campaign Monitor, Constant Contact, ConvertKit, GetResponse, HubSpot, MailerLite, Mailjet, Moosend, Salesflare, Sendfox, Automizy and Airtable.</li>
+<li><strong>CRM: </strong>Zoho CRM, Pipedrive and Freshsales.</li>
+<li><strong>Productivity: </strong>Slack, Discord, Microsoft Teams, Mattermost, Telegram, WhatsApp, Trello, Google Sheets, Google Calendar and a generic Webhook.</li>
+<li><strong>File storage: </strong>Google Drive and Dropbox, with image resizing on upload.</li>
+<li><strong>Email delivery: </strong>SendGrid, Mailgun, Postmark and Amazon SES.</li>
+<li><strong>SMS: </strong>Twilio and ClickSend.</li>
+</ul>
+
+<a href="https://hashformbuilder.com/integrations/">Browse all integrations</a>
+
+<h3>Pro: More Tools</h3>
+<ul>
+<li><strong>Form analytics: </strong>impressions, completions, abandonment, conversion rate and per field drop off, plus Google Analytics events. <a href="https://hashformbuilder.com/features/form-analytics/">More about form analytics</a></li>
+<li><strong>Popup and flying button: </strong>show a form over the page instead of in it.</li>
+<li><strong>Schedule and restrictions: </strong>open and close a form on a date, cap the number of entries, or require a login.</li>
+<li><strong>CSV export and PDF submissions: </strong>export entries to CSV and generate a PDF of a submission.</li>
+<li><strong>Front end entries: </strong>show a form's entries on a page to the users allowed to see them.</li>
+<li><strong>Post creation: </strong>turn a submission into a post, page or custom post type entry.</li>
+<li><strong>WooCommerce: </strong>read products and prices from your shop into a form.</li>
+</ul>
+
+<h3>Pro: Pricing</h3>
+Every plan includes every Pro feature. Plans differ only by the number of sites: 1 site, 5 sites or unlimited sites, paid yearly or as a lifetime license. If a yearly subscription lapses, Hash Form Pro keeps working on your sites.
+
+<a href="https://hashformbuilder.com/pricing/">Compare plans and pricing</a>
+
 <h3>Test It First</h3>
 Try every feature in a live sandbox at <a href="https://tastewp.com/plugins/hash-form/" target="_blank">the Hash Form test dashboard</a> before you install.
 
 <h3>Documentation and Support</h3>
 Step by step guides and reference are in the <a href="https://hashthemes.com/documentation/hash-form-drag-and-drop-form-builder-documentation/">Hash Form documentation</a>. For anything else, our support team is available through support tickets.
+
+<ul>
+<li><a href="https://hashthemes.com/documentation/hash-form-drag-and-drop-form-builder-documentation/">Hash Form documentation</a></li>
+<li><a href="https://hashthemes.com/documentation/hash-form-pro-documentation/">Hash Form Pro documentation</a></li>
+<li><a href="https://hashformbuilder.com/form-templates/">Form template demos</a></li>
+<li><a href="https://hashformbuilder.com/form-styles/">Form style demos</a></li>
+<li><a href="https://hashformbuilder.com/features/">Features</a></li>
+<li><a href="https://hashformbuilder.com/integrations/">Integrations</a></li>
+<li><a href="https://hashformbuilder.com/pricing/">Pricing</a></li>
+<li><a href="https://hashformbuilder.com/contact/">Contact and pre-sale questions</a></li>
+</ul>
 
 == Installation ==
 The easy way to install the plugin is via WordPress.org plugin directory.
@@ -125,7 +212,40 @@ The easy way to install the plugin is via WordPress.org plugin directory.
 <li>Activate Plugin from "Plugins" menu in WordPress.</li>
 </ol>
 
-== Screenshots ==
+== Frequently Asked Questions ==
+
+= Is the free version limited? =
+
+No. It has 27 field types, unlimited forms and unlimited entries, with conditional logic, styling, entry storage and email notifications included.
+
+= What does Hash Form Pro add? =
+
+Payments through 20 gateways, AI form generation, 79 form templates, 18 pre-built styles, 23 more field types, form analytics and 73 modules of integrations. See the full list at <a href="https://hashformbuilder.com/">hashformbuilder.com</a>.
+
+= Does Hash Form Pro replace this plugin? =
+
+No. Pro extends this plugin, so keep Hash Form installed and active. Your forms, entries and style templates stay as they are.
+
+= Can I see the Pro templates and styles before buying? =
+
+Yes. Try the <a href="https://hashformbuilder.com/form-templates/">form template demos</a> and the <a href="https://hashformbuilder.com/form-styles/">form style demos</a>.
+
+= Which payment gateways does Pro support? =
+
+Stripe, PayPal, Mollie, Paystack, Razorpay, Authorize.Net, 2Checkout, Square, Flutterwave, Cashfree, Coinbase, Braintree, Paddle, Lemon Squeezy, PayU, Instamojo, Mercado Pago, PayFast, GoCardless and Adyen.
+
+= Do the AI features need an API key? =
+
+AI form generation uses your own key for ChatGPT, Claude, Gemini, DeepSeek or Mistral. The formula assistant needs no key.
+
+= How is Hash Form Pro priced? =
+
+By number of sites (1, 5 or unlimited), yearly or as a lifetime license. Every plan includes every Pro feature. See <a href="https://hashformbuilder.com/pricing/">pricing</a>.
+
+= Can I build forms with Elementor or Gutenberg? =
+
+Yes. Add a form with the Elementor widget, the Gutenberg block or a shortcode.
+
 == Screenshots ==
 1. Form Builder Screen
 2. Form Builder Screen With Fields
@@ -143,7 +263,32 @@ The easy way to install the plugin is via WordPress.org plugin directory.
 14. Form Style Builder
 
 == Changelog ==
+= 1.4.6 - 12 Oct, 2026 =
+* Hash Form Pro links now go to hashformbuilder.com, the new home of the Pro plugin
+* Upgrade to Pro screen redesigned: the comparison is now split into eight topics, each with a one line summary of what Free and Pro do, links to its page on hashformbuilder.com, a feature search and an "Only show what Pro adds" filter
+* Upgrade to Pro screen: comparison brought in line with Hash Form Pro - 73 modules, geo location removed, and rows added for the formula assistant, signatures, 18 pre-built styles, emails held until payment and the front end entries list
+* Upgrade to Pro screen: integrations, payment gateways, AI models, template categories, pre-built styles and Pro field types are now listed by name
+* The Hash Form Pro links on the Forms list, the style builder and a form's Restrictions tab now open the Upgrade to Pro screen on the matching topic
+* Upgrade to Pro screen: the free column claimed a honeypot, which only Pro has; it now reads Google reCAPTCHA - Fixed
+* Readme: Hash Form Pro features, template and style demos, integrations, pricing and a FAQ - Added
+* Primary buttons on the list screens showed their label in the body text colour instead of white - Fixed
+
+= 1.4.5 - 28 Sep, 2026 =
+* Auto responder: the email was sent to the field ID instead of the visitor's address, so it never arrived and SMTP mailers such as Brevo reported "no recipient" - Fixed
+* Auto responder: no longer tries to send when the chosen email field is left blank
+* Multisite: deleting a subsite from WP-CLI or the Network Admin bulk action could delete the main site's forms and entries - Fixed (Data loss)
+* Multisite: creating a subsite from the front-end signup page caused a fatal error - Fixed
+* Phone field: an optional field with a format pattern rejected the form when left empty, and a "/" in the pattern broke the check - Fixed
+* Address field: the postcode box now accepts letters, as UK, Canadian and Dutch postcodes need - Fixed
+* Submit button: the Stretch alignment did not show as selected after saving - Fixed
+* Field tags: choosing a tag wrote it into every box in the row, not just the one beside the picker - Fixed
+* HTML field: content made only of an image showed as empty on the builder canvas - Fixed
+* Gutenberg block: the block no longer rewrites its settings on every editor render
+* Builder: moving a field no longer sends a request to an endpoint that does not exist
+* Code comments shortened throughout, and unused block source files removed
+
 = 1.4.4 - 3 Sep, 2026 =
+* An Upgrade to Pro screen, with a feature-by-feature comparison of the two plugins: 40 rows across six sections, covering every one of Pro's eleven module groups as well as what this plugin already does. Every figure on it is what the plugins actually ship - 27 field types here and 50 with Pro, 79 form templates, 20 payment gateways - so it can be checked against the screens rather than taken on trust. The menu entry is only added when Pro is not installed
 * Elementor widget: the widget's key had a space in it, so Elementor built the class "elementor-widget-Hash Form" - which a browser reads as two classes, leaving a stray global "Form" on the element and nothing able to target the widget. It is now elementor-widget-hashform; pages already built keep working through an alias registered under the old name - Fixed
 * Elementor widget: registering the widget used require rather than require_once, so a second pass over the elementor/widgets/register hook was a fatal "Cannot declare class" - Fixed
 * Elementor widget: the selected form id is cast to an integer before it is built into the shortcode

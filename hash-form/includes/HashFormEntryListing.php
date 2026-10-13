@@ -76,8 +76,7 @@ class HashFormEntryListing extends \WP_List_Table {
     }
 
     /**
-     * A couple of values from the entry itself, so the list can be read
-     * without opening every row.
+     * A couple of stored values from the entry, as a preview.
      */
     private function get_column_preview($entry_id) {
         if (null === $this->previews) {
@@ -98,8 +97,7 @@ class HashFormEntryListing extends \WP_List_Table {
     }
 
     /**
-     * Loads the first couple of stored values for every entry on this page in
-     * one query, rather than one query per row.
+     * Load the preview values for every entry on this page in one query.
      */
     private function load_previews() {
         global $wpdb;
@@ -134,15 +132,8 @@ class HashFormEntryListing extends \WP_List_Table {
                 continue;
             }
 
-            /*
-             * unserialize_or_decode, not maybe_unserialize: meta_value is
-             * visitor-supplied, and maybe_unserialize() would instantiate any
-             * class named in a crafted 'O:'/'C:' payload the moment an admin
-             * opened this list. This path only ever wants an array or a string
-             * for the preview, so object serialization is decoded with native
-             * unserialize disabled (see entry-detail.php and HashFormEmail.php,
-             * which already read this column the same way).
-             */
+            // unserialize_or_decode, not maybe_unserialize: meta_value is visitor-supplied, and a
+            // crafted object payload must not be instantiated when an admin opens this list.
             $value = HashFormHelper::unserialize_or_decode($row['meta_value']);
 
             if (is_array($value)) {
@@ -177,13 +168,7 @@ class HashFormEntryListing extends \WP_List_Table {
         $per_page = $this->get_items_per_page('entries_per_page', 10);
         $current_page = max(1, $this->get_pagenum());
 
-        /*
-         * Counted and fetched separately, so only the rows being shown are
-         * ever loaded. This used to select every entry on the site, sort the
-         * lot in php and throw all but ten of them away, which meant the
-         * screen's cost grew with the number of submissions rather than with
-         * the size of a page.
-         */
+        // Counted and fetched separately so only the rows on this page are loaded.
         $total_items = $this->count_rows();
         $page_rows = $total_items ? $this->get_table_data($per_page, ($current_page - 1) * $per_page) : array();
 
@@ -234,7 +219,6 @@ class HashFormEntryListing extends \WP_List_Table {
         }
         $output .= '</strong>';
 
-        // Get actions.
         $actions = $this->get_action_links($item);
         $row_actions = array();
 
@@ -250,8 +234,7 @@ class HashFormEntryListing extends \WP_List_Table {
 
 
     /**
-     * The FROM/WHERE half of the listing query, shared by the count and the
-     * page so the two can never disagree about what is being listed.
+     * FROM/WHERE for the listing query, shared by the count and the page so the two agree.
      *
      * @return array {
      *     @type string $join
@@ -274,8 +257,6 @@ class HashFormEntryListing extends \WP_List_Table {
             $where[] = 'e.is_starred = 1';
         }
 
-        // The form filter and the search box used to be mutually exclusive,
-        // so picking a form and then searching silently ignored the form.
         $form_id = HashFormHelper::get_var('form_id', 'absint');
 
         if ($form_id) {
@@ -288,8 +269,7 @@ class HashFormEntryListing extends \WP_List_Table {
         if ('' !== $search) {
             $like = '%' . $wpdb->esc_like($search) . '%';
 
-            // What was submitted lives in the meta table, which is what people
-            // expect a search to look through.
+            // Search the submitted values in the meta table.
             $join = "LEFT JOIN {$wpdb->prefix}hashform_entry_meta AS m ON m.item_id = e.id
                 LEFT JOIN {$wpdb->prefix}hashform_forms AS f ON f.id = e.form_id
                 LEFT JOIN {$wpdb->users} AS u ON u.ID = e.user_id";
@@ -321,11 +301,7 @@ class HashFormEntryListing extends \WP_List_Table {
     }
 
     /**
-     * The ORDER BY clause, from a whitelist.
-     *
-     * A tie-break on id is always appended. Without one, two entries sharing
-     * a created_at can swap places between one page and the next, which with
-     * LIMIT/OFFSET means a row shown twice and another never shown at all.
+     * The ORDER BY clause, from a whitelist. Always ends with an id tie-break so LIMIT/OFFSET paging is stable.
      *
      * @return string
      */
@@ -452,12 +428,7 @@ class HashFormEntryListing extends \WP_List_Table {
                 self::forms_dropdown('form_id', $form_id);
                 submit_button(esc_html__('Filter', 'hash-form'), 'filter_action', '', false, array('id' => 'post-query-submit'));
 
-                /*
-                 * Where add-ons hang their own entry tools. Export to CSV is
-                 * one of them, and it belongs to Pro - the free plugin used to
-                 * put a button of its own here that only led to a sales page,
-                 * which reads as a broken feature rather than an absent one.
-                 */
+                // Where add-ons add their own entry tools, such as Pro's CSV export.
                 do_action('hashform_entries_tablenav', $this->status, $form_id);
                 ?>
             </div>
@@ -465,10 +436,6 @@ class HashFormEntryListing extends \WP_List_Table {
         }
     }
 
-    /**
-     * Exporting entries lives in the Pro plugin. Point at it only when it is
-     * not already installed.
-     */
     public static function forms_dropdown($field_name, $field_value = '') {
         $forms = HashFormBuilder::get_all_forms();
         ?>
@@ -543,9 +510,7 @@ class HashFormEntryListing extends \WP_List_Table {
         $counts = HashFormEntry::get_count();
 
         foreach ($statuses as $status => $name) {
-            // All and Unread stay visible at zero: "0 unread" is readable as
-            // good news rather than the tab vanishing, and All is the way
-            // back from every other view. Starred and Trash have to earn it.
+            // All and Unread stay visible at zero; Starred and Trash only when they have entries.
             $always_shown = ('published' === $status || 'unread' === $status);
 
             if (!$always_shown && !$counts[$status]) {

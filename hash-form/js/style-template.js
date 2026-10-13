@@ -31,22 +31,14 @@
             const $form = $(this);
             const $button = $form.find('.hf-style-save');
 
-            /*
-             * A second save while the first is in flight would create a second
-             * template, because a new one still carries an id of 0 until the
-             * answer comes back.
-             */
+            // Ignore a second save while the first is in flight: a new template has id 0 until it returns.
             if ($button.prop('disabled')) {
                 return;
             }
 
             $button.prop('disabled', true).addClass('hf-button-loader');
 
-            /*
-             * The name field is printed in the header bar, which sits outside
-             * this form; it is tied here with the form attribute, and FormData
-             * collects form-associated controls wherever they are.
-             */
+            // The name field sits in the header bar outside this form, tied to it by the form attribute.
             const formData = new FormData(this);
             formData.append('action', 'hashform_save_style_template');
 
@@ -62,9 +54,7 @@
                         return;
                     }
 
-                    // A template that did not exist before this save does, now,
-                    // and under an id this form has never seen. Reload onto it
-                    // rather than saving a second copy next time.
+                    // A newly created template has a new id; reload onto it so the next save does not duplicate it.
                     if (response.data && response.data.redirect) {
                         window.location.href = response.data.redirect;
                         return;
@@ -73,8 +63,6 @@
                     notify(response.data && response.data.message ? response.data.message : hf_st_obj.saved, 'success');
                 },
                 error: function () {
-                    // Said out loud rather than logged: the request never
-                    // reached the server, and silence reads as a save.
                     notify(hf_st_obj.save_failed, 'warning');
                 },
                 complete: function () {

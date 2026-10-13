@@ -29,18 +29,14 @@ class HashFormFieldUpload extends HashFormFieldType {
         $max_size = isset($field['max_upload_size']) ? absint($field['max_upload_size']) : '';
         $max_size = $max_size ? $max_size : 10;
         $max_size = $max_size * 1024 * 1024;
-        // Kilobytes in the builder, because the useful values here are small,
-        // but bytes on the wire to match the maximum.
+        // Set in KB, sent in bytes like the maximum.
         $min_size = isset($field['min_upload_size']) ? absint($field['min_upload_size']) : 0;
         $min_size = $min_size * 1024;
         $new_extensions = isset($field['extensions']) ? hashform_sanitize_allowed_file_extensions($field['extensions']) : 'jpg,jpeg,gif,png';
 
         if (is_admin() && !HashFormHelper::is_preview_page()) {
-            // Static twin of the dropzone frontend.js builds, so the builder
-            // shows what the visitor will see. The uploader script never runs
-            // on this screen, so there is no list and no drop overlay, and the
-            // id has to stay on the button itself because the label setting
-            // live updates it by id.
+            // Static copy of the dropzone frontend.js builds. The id stays on the
+            // button because the label setting live-updates it by id.
             ?>
             <div class="hf-file-uploader-wrapper">
                 <div class="hf-file-uploader">
@@ -90,11 +86,7 @@ class HashFormFieldUpload extends HashFormFieldType {
     }
 
     /**
-     * The dropzone icon.
-     *
-     * Twin of UPLOAD_ICON in frontend.js. It has to exist in both because the
-     * uploader script overwrites the element's markup with its own template on
-     * the front end, while the builder renders this PHP instead.
+     * The dropzone icon for the builder. Keep in sync with UPLOAD_ICON in frontend.js.
      */
     private static function dropzone_icon() {
         ?>
@@ -107,10 +99,7 @@ class HashFormFieldUpload extends HashFormFieldType {
     }
 
     /**
-     * "JPG, PNG  ·  up to 10 MB  ·  5 files max".
-     *
-     * Built from the same field options the uploader is configured with, so the
-     * line cannot promise something the field does not actually allow.
+     * Hint such as "JPG, PNG  ·  up to 10 MB  ·  5 files max", built from the uploader's own options.
      */
     private static function constraints_hint($field, $extensions, $max_size, $min_size = 0) {
         $parts = array();
@@ -152,15 +141,8 @@ class HashFormFieldUpload extends HashFormFieldType {
 
         if (apply_filters('hashform_store_local', true)) {
             /*
-             * The extension is checked again here. What reaches this point is
-             * the name the browser was told to post back, and the temp
-             * directory is a staging area rather than a trusted one, so a file
-             * that got in under a different set of rules does not become
-             * permanent on the strength of having been uploaded once.
-             *
-             * Falls back to the shared list when the field carries no explicit
-             * setting, so a field saved before that option existed is still
-             * held to something rather than to nothing.
+             * Re-check the extension: the posted name and the temp directory are untrusted.
+             * Falls back to the shared list when the field has no setting.
              */
             $field_extensions = hashform_sanitize_allowed_file_extensions((string) HashFormFields::get_option($field, 'extensions'));
             $allowed_extensions = array_filter(array_map('trim', explode(',', $field_extensions)));

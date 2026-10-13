@@ -3,16 +3,9 @@
 defined('ABSPATH') || die();
 
 /**
- * Shared list-screen behaviour for the Forms and Entries admin pages.
+ * Shared trash, untrash, delete and bulk flows for the Forms and Entries list screens.
  *
- * Both screens route the same query arguments through the same trash, untrash,
- * delete and bulk flows; only the table, the request keys and the wording
- * differ. Holding the flow in one place is what keeps the nonce checks on the
- * two screens from drifting apart, which is how they came to be missing on the
- * bulk paths in the first place.
- *
- * Message text stays in the using class: every gettext call must keep a literal
- * string so the translation scanner can find it.
+ * Message text stays in the using class so every gettext call keeps a literal string.
  */
 trait HashFormListActions {
 
@@ -65,13 +58,8 @@ trait HashFormListActions {
     }
 
     /**
-     * Stop a list action the current user is not allowed to take.
-     *
-     * The menu capability only decides who reaches the screen. Without this,
-     * anyone who could open the Forms or Entries list could also trash and
-     * permanently delete from it: the rows print their own action links, so
-     * the nonce those links carry was the only thing standing in the way, and
-     * a nonce proves who is asking, not what they may do.
+     * Stop a list action the current user is not allowed to take. The menu capability
+     * only gates the screen, and a nonce proves who is asking, not what they may do.
      *
      * @param string $action
      */
@@ -120,13 +108,9 @@ trait HashFormListActions {
     }
 
     /**
-     * Would route() fall through to the list table for this request?
+     * Whether route() would fall through to the list table for this request.
      *
-     * The header bar is printed on in_admin_header, which fires before the
-     * page callback runs, so it has to work out for itself whether the list
-     * is what is about to render. Mirrors the dispatch above: anything the
-     * screen declares as an action goes somewhere else, everything else ends
-     * on the list.
+     * The header bar prints on in_admin_header, before the page callback, so it mirrors route()'s dispatch.
      */
     public static function is_list_view() {
         $config = static::list_config();
@@ -145,13 +129,7 @@ trait HashFormListActions {
     }
 
     /**
-     * Admin notices, moved inside the screen's own wrapper.
-     *
-     * Core prints them into #wpbody-content before the page callback runs
-     * (wp-admin/admin-header.php), which puts them above and outside
-     * .hf-content.hf-list-screen and off the measure the rest of the screen
-     * lines up to. They are buffered from before the first notice hook to
-     * after the last, then re-emitted by print_notices() inside the wrapper.
+     * Admin notices, buffered from core's notice hooks and re-emitted inside the screen wrapper by print_notices().
      */
     private static $notice_html = '';
     private static $buffering = false;

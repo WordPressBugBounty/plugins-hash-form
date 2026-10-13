@@ -1,19 +1,11 @@
 <?php
 defined('ABSPATH') || die();
-/*
- * A template, included from inside a class method - never loaded on its own.
- * The variables below are locals of the method that includes it, not globals,
- * which is what the prefix sniff assumes about a file-scope assignment.
- */
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
 
 /*
- * The preview shell: a toolbar and an iframe holding the form.
+ * Preview shell: a toolbar and an iframe holding the form.
  *
- * Deliberately self-contained — no wp_head(), no wp_footer(). The theme and
- * every front-end asset belong to the document inside the frame, which is
- * the thing being previewed; loading them out here as well would style the
- * toolbar with whatever the site happens to use and double the page weight.
+ * No wp_head()/wp_footer() here; theme and front-end assets load only inside the frame.
  */
 
 $hf_widths = HashFormPreview::preview_widths();
@@ -188,7 +180,7 @@ $hf_can_edit = HashFormCapabilities::user_can('hashform_edit_forms');
             </div>
 
             <div class="hfp-actions">
-                <?php // The submit button is disabled in preview; say so rather than leaving people to discover it. ?>
+                <?php // The submit button is disabled in preview, so say so. ?>
                 <span class="hfp-note"><?php esc_html_e('Submitting is off in preview', 'hash-form'); ?></span>
                 <?php if ($hf_can_edit) { ?>
                     <a class="hfp-edit" href="<?php echo esc_url(admin_url('admin.php?page=hashform&hashform_action=edit&id=' . absint($form->id))); ?>"><?php esc_html_e('Edit form', 'hash-form'); ?></a>

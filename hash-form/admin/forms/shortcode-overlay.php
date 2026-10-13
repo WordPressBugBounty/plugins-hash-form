@@ -1,10 +1,5 @@
 <?php
 defined('ABSPATH') || die();
-/*
- * A template, included from inside a class method - never loaded on its own.
- * The variables below are locals of the method that includes it, not globals,
- * which is what the prefix sniff assumes about a file-scope assignment.
- */
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- included from within a method, so these are function locals.
 
 $form_id = HashFormHelper::get_var('id', 'absint');
@@ -23,12 +18,7 @@ $hf_php_tag = '<?php echo do_shortcode( \'' . $hf_shortcode . '\' ); ?>';
         </button>
 
         <?php
-        /*
-         * A single wrapper, because the dialog shell treats its one non-heading
-         * child as the body and gives it the panel's padding. This replaces a
-         * <form> that never submitted anything and shared its id with the
-         * Create New Form dialog's form.
-         */
+        // Single wrapper: the dialog shell pads its one non-heading child as the body.
         ?>
         <div class="hf-embed-body">
 
@@ -38,7 +28,7 @@ $hf_php_tag = '<?php echo do_shortcode( \'' . $hf_shortcode . '\' ); ?>';
                 <label class="hf-embed-label" for="hf-embed-shortcode"><?php esc_html_e('Shortcode', 'hash-form'); ?></label>
 
                 <div class="hf-embed-field">
-                    <?php // readonly rather than disabled: a disabled input cannot be focused or selected, so it could not be copied by hand if the clipboard was refused. ?>
+                    <?php // readonly, not disabled, so it can still be selected and copied by hand. ?>
                     <input type="text" id="hf-embed-shortcode" class="hf-embed-input" readonly value="<?php echo esc_attr($hf_shortcode); ?>" />
 
                     <button type="button" class="hf-embed-copy" data-hf-clipboard="<?php echo esc_attr($hf_shortcode); ?>">

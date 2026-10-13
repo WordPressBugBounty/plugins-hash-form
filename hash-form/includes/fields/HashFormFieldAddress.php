@@ -30,7 +30,8 @@ class HashFormFieldAddress extends HashFormFieldType {
                 'label' => esc_html__('State/Province', 'hash-form')
             ),
             'postal' => array(
-                'type' => 'number',
+                // Text, not number: many postcodes contain letters (UK, Canada, Netherlands).
+                'type' => 'text',
                 'label' => esc_html__('Zip/Postal', 'hash-form')
             ),
             'country' => array(
@@ -134,12 +135,7 @@ class HashFormFieldAddress extends HashFormFieldType {
                     ?>
                     <div id="hf-subfield-container-<?php echo esc_attr($name) . '-' . esc_attr($field_id); ?>" class="hf-subfield-element hf-subfield-element-<?php echo esc_attr($name); ?> hf-grid-6 <?php echo esc_attr($class); ?>" data-sub-field-name="<?php echo esc_attr($name); ?>">
                         <?php
-                        /*
-                         * Every line of the address is announced by name.
-                         * Without this each box read as the field's own label,
-                         * so city, state and postcode were indistinguishable
-                         * to anyone not looking at the caption beneath them.
-                         */
+                        // Name each input "<field> <part>" so screen readers can tell the parts apart.
                         $sub_label = ('' !== trim((string) $label)) ? $label : $sub_field['label'];
                         $sub_label = trim((string) $sub_label);
                         $aria_label = $sub_label ? $field['name'] . ' ' . $sub_label : $field['name'];
@@ -178,11 +174,6 @@ class HashFormFieldAddress extends HashFormFieldType {
         <select id="<?php echo 'hf-field-' . esc_attr($field_key) . '-country'; ?>" name="<?php echo esc_attr($this->html_name()) . '[country]'; ?>"<?php echo $aria_label ? ' aria-label="' . esc_attr($aria_label) . '"' : ''; ?><?php echo !empty($field['required']) ? ' aria-required="true"' : ''; ?>>
             <?php
             foreach ($args as $arg) {
-                /*
-                 * The stray "';" that used to sit after this tag was left
-                 * over from string-built markup and printed as literal text
-                 * after every country in the list.
-                 */
                 ?>
                 <option value="<?php echo esc_attr($arg); ?>"<?php selected($selected, $arg); ?>><?php echo esc_html($arg); ?></option>
                 <?php

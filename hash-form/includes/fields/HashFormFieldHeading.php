@@ -19,8 +19,7 @@ class HashFormFieldHeading extends HashFormFieldType {
 
     protected function extra_field_default_opts() {
         return array(
-            // Not h1: the page a form sits in already has one, and a second
-            // breaks the document outline for anything reading the structure.
+            // Not h1: the page the form sits in already has one.
             'heading_type' => 'h3',
             'content' => 'Heading',
             'text_alignment' => 'left',
@@ -29,10 +28,7 @@ class HashFormFieldHeading extends HashFormFieldType {
     }
 
     /**
-     * The tag to use, held to the six that exist.
-     *
-     * Worked out once and used for both ends of the element, rather than the
-     * same expression written twice with two chances to disagree.
+     * The tag to use, held to h1-h6.
      */
     private function heading_tag($field) {
         $tag = isset($field['heading_type']) ? strtolower(trim($field['heading_type'])) : '';
@@ -45,15 +41,10 @@ class HashFormFieldHeading extends HashFormFieldType {
         $content = isset($field['content']) ? $field['content'] : '';
         $content = apply_filters('hashform_translate_string', $content, 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Content');
 
-        /*
-         * Headings stay one line of plain text. The content option is shared
-         * with the paragraph field, which does accept markup, so anything that
-         * arrives here is flattened rather than shown as literal tags.
-         */
+        // Plain text only; the content option is shared with the paragraph field, which allows markup.
         $content = wp_strip_all_tags($content);
 
-        // An empty heading is an empty element in the page and an empty
-        // announcement to a screen reader, so it is not written at all.
+        // Skip an empty heading entirely.
         if ('' === trim($content)) {
             return;
         }

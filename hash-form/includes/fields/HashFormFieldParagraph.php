@@ -31,20 +31,14 @@ class HashFormFieldParagraph extends HashFormFieldType {
         $content = isset($field['content']) ? $field['content'] : '';
         $content = apply_filters('hashform_translate_string', $content, 'Hash Form', HashFormBuilder::get_form_title($field['form_id']) . ' - ' . $field['id'] . ' - ' . 'Field Content');
 
-        // Nothing to say, nothing in the page.
+        // Skip an empty paragraph entirely.
         if ('' === trim(wp_strip_all_tags($content))) {
             return;
         }
         ?>
         <div class="hf-paragraph-field" id="hf-field-<?php echo absint($field['id']); ?>">
             <?php
-            /*
-             * wpautop, so a blank line between two thoughts is two paragraphs
-             * and a single newline is a line break. The text used to go through
-             * esc_html() into a bare div, which threw away every break the
-             * author typed and left the field's own <p> styles — the whole
-             * Paragraph panel in the styler — matching nothing at all.
-             */
+            // wpautop keeps the author's line breaks and gives the styler's <p> rules something to match.
             echo wp_kses_post(wpautop($content));
             ?>
         </div>

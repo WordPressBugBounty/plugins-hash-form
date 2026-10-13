@@ -3,23 +3,10 @@
 defined('ABSPATH') || die();
 
 /**
- * Granular permissions for the plugin's admin screens and ajax endpoints.
+ * Granular capabilities for the plugin's admin screens and ajax endpoints.
  *
- * Everything used to be gated on manage_options, which is a single switch:
- * either somebody administers the whole site or they cannot look at a form
- * entry. That is the wrong shape for the common cases - a marketing user who
- * should read submissions but not edit forms, a developer who builds forms but
- * should not hold the payment credentials.
- *
- * Backward compatibility is the constraint that shapes this class. Nobody may
- * lose access on upgrade, so anyone with manage_options is granted every one
- * of these capabilities through the user_has_cap filter below, whether or not
- * the role migration has run. Sites that want true least privilege can turn
- * that off with the hashform_grant_caps_to_admins filter and assign the
- * capabilities by hand.
- *
- * The capabilities are also written onto the administrator role so they show
- * up in the role editors people actually use.
+ * Users with manage_options hold all of them through user_has_cap, unless
+ * hashform_grant_caps_to_admins returns false.
  */
 class HashFormCapabilities {
 
@@ -29,20 +16,15 @@ class HashFormCapabilities {
     const OPTION = 'hashform_caps_version';
 
     public function __construct() {
-        // Runs before admin_menu, so a menu registered against one of these
-        // capabilities is always visible to an administrator.
+        // Added before admin_menu so menus gated on these capabilities stay visible to administrators.
         add_filter('user_has_cap', array($this, 'grant_to_admins'), 10, 1);
         add_action('plugins_loaded', array($this, 'maybe_add_role_caps'), 5);
     }
 
     /**
-     * The capability names, with no translation involved.
+     * Capability names, untranslated.
      *
-     * This is what the permission checks use. It must stay free of gettext:
-     * the user_has_cap filter below runs on the very first capability check a
-     * request makes, which can be long before init, and calling a translation
-     * function there loads the text domain too early - WordPress 6.7 reports
-     * exactly that as a notice.
+     * Must not call gettext: user_has_cap can run before init, where loading the text domain triggers a notice.
      *
      * @return string[]
      */
@@ -63,10 +45,7 @@ class HashFormCapabilities {
     }
 
     /**
-     * The same capabilities with labels, for anything that displays them.
-     *
-     * Only call this from a screen: it translates, so it must not run before
-     * init.
+     * Capabilities with translated labels. Call only after init.
      *
      * @return array<string,string>
      */
@@ -87,19 +66,14 @@ class HashFormCapabilities {
     }
 
     /**
-     * Does the current user hold this capability?
-     *
-     * Use this rather than current_user_can() directly, so an unknown
-     * capability cannot silently pass and so the administrator fallback stays
-     * in one place.
+     * Whether the user holds a Hash Form capability. Use instead of current_user_can().
      *
      * @param string $cap     One of the capabilities above.
      * @param int    $user_id Optional. Defaults to the current user.
      * @return bool
      */
     public static function user_can($cap, $user_id = 0) {
-        // A typo in a capability name must fail closed rather than fall back
-        // to something more permissive.
+        // Unknown capability names fail closed.
         if (!in_array($cap, self::slugs(), true)) {
             return false;
         }
@@ -117,10 +91,7 @@ class HashFormCapabilities {
     }
 
     /**
-     * Stop and say so when the current user may not do something.
-     *
-     * For screen callbacks, where the right answer is the standard WordPress
-     * permissions page rather than a blank screen.
+     * Show the standard WordPress permission error if the current user lacks the capability.
      *
      * @param string $cap
      */
@@ -137,7 +108,7 @@ class HashFormCapabilities {
     }
 
     /**
-     * The same check for an ajax endpoint, which needs json rather than a page.
+     * Same as require_cap() for ajax endpoints; sends a JSON error.
      *
      * @param string $cap
      */
@@ -153,12 +124,7 @@ class HashFormCapabilities {
     }
 
     /**
-     * Anyone who administers the site keeps the access they have always had.
-     *
-     * Done with a filter rather than only by writing capabilities onto the
-     * role, so an install that has not run the migration yet - or a site with
-     * a custom administrator-equivalent role - is never locked out of its own
-     * forms.
+     * Grant every capability to users with manage_options, so admins are never locked out before the role migration runs.
      *
      * @param array $allcaps
      * @return array
@@ -169,10 +135,7 @@ class HashFormCapabilities {
         }
 
         /**
-         * Whether holding manage_options implies every Hash Form capability.
-         *
-         * Return false to enforce the capabilities strictly, so an
-         * administrator only has what has actually been assigned to them.
+         * Whether manage_options implies every Hash Form capability. Return false to enforce assigned capabilities only.
          */
         if (!apply_filters('hashform_grant_caps_to_admins', true)) {
             return $allcaps;
@@ -188,11 +151,7 @@ class HashFormCapabilities {
     }
 
     /**
-     * Write the capabilities onto the administrator role once per version.
-     *
-     * The filter above is what actually grants access; this exists so the
-     * capabilities are visible to the role editing plugins site owners use to
-     * hand them to other roles.
+     * Write the capabilities onto the administrator role once per version, so role editors list them.
      */
     public function maybe_add_role_caps() {
         if ((int) get_option(self::OPTION) === self::VERSION) {
@@ -216,8 +175,7 @@ class HashFormCapabilities {
     }
 
     /**
-     * Called from uninstall.php, so the plugin does not leave capabilities
-     * behind on every role it ever touched.
+     * Remove the capabilities from every role. Called from uninstall.php.
      */
     public static function remove_caps() {
         global $wp_roles;
