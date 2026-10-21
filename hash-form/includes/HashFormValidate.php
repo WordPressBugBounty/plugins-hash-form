@@ -85,11 +85,31 @@ class HashFormValidate {
 
         $fields = HashFormFields::get_form_fields($values['form_id']);
 
-        $sh_conditions = HashFormBuilder::get_show_hide_conditions(absint($values['form_id']));
+        $hidden_arrays = self::hidden_field_ids($values['form_id'], isset($values['item_meta']) && is_array($values['item_meta']) ? $values['item_meta'] : array());
+
+        foreach ($fields as $field) {
+            self::validate_field($field, $errors, $values, !in_array($field->id, $hidden_arrays));
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Ids of the fields that conditional logic hides for these answers, as the form shows them.
+     *
+     * A hidden field is not required, and a calculation counts it as zero.
+     *
+     * @param int   $form_id
+     * @param array $item_meta Answers keyed by field id.
+     * @return int[]
+     */
+    public static function hidden_field_ids($form_id, $item_meta) {
+        $item_meta = is_array($item_meta) ? $item_meta : array();
+        $sh_conditions = HashFormBuilder::get_show_hide_conditions(absint($form_id));
         $hidden_arrays = array();
 
         foreach ($sh_conditions as $cond) {
-            $compare_to = isset($values['item_meta'][$cond['compare_to']]) ? $values['item_meta'][$cond['compare_to']] : '';
+            $compare_to = isset($item_meta[$cond['compare_to']]) ? $item_meta[$cond['compare_to']] : '';
             $compareValue = $cond['compare_value'];
             $condition = false;
 
@@ -156,15 +176,11 @@ class HashFormValidate {
             $is_visible = $show_on_match ? $condition : !$condition;
 
             if (!$is_visible) {
-                $hidden_arrays[] = $cond['compare_from'];
+                $hidden_arrays[] = (int) $cond['compare_from'];
             }
         }
 
-        foreach ($fields as $field) {
-            self::validate_field($field, $errors, $values, !in_array($field->id, $hidden_arrays));
-        }
-
-        return $errors;
+        return array_values(array_unique($hidden_arrays));
     }
 
     public static function validate_field($field, &$errors, $values, $is_field_visible) {

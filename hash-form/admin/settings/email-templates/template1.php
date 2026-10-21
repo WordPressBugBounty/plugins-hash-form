@@ -123,7 +123,8 @@ defined('ABSPATH') || die();
                 ?>
                 <tr>
                     <td class="container" style="font-family: sans-serif; font-size: 14px; vertical-align: top; box-sizing: border-box;" valign="top">
-                        <div class="content" style="box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px; padding: 30px; background: #FFFFFF; line-height:1.6">
+                        <?php $hf_accent = HashFormEmail::accent_color(); ?>
+                        <div class="content" style="box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px; padding: 30px; background: #FFFFFF; line-height:1.6;<?php echo $hf_accent ? esc_attr(' border-top: 4px solid ' . $hf_accent . ';') : ''; ?>">
                             <?php echo wp_kses_post(htmlspecialchars_decode($email_message)); ?>
                         </div>
                     </td>

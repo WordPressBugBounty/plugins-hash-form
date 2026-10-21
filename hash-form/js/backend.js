@@ -676,6 +676,19 @@ var hashFormAdmin = hashFormAdmin || {};
                     }
                 });
             });
+
+            // Opens the chosen template with sample answers. Fields marked data-email-preview (a Pro accent
+            // color, say) go along unsaved, so a change can be seen before saving.
+            $(document).on('click', '#hf-preview-email-button', function (e) {
+                e.preventDefault();
+                const params = new URLSearchParams({email_template: $('#hf-settings-email-template').val()});
+
+                $('[data-email-preview]').each(function () {
+                    params.set($(this).attr('data-email-preview'), $(this).val());
+                });
+
+                window.open($(this).attr('data-url') + '&' + params.toString(), 'hf-email-preview');
+            });
         },
 
         /* -------------------------------------------------------------------

@@ -141,6 +141,40 @@ var hashFormBuilder = hashFormBuilder || {};
     }
 
     /**
+     * Keep the canvas header's "N fields" count current as fields change over ajax.
+     * Only saved fields have a numeric id; loading placeholders and drag ghosts do not.
+     */
+    function watchFieldCount() {
+        const label = document.getElementById('hf-canvas-field-count');
+        const list = document.getElementById('hf-editor-fields');
+
+        if (!label || !list) {
+            return;
+        }
+
+        let queued = false;
+        const update = function () {
+            queued = false;
+            const count = [...list.querySelectorAll('li[id^="hf-editor-field-id-"]')].filter(function (li) {
+                return /^hf-editor-field-id-\d+$/.test(li.id);
+            }).length;
+            const format = label.getAttribute(1 === count ? 'data-singular' : 'data-plural') || '%s';
+            const text = format.replace('%s', count.toLocaleString());
+
+            if (label.textContent.trim() !== text) {
+                label.textContent = text;
+            }
+        };
+
+        new MutationObserver(function () {
+            if (!queued) {
+                queued = true;
+                window.requestAnimationFrame(update);
+            }
+        }).observe(list, {childList: true, subtree: true, attributes: true, attributeFilter: ['id']});
+    }
+
+    /**
      * The move and delete controls for a columns row, which is built in the browser rather than by PHP.
      */
     function columnRowActions() {
@@ -231,6 +265,7 @@ var hashFormBuilder = hashFormBuilder || {};
             // The canvas is rendered with the class already set, so the body
             // has to be told once on load as well as on every change.
             setHasFields(!!editorWrap() && editorWrap().classList.contains('hf-editor-has-fields'));
+            watchFieldCount();
             hashFormBuilder.initBuild();
         },
 

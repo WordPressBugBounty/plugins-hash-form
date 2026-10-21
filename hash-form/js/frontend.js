@@ -573,7 +573,15 @@ jQuery(function ($) {
                 const matched = conditionMatches(val.compare_condition, value, val.compare_value, arrayVals, isArrayVals);
 
                 if (matched !== null && actionField.length) {
-                    actionField.toggle(matched === showOnMatch);
+                    const visible = matched === showOnMatch;
+                    const changed = actionField.hasClass('hf-condition-hidden') === visible;
+
+                    actionField.toggle(visible).toggleClass('hf-condition-hidden', !visible);
+
+                    // A hidden field counts as zero in a calculation, so totals need working out again.
+                    if (changed) {
+                        $(document).trigger('hashform:recalculate');
+                    }
                 }
             }).trigger('change');
         });

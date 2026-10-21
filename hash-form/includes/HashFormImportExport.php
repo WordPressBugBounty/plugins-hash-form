@@ -282,14 +282,10 @@ class HashFormImportExport {
         // exported without field ids cannot be matched and are dropped.
         HashFormBuilder::remap_calculation_formulas($form_id, $map);
 
-        if (!empty($settings['condition_action'])) {
-            $settings = HashFormBuilder::remap_conditions($settings, $map, $dropped);
+        $remapped = $settings;
 
-            $wpdb->update(
-                    $wpdb->prefix . 'hashform_forms',
-                    array('settings' => serialize($settings)),
-                    array('id' => $form_id)
-            );
+        if (!empty($settings['condition_action'])) {
+            $remapped = HashFormBuilder::remap_conditions($remapped, $map, $dropped);
 
             if ($dropped) {
                 HashFormHelper::log(sprintf(
@@ -298,6 +294,23 @@ class HashFormImportExport {
                                 $dropped
                 ));
             }
+        }
+
+        /**
+         * Form settings that name a field by id, pointed at the recreated fields.
+         *
+         * @param array $remapped The imported settings.
+         * @param array $map      Field id in the file => new field id.
+         * @param int   $form_id
+         */
+        $remapped = (array) apply_filters('hashform_import_remap_settings', $remapped, $map, $form_id);
+
+        if ($remapped !== $settings) {
+            $wpdb->update(
+                    $wpdb->prefix . 'hashform_forms',
+                    array('settings' => serialize($remapped)),
+                    array('id' => $form_id)
+            );
         }
     }
 

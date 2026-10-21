@@ -44,7 +44,10 @@ if (defined('DOING_AJAX')) {
                     ?>
                     <div class="hf-canvas-header">
                         <span class="hf-canvas-title"><?php echo esc_html($form->name); ?></span>
-                        <span class="hf-canvas-count">
+                        <?php // builder.js keeps the count current as fields are added and removed. ?>
+                        <span class="hf-canvas-count" id="hf-canvas-field-count" aria-live="polite"
+                              data-singular="<?php /* translators: %s: number of fields on the form. */ echo esc_attr(_n('%s field', '%s fields', 1, 'hash-form')); ?>"
+                              data-plural="<?php /* translators: %s: number of fields on the form. */ echo esc_attr(_n('%s field', '%s fields', 2, 'hash-form')); ?>">
                             <?php
                             printf(
                                     /* translators: %s: number of fields on the form. */

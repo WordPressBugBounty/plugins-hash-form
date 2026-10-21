@@ -10,6 +10,7 @@ class HashFormSettings {
         add_action('in_admin_header', array($this, 'list_header'));
 
         add_action('wp_ajax_hashform_test_email_template', array($this, 'send_test_email'), 10, 0);
+        add_action('wp_ajax_hashform_preview_email_template', array($this, 'preview_email'), 10, 0);
     }
 
     public function menu() {
@@ -246,45 +247,10 @@ class HashFormSettings {
 
         $header_image = $settings['header_image'];
 
-        // Whitelist: the value feeds both a callable name and an include path.
-        $email_template = HashFormHelper::get_post('email_template');
-        if (!in_array($email_template, array('template1', 'template2', 'template3'), true)) {
-            $email_template = 'template1';
-        }
-
+        $email_template = HashFormEmail::email_template(HashFormHelper::get_post('email_template'));
         $test_email = HashFormHelper::get_post('test_email', 'sanitize_email');
         $email_subject = esc_html__('Test Email', 'hash-form');
-        $count = 0;
-
-        $contents = array(
-            0 => array(
-                'title' => 'Name',
-                'value' => 'John Doe'
-            ),
-            1 => array(
-                'title' => 'Email',
-                'value' => 'noreply@gmail.com'
-            ),
-            2 => array(
-                'title' => 'Subject',
-                'value' => 'Exciting Updates and Important Information Inside!'
-            ),
-            3 => array(
-                'title' => 'Message',
-                'value' => '<p>I hope this email finds you well. We are thrilled to share some exciting updates and important information that we believe you will find valuable.</p><p>Your satisfaction is our priority, and we are committed to delivering the best possible experience.</p>'
-            )
-        );
-
-        $email_message = '<p style="margin-bottom:20px">';
-        $email_message .= esc_html__('Hello, this is a test email.', 'hash-form');
-        $email_message .= '</p>';
-        foreach ($contents as $content) {
-            $count++;
-            $email_message .= call_user_func('HashFormEmail::' . $email_template, $content['title'], $content['value'], $count);
-        }
-        ob_start();
-        include(HASHFORM_PATH . 'admin/settings/email-templates/' . $email_template . '.php');
-        $form_html = ob_get_clean();
+        $form_html = self::sample_email($email_template, $header_image);
 
         $admin_email = get_option('admin_email');
         $site_name = get_bloginfo('name');
@@ -306,6 +272,50 @@ class HashFormSettings {
                 'message' => esc_html__('Failed to Send Email', 'hash-form')
             )
         ));
+    }
+
+    /**
+     * The template opened in the browser with sample answers, so templates can be compared without sending.
+     */
+    public function preview_email() {
+        HashFormCapabilities::require_cap_ajax('hashform_manage_settings');
+
+        check_ajax_referer('hashform_backend_ajax', 'backend_nonce');
+
+        $settings = self::get_settings();
+        nocache_headers();
+        header('Content-Type: text/html; charset=UTF-8');
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts by the template.
+        echo self::sample_email(HashFormEmail::email_template(HashFormHelper::get_var('email_template')), $settings['header_image']);
+        exit;
+    }
+
+    /**
+     * A whole email in the given template, filled with sample answers.
+     *
+     * @param string $email_template A key from HashFormEmail::templates().
+     * @param string $header_image   Attachment id.
+     * @return string
+     */
+    private static function sample_email($email_template, $header_image) {
+        $contents = array(
+            array('Name', 'John Doe'),
+            array('Email', 'noreply@example.com'),
+            array('Subject', 'Exciting Updates and Important Information Inside!'),
+            array('Message', '<p>I hope this email finds you well. We are thrilled to share some exciting updates and important information that we believe you will find valuable.</p><p>Your satisfaction is our priority, and we are committed to delivering the best possible experience.</p>'),
+        );
+
+        $form_title = esc_html__('Contact Form', 'hash-form');
+        $email_context = 'test';
+        $email_entry_id = 0;
+        $email_message = '<p style="margin-bottom:20px">' . esc_html__('Hello, this is a test email.', 'hash-form') . '</p>';
+        foreach ($contents as $count => $content) {
+            $email_message .= HashFormEmail::render_row($email_template, $content[0], $content[1], $count + 1);
+        }
+
+        ob_start();
+        include HashFormEmail::layout_file($email_template);
+        return ob_get_clean();
     }
 
     public static function checkbox_settings() {
