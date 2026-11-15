@@ -689,6 +689,17 @@ class HashFormFields {
 
     public static function get_field_class($field_type, $field = 0) {
         $class = self::get_field_type_class($field_type);
+
+        // An add-on that loaded after this plugin may not have included its field classes yet.
+        if (!class_exists($class, false)) {
+            do_action('hashform_include_field_class');
+        }
+
+        // Still missing (an add-on's files are gone): show a text field rather than stop the page.
+        if (!class_exists($class, false)) {
+            $class = 'HashFormFieldText';
+        }
+
         $field_obj = new $class($field, $field_type);
         return $field_obj;
     }

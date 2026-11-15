@@ -1,25 +1,25 @@
-=== Hash Form - Drag & Drop Form Builder ===
+=== Hash Form Builder – Drag & Drop Contact Form Builder ===
 Contributors: hashthemes
-Tags: form, form builder, drag and drop, contact form
+Tags: form builder, contact form, drag and drop, survey, form
 Requires at least: 6.3
 Tested up to: 7.1
-Stable tag: 1.4.7
+Stable tag: 1.4.8
 Requires PHP: 7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Create any kind of forms effortlessly with Hash Form – the ultimate drag & drop form builder plugin for WordPress.
+Hash Form Builder is a free drag & drop form builder for WordPress. Build contact forms, surveys, quotes and bookings with no code.
 
 == Description ==
 
-Hash Form is a free drag and drop form builder for WordPress. Build a form, style it to match your site, and embed it anywhere, with no code and no paywall on the features you actually need.
+Hash Form Builder is a free drag and drop form builder for WordPress. Build a form, style it to match your site, and embed it anywhere, with no code and no paywall on the features you actually need.
 
 Use it for contact, feedback, survey, registration and quote forms. Drag fields onto a row and column canvas, set the styling, add conditional logic, and publish. The full field set, entry storage, styling and email tools are all in the free plugin, not held back for a paid tier.
 
-<strong>Hash Form links: </strong><a href="https://hashformbuilder.com/">Hash Form Pro</a> | <a href="https://hashformbuilder.com/form-templates/">Form Template Demos</a> | <a href="https://hashformbuilder.com/form-styles/">Form Style Demos</a> | <a href="https://hashformbuilder.com/features/">Features</a> | <a href="https://hashformbuilder.com/integrations/">Integrations</a> | <a href="https://hashformbuilder.com/pricing/">Pricing</a> | <a href="https://hashthemes.com/documentation/hash-form-drag-and-drop-form-builder-documentation/">Documentation</a>
+<strong>Hash Form Builder links: </strong><a href="https://hashformbuilder.com/">Hash Form Pro</a> | <a href="https://hashformbuilder.com/form-templates/">Form Template Demos</a> | <a href="https://hashformbuilder.com/form-styles/">Form Style Demos</a> | <a href="https://hashformbuilder.com/features/">Features</a> | <a href="https://hashformbuilder.com/integrations/">Integrations</a> | <a href="https://hashformbuilder.com/pricing/">Pricing</a> | <a href="https://hashthemes.com/documentation/hash-form-drag-and-drop-form-builder-documentation/">Documentation</a>
 
 <h3>Forms You Can Build</h3>
-Hash Form is not tied to one type of form. The same canvas and field set cover a two field contact box and a long, multi section application.
+Hash Form Builder is not tied to one type of form. The same canvas and field set cover a two field contact box and a long, multi section application.
 
 <ul>
 <li><strong>Contact and enquiry forms: </strong>name, email, phone and message, with the built in captcha keeping spam out.</li>
@@ -44,7 +44,8 @@ Whatever the form, every submission is stored as an entry on your own site and c
 <li><strong>Full design control: </strong>set typography, colour and spacing, then save it as a style template you reuse across forms.</li>
 <li><strong>Entries kept on your site: </strong>every submission is stored and searchable, so a missed email never loses a lead.</li>
 <li><strong>Embed anywhere: </strong>a shortcode, the Gutenberg block, or the Elementor widget.</li>
-<li><strong>Privacy option: </strong>turn off Google font requests so forms do not share visitor data by default.</li>
+<li><strong>Privacy friendly: </strong>turn off Google font requests, and let WordPress's Export and Erase Personal Data tools include form entries.</li>
+<li><strong>Multisite ready: </strong>each site in a network keeps its own forms and entries.</li>
 </ul>
 
 <h3>Available Field Types</h3>
@@ -80,13 +81,13 @@ Assemble any form from a full set of drag and drop, fully styleable fields.
 </ul>
 
 <h3>Drag and Drop Builder</h3>
-Arrange fields on a row and column canvas, reorder them by dragging, and get a responsive layout without writing code.
+Arrange fields on a row and column canvas, reorder them by dragging, and get a responsive layout without writing code. Duplicate a field or a whole form in one click, and preview the form before it goes live.
 
 <h3>Design and Style Templates</h3>
-Control typography, colour and spacing down to the detail, then save the result as a style template and apply it to any form so your forms stay consistent across the site.
+Control typography, colour and spacing down to the detail, then save the result as a style template and apply it to any form so your forms stay consistent across the site. Style templates open in a full screen builder of their own, with a live preview as you change them.
 
 <h3>Conditional Logic</h3>
-Show or hide fields based on earlier answers, so each form stays short and relevant to the person filling it in.
+Show or hide fields based on earlier answers, so each form stays short and relevant to the person filling it in. Fields that a rule shows or hides are marked on the canvas, and the preview tells you how many are hidden at that moment. Rules keep working when a form is duplicated or imported.
 
 <h3>Entry Management</h3>
 Every submission is saved and listed on an Entries screen. Read answers, star the ones worth following up, search, and trash entries from one place.
@@ -109,13 +110,19 @@ Built in Google reCAPTCHA v2 and v3, with language and, for v3, score threshold 
 <h3>Reliable Email Delivery</h3>
 Works with WP Mail SMTP so notifications send over a configured SMTP connection rather than the server's default mailer.
 
+<h3>Restrictions</h3>
+Allow one entry per person, with logged in visitors matched by their account and guests by IP address, and choose the message shown to anyone who has already submitted.
+
 <h3>Import and Export</h3>
-Export a form to a file and import it on another site, without rebuilding it.
+Export a form to a file and import it on another site, without rebuilding it. Conditional logic rules and calculation formulas are pointed at the imported form's own fields.
+
+<h3>For Developers</h3>
+Hash Form Builder is built to be extended. Add your own email templates with the <code>hashform_email_templates</code> filter, set an email accent color with <code>hashform_email_accent_color</code>, add options beside the template choice with the <code>hashform_email_settings_after_template</code> action, and remap custom form settings on import with <code>hashform_import_remap_settings</code>.
 
 <h3>Hash Form Pro</h3>
 The free plugin is a complete form builder. <a href="https://hashformbuilder.com/">Hash Form Pro</a> is for what comes after that: taking payments, generating forms with AI, starting from a finished template and sending submissions on to the tools you already use. It extends this plugin on the same canvas, with the same styling and the same entry storage, so nothing you have built needs redoing.
 
-Pro adds 23 field types (50 in all), 20 payment gateways, 79 form templates, 18 pre-built styles, 10 more email templates with an accent color, form analytics and 73 modules. A site loads only the modules it switches on.
+Pro adds 23 field types (50 in all), 20 payment gateways, 79 form templates, 18 pre-built styles, 10 more email templates with a brand accent color, form analytics and 73 modules. A site loads only the modules it switches on.
 
 <a href="https://hashformbuilder.com/">See everything in Hash Form Pro</a> | <a href="https://hashformbuilder.com/pricing/">View pricing</a>
 
@@ -160,9 +167,9 @@ Describe the form you want in a sentence and have it built, with fields, labels,
 
 <h3>Pro: Integrations</h3>
 <ul>
-<li><strong>Email marketing: </strong>Mailchimp, ActiveCampaign, Brevo, Campaign Monitor, Constant Contact, ConvertKit, GetResponse, HubSpot, MailerLite, Mailjet, Moosend, Salesflare, Sendfox and Airtable.</li>
+<li><strong>Email marketing: </strong>Mailchimp, ActiveCampaign, Brevo, Campaign Monitor, Constant Contact, ConvertKit, GetResponse, HubSpot, MailerLite, Mailjet, Moosend, Salesflare and Sendfox.</li>
 <li><strong>CRM: </strong>Zoho CRM, Pipedrive and Freshsales.</li>
-<li><strong>Productivity: </strong>Slack, Discord, Microsoft Teams, Mattermost, Telegram, WhatsApp, Trello, Google Sheets, Google Calendar and a generic Webhook.</li>
+<li><strong>Productivity: </strong>Slack, Discord, Microsoft Teams, Mattermost, Telegram, WhatsApp, Trello, Airtable, Google Sheets, Google Calendar and a generic Webhook.</li>
 <li><strong>File storage: </strong>Google Drive and Dropbox, with image resizing on upload.</li>
 <li><strong>Email delivery: </strong>SendGrid, Mailgun, Postmark and Amazon SES.</li>
 <li><strong>SMS: </strong>Twilio and ClickSend.</li>
@@ -173,6 +180,7 @@ Describe the form you want in a sentence and have it built, with fields, labels,
 <h3>Pro: More Tools</h3>
 <ul>
 <li><strong>Form analytics: </strong>impressions, completions, abandonment, conversion rate and per field drop off, plus Google Analytics events. <a href="https://hashformbuilder.com/features/form-analytics/">More about form analytics</a></li>
+<li><strong>10 more email templates: </strong>Modern Card, Two-Column Table, Minimal, Bold Header, Receipt, Letterhead, Support Ticket, Event Ticket, Friendly and Compact, with an accent color that also tints the three free templates.</li>
 <li><strong>Popup and flying button: </strong>show a form over the page instead of in it.</li>
 <li><strong>Schedule and restrictions: </strong>open and close a form on a date, cap the number of entries, or require a login.</li>
 <li><strong>CSV export and PDF submissions: </strong>export entries to CSV and generate a PDF of a submission.</li>
@@ -187,13 +195,13 @@ Every plan includes every Pro feature. Plans differ only by the number of sites:
 <a href="https://hashformbuilder.com/pricing/">Compare plans and pricing</a>
 
 <h3>Test It First</h3>
-Try every feature in a live sandbox at <a href="https://tastewp.com/plugins/hash-form/" target="_blank">the Hash Form test dashboard</a> before you install.
+Try every feature in a live sandbox at <a href="https://tastewp.com/plugins/hash-form/" target="_blank">the Hash Form Builder test dashboard</a> before you install.
 
 <h3>Documentation and Support</h3>
-Step by step guides and reference are in the <a href="https://hashthemes.com/documentation/hash-form-drag-and-drop-form-builder-documentation/">Hash Form documentation</a>. For anything else, our support team is available through support tickets.
+Step by step guides and reference are in the <a href="https://hashthemes.com/documentation/hash-form-drag-and-drop-form-builder-documentation/">Hash Form Builder documentation</a>. For anything else, our support team is available through support tickets.
 
 <ul>
-<li><a href="https://hashthemes.com/documentation/hash-form-drag-and-drop-form-builder-documentation/">Hash Form documentation</a></li>
+<li><a href="https://hashthemes.com/documentation/hash-form-drag-and-drop-form-builder-documentation/">Hash Form Builder documentation</a></li>
 <li><a href="https://hashthemes.com/documentation/hash-form-pro-documentation/">Hash Form Pro documentation</a></li>
 <li><a href="https://hashformbuilder.com/form-templates/">Form template demos</a></li>
 <li><a href="https://hashformbuilder.com/form-styles/">Form style demos</a></li>
@@ -208,7 +216,7 @@ The easy way to install the plugin is via WordPress.org plugin directory.
 
 <ol>
 <li>Go to WordPress Dashboard > Plugins > Add New</li>
-<li>Search for "Hash Form" and install the plugin.</li>
+<li>Search for "Hash Form Builder" and install the plugin.</li>
 <li>Activate Plugin from "Plugins" menu in WordPress.</li>
 </ol>
 
@@ -224,7 +232,7 @@ Payments through 20 gateways, AI form generation, 79 form templates, 18 pre-buil
 
 = Does Hash Form Pro replace this plugin? =
 
-No. Pro extends this plugin, so keep Hash Form installed and active. Your forms, entries and style templates stay as they are.
+No. Pro extends this plugin, so keep Hash Form Builder installed and active. Your forms, entries and style templates stay as they are.
 
 = Can I see the Pro templates and styles before buying? =
 
@@ -242,27 +250,49 @@ AI form generation uses your own key for ChatGPT, Claude, Gemini, DeepSeek or Mi
 
 By number of sites (1, 5 or unlimited), yearly or as a lifetime license. Every plan includes every Pro feature. See <a href="https://hashformbuilder.com/pricing/">pricing</a>.
 
+= Hash Form is now Hash Form Builder. Does anything change for me? =
+
+No. It is the same plugin with a new name. Your forms, entries, style templates, shortcodes, blocks and Elementor widgets keep working as they are, and Hash Form Pro works as before.
+
+= Can I limit a form to one entry per person? =
+
+Yes, in the free plugin. Logged in visitors are matched by their account and guests by IP address. Hash Form Pro adds scheduling, entry caps and login only forms.
+
+= Is it GDPR friendly? =
+
+Entries are stored on your own site, Google font requests can be turned off, and form entries are included in WordPress's Export Personal Data and Erase Personal Data tools. Hash Form Builder also adds a suggested section to your privacy policy.
+
+= Does it work on multisite? =
+
+Yes. Each site in a network keeps its own forms and entries.
+
 = Can I build forms with Elementor or Gutenberg? =
 
 Yes. Add a form with the Elementor widget, the Gutenberg block or a shortcode.
 
 == Screenshots ==
-1. Form Builder Screen
-2. Form Builder Screen With Fields
-3. Email Settings
-4. Auto Responder
-5. Confirmation
-6. Conditional Logic
-7. Restriction
-8. Import/Export
-9. Form Style Selector
-10. Entries Listing Page
-11. ReCaptcha v2 & v3 Integration
-12. Global Email Settings
-13. General Settings
-14. Form Style Builder
+1. Form builder: drag fields from the panel onto the row and column canvas
+2. Form builder with fields added and a field's settings open
+3. Email settings: recipients, reply to, subject and message with field tags
+4. Auto responder: an automatic reply to the person who submitted
+5. Confirmation: show a message or redirect after submission
+6. Conditional logic: show or hide fields based on earlier answers
+7. Restrictions: allow one entry per person
+8. Import and export a form
+9. Choose a style template for a form
+10. Entries: read, star, search and trash submissions
+11. Google reCAPTCHA v2 and v3 settings
+12. Global email settings: header image, email template and a test email
+13. General settings
+14. Style template builder: typography, colours and spacing with a live preview
 
 == Changelog ==
+= 1.4.8 - 15 Nov, 2026 =
+* Hash Form is now Hash Form Builder, matching its home at hashformbuilder.com. Only the name changes: forms, entries, style templates, shortcodes, blocks and Elementor widgets keep working as before
+* A page with a form could stop with a fatal error when an add-on such as Hash Form Pro was loaded after Hash Form Builder (for example after a site migration); a field whose class is missing now asks add-ons to load it, and falls back to a text field instead of breaking the page - Fixed
+* Readme: restrictions, privacy tools, multisite, duplicate and preview, conditional logic markers and developer hooks are now described; new FAQs; clearer screenshot captions
+* Readme: Hash Form Pro section brought in line with Pro 1.1.0 - its 10 email templates listed by name, and Airtable moved to Productivity now that it adds each submission to a table
+
 = 1.4.7 - 21 Oct, 2026 =
 * Conditional logic: showing or hiding a field now tells calculations to update, and the new HashFormValidate::hidden_field_ids() reports which fields a form's conditions hide for a set of answers
 * Emails held back (for example until a payment completes): post submission actions now get their tags filled in, as when the email is sent
