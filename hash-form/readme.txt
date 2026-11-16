@@ -3,7 +3,7 @@ Contributors: hashthemes
 Tags: form builder, contact form, drag and drop, survey, form
 Requires at least: 6.3
 Tested up to: 7.1
-Stable tag: 1.4.8
+Stable tag: 1.5.0
 Requires PHP: 7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -287,6 +287,10 @@ Yes. Add a form with the Elementor widget, the Gutenberg block or a shortcode.
 14. Style template builder: typography, colours and spacing with a live preview
 
 == Changelog ==
+= 1.5.0 - 16 Nov, 2026 =
+* Material Design Icons updated to 7.4.47 and loaded under the same stylesheet handle as in the other HashThemes themes and plugins, so it loads only once - Changed
+* Google Fonts list updated to 1,980 fonts - Changed
+
 = 1.4.8 - 15 Nov, 2026 =
 * Hash Form is now Hash Form Builder, matching its home at hashformbuilder.com. Only the name changes: forms, entries, style templates, shortcodes, blocks and Elementor widgets keep working as before
 * A page with a form could stop with a fatal error when an add-on such as Hash Form Pro was loaded after Hash Form Builder (for example after a site migration); a field whose class is missing now asks add-ons to load it, and falls back to a text field instead of breaking the page - Fixed

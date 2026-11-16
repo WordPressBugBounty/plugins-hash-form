@@ -3,7 +3,7 @@
 /*
  * Plugin Name: Hash Form Builder - Drag & Drop Contact Form Builder
  * Description: Free drag & drop form builder for WordPress. Build contact forms, surveys, quotes and bookings with no code.
- * Version: 1.4.8
+ * Version: 1.5.0
  * Author: HashThemes
  * Author URI: https://hashthemes.com/
  * Text Domain: hash-form
@@ -15,7 +15,7 @@
 
 defined('ABSPATH') || die();
 
-define('HASHFORM_VERSION', '1.4.8');
+define('HASHFORM_VERSION', '1.5.0');
 define('HASHFORM_FILE', __FILE__);
 define('HASHFORM_PATH', plugin_dir_path(HASHFORM_FILE));
 define('HASHFORM_URL', plugin_dir_url(HASHFORM_FILE));
@@ -142,3 +142,4 @@ function hashform_on_delete_blog($tables, $site_id = 0) {
 
     return $tables;
 }
+

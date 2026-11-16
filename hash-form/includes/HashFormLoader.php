@@ -119,7 +119,7 @@ class HashFormLoader {
         ));
 
         wp_enqueue_style('wp-color-picker');
-        wp_enqueue_style('materialdesignicons', HASHFORM_URL . 'fonts/materialdesignicons.css', array(), HASHFORM_VERSION);
+        wp_enqueue_style('materialdesignicons-7.4.47', HASHFORM_URL . 'fonts/materialdesignicons.css', array(), HASHFORM_VERSION);
         wp_enqueue_style('hashform-chosen', HASHFORM_URL . 'css/chosen.css', array(), HASHFORM_VERSION);
         wp_enqueue_style('hashform-select2', HASHFORM_URL . 'css/select2.min.css', array(), HASHFORM_VERSION);
         wp_enqueue_style('hashform-searchable-select', HASHFORM_URL . 'css/searchable-select.css', array(), HASHFORM_VERSION);
@@ -158,7 +158,7 @@ class HashFormLoader {
     public static function enqueue_styles() {
         // No stock jquery.timepicker stylesheet: the time picker is styled in style.css with the date picker.
         wp_register_style('hashform-file-uploader', HASHFORM_URL . 'css/file-uploader.css', array(), HASHFORM_VERSION);
-        wp_register_style('materialdesignicons', HASHFORM_URL . 'fonts/materialdesignicons.css', array(), HASHFORM_VERSION);
+        wp_register_style('materialdesignicons-7.4.47', HASHFORM_URL . 'fonts/materialdesignicons.css', array(), HASHFORM_VERSION);
         wp_register_style('hashform-style', HASHFORM_URL . 'css/style.css', array(), HASHFORM_VERSION);
 
         $fonts_url = HashFormStyles::fonts_url();
@@ -190,7 +190,7 @@ class HashFormLoader {
     public static function enqueue_form_styles() {
         wp_enqueue_style('dashicons');
         wp_enqueue_style('hashform-file-uploader');
-        wp_enqueue_style('materialdesignicons');
+        wp_enqueue_style('materialdesignicons-7.4.47');
         wp_enqueue_style('hashform-style');
         wp_enqueue_style('hashform-fonts');
     }
